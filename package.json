@@ -1,0 +1,14 @@
+{
+  "name": "assembl-desktop-demo",
+  "version": "1.0.0",
+  "description": "A tech demo for Assembl",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Assembl",
+  "license": "SEE LICENSE IN LICENSE.MD",
+  "devDependencies": {
+    "electron": "^4.0.1"
+  }
+}
