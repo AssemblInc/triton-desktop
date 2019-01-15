@@ -10,5 +10,13 @@
   "license": "SEE LICENSE IN LICENSE.MD",
   "devDependencies": {
     "electron": "^4.0.1"
+  },
+  "dependencies": {
+    "libp2p": "^0.24.4",
+    "libp2p-websocket-star": "^0.10.2",
+    "multiaddr": "^6.0.3",
+    "peer-id": "^0.12.2",
+    "peer-info": "^0.15.1",
+    "pull-stream": "^3.6.9"
   }
 }
