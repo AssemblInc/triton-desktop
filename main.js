@@ -28,6 +28,7 @@ class Node extends libp2p {
 
 let mainWindow = null;
 let node = null;
+let statInterval = null;
 function createWindow() {
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
@@ -58,8 +59,19 @@ function createWindow() {
         return false;
     });
     mainWindow.on('closed', function(event) {
-        console.log("Quitting application...");
-        app.quit();
+        clearInterval(statInterval);
+        statInterval = null;
+        console.log("Closing websocket connections...");
+        node.stop(function(error) {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                console.log("Successfully closed websocket connections.");
+            }
+            console.log("Quitting application...");
+            app.quit();
+        });
     });
 
     // disable menu bar and maximize window
@@ -95,10 +107,33 @@ function createWindow() {
             console.log(error);
         });
 
-        node.handle("/assembl/1.0.0", function(protocol, conn) {
-            console.log("Handling assembl protocol connection");
+        node.handle("/assemblhi/1.0.0", function(protocol, conn) {
+            console.log("Handling assemblhi protocol connection");
+            console.log(conn);
             pull(
-                pull.values(['hello']),
+                pull.empty(),
+                conn,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(_values);
+                        peerId = PeerId.createFromB58String(_values[0]);
+                        const peerInfo = new PeerInfo(peerId);
+                        peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star/ipfs/"+peerInfo.id._idB58String));
+                        receiverPeerInfo = peerInfo;
+                        mainWindow.webContents.send('receiver-connected', _values[1]);
+                    }
+                })
+            )
+        });
+
+        node.handle("/assemblfile/1.0.0", function(protocol, conn) {
+            console.log("Handling assemblfile protocol connection");
+            mainWindow.webContents.send('receiving-file', null);
+            pull(
+                pull.empty(),
                 conn,
                 pull.collect(function(error, _values) {
                     if (error) {
@@ -130,68 +165,64 @@ function createWindow() {
             if (error) {
                 throw error;
             }
-
-            mainWindow.webContents.executeJavaScript(`
-                document.getElementById('yourpeerid').value = '`+node.peerInfo.id._idB58String+`';
-            `);
+            else {
+                mainWindow.webContents.executeJavaScript(`
+                    document.getElementById('yourpeerid').value = '`+node.peerInfo.id._idB58String+`';
+                `);
+            }
         });
+
+        statInterval = setInterval(function() {
+            let statsProtocols = node.stats.protocols();
+            for (let i = 0; i < statsProtocols.length; i++) {
+                console.log(node.stats.forProtocol(statsProtocols[i]).snapshot);
+            }
+        }, 1000);
     });
 }
 
-ipcMain.on('peerid-entered', function(event, peerId) {
-    console.log(peerId);
-    peerId = PeerId.createFromB58String(peerId);
+let senderPeerInfo = null;
+let receiverPeerInfo = null;
+ipcMain.on('peerid-entered', function(event, options) {
+    console.log(options);
+    peerId = PeerId.createFromB58String(options.senderPeerId);
     const peerInfo = new PeerInfo(peerId);
     peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star/ipfs/"+peerInfo.id._idB58String));
+    senderPeerInfo = peerInfo;
     console.log("Dialing peer:");
-    console.log(peerInfo);
-    node.dialProtocol(peerInfo, "/assembl/1.0.0", function(error, connection) {
+    console.log(senderPeerInfo);
+    node.dialProtocol(senderPeerInfo, "/assemblhi/1.0.0", function(error, connection) {
         if (error) {
             throw error;
         }
         else {
+            console.log(senderPeerInfo);
             pull(
-                pull.values(['hello from the other side']),
-                connection,
-                pull.collect(function(error, _values) {
-                    if (error) {
-                        console.log(error);
-                    }
-                    else {
-                        console.log(_values);
-                    }
-                })
+                pull.values([node.peerInfo.id._idB58String, options.receiverName]),
+                connection
             );
         }
     });
-    /*
-    node.dialFSM(peerInfo, '/assembl/1.0.0', function(error, connectionFSM) {
-        if (error) {
-            event.sender.send('peer-connect-error', error);
-        }
-        else {
-            connectionFSM.once('connection', function(connection) {
-                console.log("A connection has been made. Sending a text");
+});
+
+ipcMain.on('data-ready-for-transfer', function(event, data) {
+    if (receiverPeerInfo != null) {
+        node.dialProtocol(receiverPeerInfo, "/assemblfile/1.0.0", function(error, connection) {
+            if (error) {
+                throw error;
+            }
+            else {
+                console.log(data);
                 pull(
-                    pull.values(['hello from the other side']),
-                    connection,
-                    pull.map(function(s) {
-                        s.toString();
-                    }),
-                    pull.log()
-                )
-            });
-            connectionFSM.once('error', function() {
-                console.log("An error occured");
-            });
-            connectionFSM.once('close', function() {
-                console.log("The connection has been closed");
-            });
-            // connectionFSM.close(); 
-            event.sender.send('peer-connected', connectionFSM);
-        }
-    });
-    */
+                    pull.once(data),
+                    connection
+                );
+            }
+        });
+    }
+    else {
+        console.log("receiverPeerInfo equals null");
+    }
 });
 
 app.on('ready', createWindow);

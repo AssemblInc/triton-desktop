@@ -106,6 +106,23 @@ a:hover, a:focus, a:active {
     margin-top: 72px;
 }
 
+input[type=text] {
+    display: inline-block;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: rgba(0,0,0,0.1);
+    color: #FFFFFF;
+    font-size: 1em;
+    width: 620px;
+    font-family: 'Courier New', Courier, monospace, Serif;
+    border: none;
+    border-radius: 3px;
+    cursor: text;
+    user-select: initial;
+    text-align: center;
+}
+
 /* startup screen (splash screen) */
 #startup {
     animation: splash 30s ease 0s infinite alternate;
@@ -156,6 +173,32 @@ a:hover, a:focus, a:active {
     height: 64px;
 }
 
+#loading-progress {
+	display: block;
+	height: 12px;
+    width: 80%;
+    margin: 0px 10% 60px;
+	border: none;
+	border-radius: 2px;
+	color: #004CFF;
+	transition: color 1s;
+	background-color: rgba(255,255,255,0.1);
+	
+	-webkit-animation-fill-mode: forwards;
+	-moz-animation-fill-mode: forwards;
+	animation-fill-mode: forwards;
+}
+
+#loading-progress::-webkit-progress-bar {
+	background-color: rgba(255,255,255,0.1);
+	border-radius: 2px;
+}
+
+#loading-progress::-webkit-progress-value {
+	background-color: #004CFF;
+	border-radius: 2px;
+}
+
 #extra-loading {
     height: 0px;
     overflow: hidden;
@@ -189,36 +232,27 @@ a:hover, a:focus, a:active {
 
 /* sender */
 #yourpeerid {
-    display: inline-block;
-    margin-top: 24px;
-    padding: 16px;
-    background-color: rgba(0,0,0,0.1);
-    color: #FFFFFF;
-    font-size: 1em;
-    width: 620px;
-    font-family: 'Courier New', Courier, monospace, Serif;
-    border: none;
-    border-radius: 3px;
-    cursor: text;
-    user-select: initial;
-    text-align: center;
+    margin-bottom: 0px;
 }
 
 /* receiver */
-#senderpeerid {
+.connect-button {
     display: inline-block;
-    margin-top: 24px;
-    padding: 16px;
-    background-color: rgba(0,0,0,0.1);
-    color: #FFFFFF;
-    font-size: 1em;
-    width: 620px;
-    font-family: 'Courier New', Courier, monospace, Serif;
+    cursor: pointer;
+    background: #97CED9;
     border: none;
     border-radius: 3px;
-    cursor: text;
-    user-select: initial;
-    text-align: center;
+    padding: 6px 12px;
+    margin: 2px 4px;
+    color: #1A1A1A;
+    transition: 0.35s;
+    font-size: 1em;
+}
+
+.connect-button:hover {
+    background: #ABE2ED;
+    color: #1A1A1A;
+    transition: 0.15s;
 }
 
 /* file dropper */
@@ -262,7 +296,7 @@ div#itemdrop {
     z-index: 5;
 }
 
-input#fileToUpload {
+input#fileChooser {
 	width: 100%;
 	height: 100%;
 	cursor: default;
