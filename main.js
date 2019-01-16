@@ -1,13 +1,33 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const fs = require('fs');
 const libp2p = require('libp2p');
 const PeerId = require('peer-id');
 const PeerInfo = require('peer-info');
 const multiaddr = require('multiaddr');
-const pullStream = require('pull-stream');
 const WSStar = require('libp2p-websocket-star');
+const defaultsDeep = require('@nodeutils/defaults-deep');
+const pull = require('pull-stream');
+
+class Node extends libp2p {
+    constructor (_ws, _options) {
+        const peerInfo = _options.peerInfo;
+        const defaults = {
+            modules: {
+                transport: [
+                    _ws
+                ],
+                peerDiscovery: [
+                    _ws.discovery
+                ]
+            }
+        };
+
+        super(defaultsDeep(_options, defaults))
+    }
+}
 
 let mainWindow = null;
+let node = null;
 function createWindow() {
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
@@ -19,7 +39,7 @@ function createWindow() {
         fullscreenable: false,
         title: "Assembl Desktop Demo",
         webPreferences: {
-            devTools: false,
+            devTools: true,
             defaultFontFamily: 'sansSerif',
             defaultFontSize: 17,
             nativeWindowOpen: false,             // do not support native window.open JS function
@@ -45,44 +65,65 @@ function createWindow() {
     // disable menu bar and maximize window
     mainWindow.setMenu(null);
     mainWindow.maximize();
+    mainWindow.webContents.openDevTools();
 
     // load the user interface
     mainWindow.loadFile('ui.html');
 
     // create p2p connector
-    PeerId.create(function(error, id) {
+    PeerId.create({
+            bits: 1028
+        }, function(error, id) {
         if (error) {
             throw error;
         }
 
         const peerInfo = new PeerInfo(id);
-        peerInfo.multiaddrs.add(multiaddr("/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star/"));
-        console.log(peerInfo);
+        peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star"));
 
-        // TODO -> review why the ID can not be passed by the .listen call
         // the id is required for the crypto challenge
         const ws = new WSStar({ id: id });
+        
+        console.log(peerInfo);
+        node = new Node(ws, { peerInfo: peerInfo });
 
-        const modules = {
-            transport: [
-                ws
-            ],
-            discovery: [
-                ws.discovery
-            ]
-        };
+        node.on('start', function() {
+            console.log('libp2p node started');
+        });
 
-        const node = new libp2p(modules, peerInfo);
+        node.on('error', function(error) {
+            console.log(error);
+        });
 
-        node.handle("/test/1.0.0", function(protocol, connection) {
-            pullStream(
-                pullStream.values(['hello']),
-                connection,
-                pullStream.map(function(s) {
-                    s.toString();
-                }),
-                pullStream.log()
-            );
+        node.handle("/assembl/1.0.0", function(protocol, conn) {
+            console.log("Handling assembl protocol connection");
+            pull(
+                pull.values(['hello']),
+                conn,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(_values);
+                    }
+                })
+            )
+        });
+
+        node.on('peer:discovery', function(peer) {
+            // console.log("A peer has been discovered!");
+            // console.log(peer);
+        });
+
+        node.on('peer:connect', function(peer) {
+            console.log("A peer connected!");
+            console.log(peer);
+        });
+
+        node.on('peer:disconnect', function(peer) {
+            console.log("A peer disconnected!");
+            console.log(peer);
         });
 
         node.start(function(error) {
@@ -90,20 +131,67 @@ function createWindow() {
                 throw error;
             }
 
-            node.dial(peerInfo, "/test/1.0.0", function(error, pullStream) {
-                if (error) {
-                    throw error;
-                }
-
-                pullStream(
-                    pullStream.values(['hello from the other side']),
-                    pullStream,
-                    pullStream.map((s) => s.toString()),
-                    pullStream.log()
-                );
-            });
+            mainWindow.webContents.executeJavaScript(`
+                document.getElementById('yourpeerid').value = '`+node.peerInfo.id._idB58String+`';
+            `);
         });
     });
 }
+
+ipcMain.on('peerid-entered', function(event, peerId) {
+    console.log(peerId);
+    peerId = PeerId.createFromB58String(peerId);
+    const peerInfo = new PeerInfo(peerId);
+    peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star/ipfs/"+peerInfo.id._idB58String));
+    console.log("Dialing peer:");
+    console.log(peerInfo);
+    node.dialProtocol(peerInfo, "/assembl/1.0.0", function(error, connection) {
+        if (error) {
+            throw error;
+        }
+        else {
+            pull(
+                pull.values(['hello from the other side']),
+                connection,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(_values);
+                    }
+                })
+            );
+        }
+    });
+    /*
+    node.dialFSM(peerInfo, '/assembl/1.0.0', function(error, connectionFSM) {
+        if (error) {
+            event.sender.send('peer-connect-error', error);
+        }
+        else {
+            connectionFSM.once('connection', function(connection) {
+                console.log("A connection has been made. Sending a text");
+                pull(
+                    pull.values(['hello from the other side']),
+                    connection,
+                    pull.map(function(s) {
+                        s.toString();
+                    }),
+                    pull.log()
+                )
+            });
+            connectionFSM.once('error', function() {
+                console.log("An error occured");
+            });
+            connectionFSM.once('close', function() {
+                console.log("The connection has been closed");
+            });
+            // connectionFSM.close(); 
+            event.sender.send('peer-connected', connectionFSM);
+        }
+    });
+    */
+});
 
 app.on('ready', createWindow);
