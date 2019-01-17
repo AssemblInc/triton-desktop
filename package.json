@@ -1,15 +1,28 @@
 {
   "name": "assembl-desktop-demo",
   "version": "1.0.0",
-  "description": "A tech demo for Assembl",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron ."
-  },
-  "author": "Assembl",
+  "description": "Assembl File transmitter for Desktop",
+  "homepage": "https://assembl.science",
+  "author": "Assembl LLC",
   "license": "SEE LICENSE IN LICENSE.MD",
+  "main": "main.js",
+  "build": {
+    "appId": "science.assembl.desktop",
+    "productName": "Assembl Desktop",
+    "copyright": "Copyright © 2019 Assembl LLC",
+    "extraFiles": [
+      "resources/*",
+      "LICENSE.MD"
+    ]
+  },
+  "scripts": {
+    "start": "electron .",
+    "build-win": "build --win",
+    "pack": "electron-builder"
+  },
   "devDependencies": {
-    "electron": "^4.0.1"
+    "electron": "^4.0.1",
+    "electron-builder": "^20.38.5"
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
@@ -22,5 +35,9 @@
     "peer-info": "^0.15.1",
     "prettysize": "^2.0.0",
     "pull-stream": "^3.6.9"
+  },
+  "engines": {
+    "node": "11.6.0",
+    "npm": "5.5.1"
   }
 }

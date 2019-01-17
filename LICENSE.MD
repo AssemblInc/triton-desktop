@@ -1,1 +1,1 @@
-Copyright © Assembl LLC 2019
+Copyright © 2019 Assembl LLC
