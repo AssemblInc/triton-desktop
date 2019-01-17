@@ -182,7 +182,10 @@ input[type=text] {
 	border-radius: 2px;
 	color: #004CFF;
 	transition: color 1s;
-	background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255,255,255,0.1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
 	
 	-webkit-animation-fill-mode: forwards;
 	-moz-animation-fill-mode: forwards;
@@ -197,6 +200,17 @@ input[type=text] {
 #loading-progress::-webkit-progress-value {
 	background-color: #004CFF;
 	border-radius: 2px;
+}
+
+#loading-progress-inner {
+    background-color: #004CFF;
+    width: 0%;
+    height: inherit;
+    position: absolute;
+    left: 0;
+    transition: 1s;
+    transition-timing-function: linear;
+    border-radius: 2px;
 }
 
 #loading-details {

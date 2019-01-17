@@ -146,7 +146,9 @@ function createWindow() {
                     else {
                         console.log(_values);
                         receivedChunks.push(_values[0]);
-                        mainWindow.webContents.send('received-chunk', _values[0].byteLength);
+                        if (_values[0] != undefined) {
+                            mainWindow.webContents.send('received-chunk', _values[0].byteLength);
+                        }
                     }
                 })
             );

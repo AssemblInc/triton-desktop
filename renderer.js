@@ -54,6 +54,7 @@ function setLoadingDetails(text) {
 }
 
 function setLoadingProgress(progress, max) {
+    /*
     document.getElementById("loading-progress").max = max;
     document.getElementById("loading-progress").value = progress;
     if (progress != max) {
@@ -62,12 +63,26 @@ function setLoadingProgress(progress, max) {
     else {
         document.getElementById("loading-progress").innerHTML = "100%";
     }
+    */
+    let progressPerc = ((progress / max) * 100).toFixed(1);
+    document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
+    let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
+    if (textBar.length > 0) {
+        textBar[0].innerHTML = progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")";
+    }
 }
 
 function resetLoadingProgress() {
+    /*
     document.getElementById("loading-progress").max = 100;
     document.getElementById("loading-progress").value = 0;
     document.getElementById("loading-progress").innerHTML = "0.0%";
+    */
+    document.getElementById("loading-progress-inner").style.width = "0%";
+    let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
+    if (textBar.length > 0) {
+        textBar[0].innerHTML = "0%";
+    }
 }
 
 ipcRenderer.on('peer-connect-error', function(event, error) {
@@ -240,7 +255,7 @@ function readFile(file) {
         totalSize = fileAB.byteLength;
 
         // update loading screen once more
-        setLoadingDetails(file.name + " &bull; " + prettySize(totalSize, true, false, 2));
+        setLoadingDetails(file.name + " &bull; " + prettySize(totalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
 
         // send data initialized event to receiver
         ipcRenderer.send('data-initialized', [
