@@ -85,12 +85,20 @@ function resetLoadingProgress() {
     }
 }
 
-ipcRenderer.on('peer-connect-error', function(event, error) {
-    console.log(error);
+// for both
+ipcRenderer.on('websocket-connected', function(event, data) {
+    console.log("Websocket connected!");
+    clearTimeout(loadingTimeout);
+    loadingTimeout = null;
+    startPurposeSelector();
 });
 
-ipcRenderer.on('peer-connected', function(event, connectionFSM) {
-    console.log(connectionFSM);
+// for both
+ipcRenderer.on('websocket-connection-error', function(event, data) {
+    console.warn("Websocket connection error");
+    clearTimeout(loadingTimeout);
+    loadingTimeout = null;
+    alert("Could not establish a connection.");
 });
 
 // for sender
@@ -137,6 +145,40 @@ ipcRenderer.on('received-file', function(event, data) {
     showLoadingScreen(false);
 });
 
+// for receiver
+ipcRenderer.on('saved-file', function(event, data) {
+    console.log("File has been saved");
+    setLoadingStatus("Waiting for sender...");
+    setLoadingDetails("");
+    resetLoadingProgress();
+    showLoadingScreen(true);
+});
+
+// for sender
+ipcRenderer.on('receiver-saved-file', function(event, data) {
+    console.log("File has been saved by the receiver");
+    startFileDropper();
+});
+
+// for receiver
+// once data is ready to be send, execute this
+// (data is ready to be sent once the file info has been confirmed received)
+ipcRenderer.on('data-ready-to-send', function(event, data) {
+    let i, j;
+    for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
+        chunks.push(fileAB.slice(i,i+chunkSize));
+    }
+    setLoadingStatus("Transmitting file to " + strip(receiverName) + "...");
+    setLoadingProgress(0, totalSize);
+    showLoadingScreen(false);
+    sendChunk();
+});
+
+// run this function when the sender states the next chunk is ready to be sent
+ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
+    sendChunk();
+});
+
 let loadingTimeout = null;
 function domReady() {
     loadingTimeout = setTimeout(function() {
@@ -145,8 +187,6 @@ function domReady() {
         extraLoading.style.marginTop = "72px";
         // start connecting to the main server here
     }, 3000);
-
-    setTimeout(startPurposeSelector, 5000);
 
     document.getElementById("connect-btn").addEventListener("click", function(event) {
         ipcRenderer.send('peerid-entered', {
@@ -196,9 +236,9 @@ function sendChunk() {
         currentChunk += 1;
     }
     else {
-        setLoadingStatus("File has been transmitted successfully!");
-        setLoadingProgress(totalSize, totalSize);
-        showLoadingScreen(false);
+        setLoadingStatus("Waiting for " + receiverName + " to save the file...");
+        resetLoadingProgress();
+        showLoadingScreen(true);
         ipcRenderer.send('data-transfer-complete', null);
         chunks = [];
         currentChunk = 0;
@@ -231,24 +271,6 @@ function readFile(file) {
         resetLoadingProgress();
         showLoadingScreen(true);
         // console.log(reader.result);
-
-        // once data is ready to be send, execute this
-        // (data is ready to be sent once the file info has been confirmed received)
-        ipcRenderer.on('data-ready-to-send', function(event, data) {
-            let i, j;
-            for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
-                chunks.push(fileAB.slice(i,i+chunkSize));
-            }
-            setLoadingStatus("Transmitting file to " + strip(receiverName) + "...");
-            setLoadingProgress(0, totalSize);
-            showLoadingScreen(false);
-            sendChunk();
-        });
-
-        // run this function when the sender states the next chunk is ready to be sent
-        ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-            sendChunk();
-        });
 
         // retrieve file contents in bytes
         var fileAB = reader.result;

@@ -101,10 +101,12 @@ function createWindow() {
 
         node.on('start', function() {
             console.log('libp2p node started');
+            mainWindow.webContents.send('websocket-connected', null);
         });
 
         node.on('error', function(error) {
             console.log(error);
+            mainWindow.webContents.send('websocket-connection-error', null);
         });
 
         // for sender
@@ -125,6 +127,32 @@ function createWindow() {
                         peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star/ipfs/"+peerInfo.id._idB58String));
                         receiverPeerInfo = peerInfo;
                         mainWindow.webContents.send('receiver-connected', _values[1]);
+                    }
+                })
+            );
+        });
+
+        // for sender
+        node.handle("/assemblsaved/1.0.0", function(protocol, conn) {
+            console.log("Handling assemblsaved protocol connection");
+            pull(
+                pull.empty(),
+                conn,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(_values);
+                        var callbackStr = _values.toString();
+                        if (callbackStr == "ready") {
+                            console.log("Receiver has saved the file. Next file ready for transmission.");
+                            mainWindow.webContents.send('receiver-saved-file', null);
+                        }
+                        else {
+                            console.log(callbackStr);
+                            console.log("Not starting next data transmission because assemblsaved didn't equal 'ready'");
+                        }
                     }
                 })
             );
@@ -212,6 +240,20 @@ function createWindow() {
                                         throw error;
                                     }
                                     console.log("The file has been saved!");
+                                    mainWindow.webContents.send('saved-file', null);
+                                    if (senderPeerInfo != null) {
+                                        node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
+                                            if (error) {
+                                                throw error;
+                                            }
+                                            else {
+                                                pull(
+                                                    pull.once('ready'),
+                                                    connection
+                                                );
+                                            }
+                                        });
+                                    }
                                 });
                             }
                         });
