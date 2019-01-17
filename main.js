@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const libp2p = require('libp2p');
 const PeerId = require('peer-id');
@@ -107,6 +107,7 @@ function createWindow() {
             console.log(error);
         });
 
+        // for sender
         node.handle("/assemblhi/1.0.0", function(protocol, conn) {
             console.log("Handling assemblhi protocol connection");
             console.log(conn);
@@ -126,12 +127,53 @@ function createWindow() {
                         mainWindow.webContents.send('receiver-connected', _values[1]);
                     }
                 })
-            )
+            );
         });
 
+        // for receiver
+        let receivedChunks = [];
+        let receivedFilename = null;
         node.handle("/assemblfile/1.0.0", function(protocol, conn) {
             console.log("Handling assemblfile protocol connection");
-            mainWindow.webContents.send('receiving-file', null);
+            mainWindow.webContents.send('receiving-chunk', null);
+            pull(
+                pull.once('ready'),
+                conn,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        console.log(_values);
+                        receivedChunks.push(_values[0]);
+                        mainWindow.webContents.send('received-chunk', _values[0].byteLength);
+                    }
+                })
+            );
+        });
+
+        // for receiver
+        node.handle("/assemblfileinfo/1.0.0", function(protocol, conn) {
+            console.log("Handling assemblfileinfo protocol connection");
+            pull(
+                pull.once('ready'),
+                conn,
+                pull.collect(function(error, _values) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        let info = _values.toString().split(",");
+                        receivedFilename = info[1];
+                        mainWindow.webContents.send('data-initialized', info);
+                    }
+                })
+            );
+        });
+
+        // for receiver
+        node.handle("/assemblfilecomplete/1.0.0", function(protocol, conn) {
+            console.log("Handling assemblfilecomplete protocol connection");
             pull(
                 pull.empty(),
                 conn,
@@ -140,10 +182,40 @@ function createWindow() {
                         console.log(error);
                     }
                     else {
-                        console.log(_values);
+                        console.log("Data transmission has been completed!");
+                        mainWindow.webContents.send('received-file', null);
+                        let totalBytes = 0;
+                        for (let i = 0, j = receivedChunks.length; i < j; i++) {
+                            totalBytes += receivedChunks[i].byteLength;
+                        }
+                        let tmp = new Uint8Array(totalBytes);
+                        let processedBytes = 0;
+                        for (let i = 0, j = receivedChunks.length; i < j; i++) {
+                            tmp.set(new Uint8Array(receivedChunks[i]), processedBytes);
+                            processedBytes += receivedChunks[i].byteLength;
+                        }
+                        let defaultPath = app.getPath('downloads') + '\\' + receivedFilename;
+                        let extension = receivedFilename.split('.').pop();
+                        if (extension == null || extension == undefined) {
+                            extension = "";
+                        }
+                        console.log(defaultPath);
+                        dialog.showSaveDialog({
+                            defaultPath: defaultPath,
+                            filters: [{ name: extension.toUpperCase(), extensions: [ extension ] }]
+                        }, function(savePath) {
+                            if (savePath != undefined && savePath != null && savePath != "") {
+                                fs.writeFile(savePath, tmp, function(error) {
+                                    if (error) {
+                                        throw error;
+                                    }
+                                    console.log("The file has been saved!");
+                                });
+                            }
+                        });
                     }
                 })
-            )
+            );
         });
 
         node.on('peer:discovery', function(peer) {
@@ -172,17 +244,20 @@ function createWindow() {
             }
         });
 
+        /*
         statInterval = setInterval(function() {
             let statsProtocols = node.stats.protocols();
             for (let i = 0; i < statsProtocols.length; i++) {
                 console.log(node.stats.forProtocol(statsProtocols[i]).snapshot);
             }
         }, 1000);
+        */
     });
 }
 
 let senderPeerInfo = null;
 let receiverPeerInfo = null;
+// for receiver
 ipcMain.on('peerid-entered', function(event, options) {
     console.log(options);
     peerId = PeerId.createFromB58String(options.senderPeerId);
@@ -205,7 +280,41 @@ ipcMain.on('peerid-entered', function(event, options) {
     });
 });
 
-ipcMain.on('data-ready-for-transfer', function(event, data) {
+// for sender
+ipcMain.on('data-initialized', function(event, data) {
+    if (receiverPeerInfo != null) {
+        node.dialProtocol(receiverPeerInfo, "/assemblfileinfo/1.0.0", function(error, connection) {
+            if (error) {
+                throw error;
+            }
+            else {
+                console.log(data);
+                pull(
+                    pull.values(data),
+                    connection,
+                    pull.collect(function(error, _values) {
+                        var callbackStr = _values.toString();
+                        if (callbackStr == "ready") {
+                            console.log("Data is ready to be sent!");
+                            mainWindow.webContents.send('data-ready-to-send', null);
+                        }
+                        else {
+                            console.log(callbackStr);
+                            console.log("Not starting data transmission because data-initialized callback didn't equal 'ready'");
+                        }
+                    })
+                );
+
+            }
+        });
+    }
+    else {
+        console.log("receiverPeerInfo equals null");
+    }
+});
+
+// for sender
+ipcMain.on('chunk-ready-for-transfer', function(event, data) {
     if (receiverPeerInfo != null) {
         node.dialProtocol(receiverPeerInfo, "/assemblfile/1.0.0", function(error, connection) {
             if (error) {
@@ -215,6 +324,38 @@ ipcMain.on('data-ready-for-transfer', function(event, data) {
                 console.log(data);
                 pull(
                     pull.once(data),
+                    connection,
+                    pull.collect(function(error, _values) {
+                        var callbackStr = _values.toString();
+                        if (callbackStr == "ready") {
+                            console.log("Next chunk is ready to be sent!");
+                            mainWindow.webContents.send('next-chunk-ready-to-send', null);
+                        }
+                        else {
+                            console.log(callbackStr);
+                            console.log("Not starting next data chunk transmission because chunk-ready-for-transfer callback didn't equal 'ready'");
+                        }
+                    })
+                );
+            }
+        });
+    }
+    else {
+        console.log("receiverPeerInfo equals null");
+    }
+});
+
+// for sender
+ipcMain.on('data-transfer-complete', function(event, data) {
+    console.log("File transfer is complete! No next chunk to send.");
+    if (receiverPeerInfo != null) {
+        node.dialProtocol(receiverPeerInfo, "/assemblfilecomplete/1.0.0", function(error, connection) {
+            if (error) {
+                throw error;
+            }
+            else {
+                pull(
+                    pull.once('done'),
                     connection
                 );
             }

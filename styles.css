@@ -199,6 +199,11 @@ input[type=text] {
 	border-radius: 2px;
 }
 
+#loading-details {
+    font-size: 0.6em;
+    margin-top: 8px;
+}
+
 #extra-loading {
     height: 0px;
     overflow: hidden;

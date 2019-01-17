@@ -19,6 +19,7 @@
     "multiaddr": "^6.0.3",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
+    "prettysize": "^2.0.0",
     "pull-stream": "^3.6.9"
   }
 }

@@ -48,7 +48,7 @@
         </div>
         <div class="screen" id="dragdrop" style="display: none;">
             <div id="filedropper">
-                <input type="file" name="fileChooser" id="fileChooser" onchange="sendFile(this.files[0])" required>
+                <input type="file" name="fileChooser" id="fileChooser" onchange="readFile(this.files[0])" required>
                 <div id="filedropperborder"></div>
                 <div id="itemdropbox">
                     <div id="filedropperdragbg"></div>
@@ -65,6 +65,7 @@
                                 <img class="loading-svg" src="resources/svg/loading.svg" />
                                 <progress id="loading-progress" min="0" max="100" value="0"></progress>
                                 <div id="loading-status">Loading...</div>
+                                <div id="loading-details"></div>
                             </div>
                         </td>
                     </tr>

@@ -1,4 +1,5 @@
 const { ipcRenderer } = require('electron');
+const prettySize = require('prettysize');
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -48,6 +49,10 @@ function setLoadingStatus(text) {
     document.getElementById("loading-status").innerHTML = text;
 }
 
+function setLoadingDetails(text) {
+    document.getElementById("loading-details").innerHTML = text;
+}
+
 function setLoadingProgress(progress, max) {
     document.getElementById("loading-progress").max = max;
     document.getElementById("loading-progress").value = progress;
@@ -73,6 +78,7 @@ ipcRenderer.on('peer-connected', function(event, connectionFSM) {
     console.log(connectionFSM);
 });
 
+// for sender
 let receiverName = "";
 ipcRenderer.on('receiver-connected', function(event, name) {
     console.log("A receiver connected");
@@ -81,14 +87,39 @@ ipcRenderer.on('receiver-connected', function(event, name) {
     startFileDropper();
 });
 
-ipcRenderer.on('receiving-file', function(event, data) {
-    console.log("Receiving a file...");
+// for receiver
+let rTotalSize = 0;
+let rProgressSize = 0;
+ipcRenderer.on('data-initialized', function(event, data) {
+    console.log("Getting ready for file transmission...");
+    setLoadingStatus("Getting ready for file transmission...");
+    rTotalSize = parseInt(data[0]);
+    setLoadingDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2));
+    resetLoadingProgress();
+    showLoadingScreen(false);
+    setLoadingProgress(0, parseInt(data[0]));
+});
+
+// for receiver
+ipcRenderer.on('receiving-chunk', function(event, data) {
+    // console.log("Receiving a chunk...");
     setLoadingStatus("Receiving file...");
 });
 
+// for receiver
+ipcRenderer.on('received-chunk', function(event, progressIncrease) {
+    console.log("Received a chunk of " + progressIncrease + " bytes");
+    rProgressSize += progressIncrease;
+    // setLoadingStatus("Receiving file...");
+    setLoadingProgress(rProgressSize, rTotalSize);
+});
+
+// for receiver
 ipcRenderer.on('received-file', function(event, data) {
-    console.log("File has been received...");
-    setLoadingStatus("Waiting for sender...");
+    console.log("File has been fully received!");
+    setLoadingStatus("File has been received successfully!");
+    setLoadingProgress(rTotalSize, rTotalSize);
+    showLoadingScreen(false);
 });
 
 let loadingTimeout = null;
@@ -135,26 +166,96 @@ function domReady() {
     };
 }
 
-function sendFile(file) {
+/* for sender */
+let chunks = [];
+let chunkSize = 1048576;    // 1MB in bytes
+let totalSize = 0;
+let currentChunk = 0;
+function sendChunk() {
+    if (currentChunk < chunks.length) {
+        console.log("Transmitting chunk " + (currentChunk+1) + " of " + chunks.length);
+        console.log("Total progress: " + (currentChunk * chunkSize) + " bytes sent (out of " + totalSize + " total bytes)");
+        setLoadingProgress(currentChunk * chunkSize, totalSize);
+        convertedChunk = new Uint8Array(chunks[currentChunk]);
+        ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
+        currentChunk += 1;
+    }
+    else {
+        setLoadingStatus("File has been transmitted successfully!");
+        setLoadingProgress(totalSize, totalSize);
+        showLoadingScreen(false);
+        ipcRenderer.send('data-transfer-complete', null);
+        chunks = [];
+        currentChunk = 0;
+        totalSize = 0;
+    }
+}
+function readFile(file) {
     console.log("File changed!");
+
+    // reset chunks
+    chunks = [];
+    currentChunk = 0;
+    totalSize = 0;
+
+    // set loadingscreen
     setLoadingStatus("Preparing file for exchange...");
+    setLoadingDetails(file.name);
     resetLoadingProgress();
-    showLoadingScreen();
+    showLoadingScreen(false);
+
+    // create filereader instance
     var reader = new FileReader();
+
+    // function to run when we're done reading the file
     reader.addEventListener("load", function(event) {
         console.log("Filereader loaded!");
+
+        // update loading screen
         setLoadingStatus("Getting ready...");
         resetLoadingProgress();
         showLoadingScreen(true);
         // console.log(reader.result);
+
+        // once data is ready to be send, execute this
+        // (data is ready to be sent once the file info has been confirmed received)
+        ipcRenderer.on('data-ready-to-send', function(event, data) {
+            let i, j;
+            for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
+                chunks.push(fileAB.slice(i,i+chunkSize));
+            }
+            setLoadingStatus("Transmitting file to " + strip(receiverName) + "...");
+            setLoadingProgress(0, totalSize);
+            showLoadingScreen(false);
+            sendChunk();
+        });
+
+        // run this function when the sender states the next chunk is ready to be sent
+        ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
+            sendChunk();
+        });
+
+        // retrieve file contents in bytes
         var fileAB = reader.result;
-        ipcRenderer.send('data-ready-for-transfer', new Uint8Array(fileAB));
-        setLoadingStatus("Sending data to " + strip(receiverName) + "...");
+        totalSize = fileAB.byteLength;
+
+        // update loading screen once more
+        setLoadingDetails(file.name + " &bull; " + prettySize(totalSize, true, false, 2));
+
+        // send data initialized event to receiver
+        ipcRenderer.send('data-initialized', [
+            totalSize.toString(),
+            file.name,
+            file.type
+        ]);
     });
     reader.addEventListener("progress", function(data) {
         if (data.lengthComputable) {
+            // update progress bar upon file reading
             setLoadingProgress(data.loaded, data.total);
         }
     });
+
+    // start reading the file
     reader.readAsArrayBuffer(file);
 }
