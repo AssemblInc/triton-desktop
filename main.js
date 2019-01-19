@@ -111,7 +111,7 @@ function createWindow() {
         fullscreenable: false,
         title: "Assembl Desktop Demo",
         webPreferences: {
-            devTools: true,
+            devTools: false,
             defaultFontFamily: 'sansSerif',
             defaultFontSize: 17,
             nativeWindowOpen: false,             // do not support native window.open JS function
@@ -142,7 +142,7 @@ function createWindow() {
          // disable menu bar and maximize window
         mainWindow.setMenu(null);
         mainWindow.maximize();
-        mainWindow.webContents.openDevTools();
+        // mainWindow.webContents.openDevTools();
 
         setTimeout(function() {
                 // create p2p connector
