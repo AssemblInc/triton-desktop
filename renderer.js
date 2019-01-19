@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 const prettySize = require('prettysize');
+let appClosing = false;
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -8,67 +9,88 @@ function strip(text) {
 }
 
 function hideAllScreens() {
-    var screens = document.getElementsByClassName("screen");
-    for (var i = 0; i < screens.length; i++) {
-        screens[i].style.display = "none";
+    if (!appClosing) {
+        var screens = document.getElementsByClassName("screen");
+        for (var i = 0; i < screens.length; i++) {
+            screens[i].style.display = "none";
+        }
     }
 }
 
 function startPurposeSelector() {
-    hideAllScreens();
-    document.getElementById("purpose").style.display = "block";
+    if (!appClosing) {
+        hideAllScreens();
+        document.getElementById("purpose").style.display = "block";
+    }
 }
 
 function startSender() {
-    hideAllScreens();
-    document.getElementById("sender").style.display = "block";
+    if (!appClosing) {
+        hideAllScreens();
+        document.getElementById("sender").style.display = "block";
+    }
 }
 
 function startFileDropper() {
-    hideAllScreens();
-    document.getElementById("dragdrop").style.display = "block";
+    if (!appClosing) {
+        hideAllScreens();
+        document.getElementById("dragdrop").style.display = "block";
+    }
 }
 
 function startReceiver() {
-    hideAllScreens();
-    document.getElementById("receiver").style.display = "block";
+    if (!appClosing) {
+        hideAllScreens();
+        document.getElementById("receiver").style.display = "block";
+    }
 }
 
 function showLoadingScreen(indeterminatable) {
-    hideAllScreens();
-    if (indeterminatable) {
-        document.getElementById("loading-progress").style.display = "none";
+    if (!appClosing) {
+        hideAllScreens();
+        if (indeterminatable) {
+            document.getElementById("loading-progress").style.display = "none";
+        }
+        else {
+            document.getElementById("loading-progress").style.display = "block";
+        }
+        document.getElementById("loading").style.display = "block";
     }
-    else {
-        document.getElementById("loading-progress").style.display = "block";
-    }
-    document.getElementById("loading").style.display = "block";
 }
 
 function setLoadingStatus(text) {
-    document.getElementById("loading-status").innerHTML = text;
+    if (!appClosing) {
+        document.getElementById("loading-status").innerHTML = text;
+    }
 }
 
 function setLoadingDetails(text) {
-    document.getElementById("loading-details").innerHTML = text;
+    if (!appClosing) {
+        document.getElementById("loading-details").innerHTML = text;
+    }
 }
 
 function setLoadingProgress(progress, max) {
-    /*
-    document.getElementById("loading-progress").max = max;
-    document.getElementById("loading-progress").value = progress;
-    if (progress != max) {
-        document.getElementById("loading-progress").innerHTML = ((progress / max) * 100).toFixed(1) + "%";
-    }
-    else {
-        document.getElementById("loading-progress").innerHTML = "100%";
-    }
-    */
-    let progressPerc = ((progress / max) * 100).toFixed(1);
-    document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-    let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
-    if (textBar.length > 0) {
-        textBar[0].innerHTML = progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")";
+    if (!appClosing) {
+        /*
+        document.getElementById("loading-progress").max = max;
+        document.getElementById("loading-progress").value = progress;
+        if (progress != max) {
+            document.getElementById("loading-progress").innerHTML = ((progress / max) * 100).toFixed(1) + "%";
+        }
+        else {
+            document.getElementById("loading-progress").innerHTML = "100%";
+        }
+        */
+        let progressPerc = ((progress / max) * 100).toFixed(1);
+        document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
+        let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
+        if (textBar.length > 0) {
+            textBar[0].innerHTML = progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")";
+        }
+        ipcRenderer.send('progress-update', true, progress / max, {
+            mode: "normal"
+        });
     }
 }
 
@@ -83,6 +105,7 @@ function resetLoadingProgress() {
     if (textBar.length > 0) {
         textBar[0].innerHTML = "0%";
     }
+    ipcRenderer.send('progress-update', false);
 }
 
 // for both
@@ -99,6 +122,16 @@ ipcRenderer.on('websocket-connection-error', function(event, data) {
     clearTimeout(loadingTimeout);
     loadingTimeout = null;
     alert("Could not establish a connection.");
+});
+
+// for both
+ipcRenderer.on('app-closing', function(event, data) {
+    console.warn("App is closing!");
+    resetLoadingProgress();
+    setLoadingStatus("Closing Assembl Desktop...");
+    setLoadingDetails("Please wait...");
+    showLoadingScreen(true);
+    appClosing = true;
 });
 
 // for sender
@@ -121,6 +154,9 @@ ipcRenderer.on('data-initialized', function(event, data) {
     resetLoadingProgress();
     showLoadingScreen(false);
     setLoadingProgress(0, parseInt(data[0]));
+    ipcRenderer.send('progress-update', true, 0, {
+        mode: "indeterminate"
+    });
 });
 
 // for receiver
@@ -152,31 +188,16 @@ ipcRenderer.on('saved-file', function(event, data) {
     setLoadingDetails("");
     resetLoadingProgress();
     showLoadingScreen(true);
+    ipcRenderer.send('progress-update', true, 0, {
+        mode: "indeterminate"
+    });
 });
 
 // for sender
 ipcRenderer.on('receiver-saved-file', function(event, data) {
     console.log("File has been saved by the receiver");
+    resetLoadingProgress();
     startFileDropper();
-});
-
-// for receiver
-// once data is ready to be send, execute this
-// (data is ready to be sent once the file info has been confirmed received)
-ipcRenderer.on('data-ready-to-send', function(event, data) {
-    let i, j;
-    for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
-        chunks.push(fileAB.slice(i,i+chunkSize));
-    }
-    setLoadingStatus("Transmitting file to " + strip(receiverName) + "...");
-    setLoadingProgress(0, totalSize);
-    showLoadingScreen(false);
-    sendChunk();
-});
-
-// run this function when the sender states the next chunk is ready to be sent
-ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-    sendChunk();
 });
 
 let loadingTimeout = null;
@@ -196,6 +217,9 @@ function domReady() {
         setLoadingStatus("Waiting for sender...");
         resetLoadingProgress();
         showLoadingScreen(true);
+        ipcRenderer.send('progress-update', true, 0, {
+            mode: "indeterminate"
+        });
     });
 
     var drop = document.getElementById("fileChooser");
@@ -221,11 +245,31 @@ function domReady() {
     };
 }
 
+// for sender
+// once data is ready to be sent, execute this
+// (data is ready to be sent once the file info has been confirmed received)
+ipcRenderer.on('data-ready-to-send', function(event, data) {
+    let i, j;
+    for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
+        chunks.push(fileAB.slice(i,i+chunkSize));
+    }
+    setLoadingStatus("Transmitting file to " + strip(receiverName) + "...");
+    setLoadingProgress(0, totalSize);
+    showLoadingScreen(false);
+    sendChunk();
+});
+
+// run this function when the sender states the next chunk is ready to be sent
+ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
+    sendChunk();
+});
+
 /* for sender */
 let chunks = [];
 let chunkSize = 1048576;    // 1MB in bytes
 let totalSize = 0;
 let currentChunk = 0;
+let fileAB = null;
 function sendChunk() {
     if (currentChunk < chunks.length) {
         console.log("Transmitting chunk " + (currentChunk+1) + " of " + chunks.length);
@@ -238,6 +282,9 @@ function sendChunk() {
     else {
         setLoadingStatus("Waiting for " + receiverName + " to save the file...");
         resetLoadingProgress();
+        ipcRenderer.send('progress-update', true, 1, {
+            mode: "indeterminate"
+        });
         showLoadingScreen(true);
         ipcRenderer.send('data-transfer-complete', null);
         chunks = [];
@@ -270,10 +317,13 @@ function readFile(file) {
         setLoadingStatus("Getting ready...");
         resetLoadingProgress();
         showLoadingScreen(true);
+        ipcRenderer.send('progress-update', true, 0, {
+            mode: "indeterminate"
+        });
         // console.log(reader.result);
 
         // retrieve file contents in bytes
-        var fileAB = reader.result;
+        fileAB = reader.result;
         totalSize = fileAB.byteLength;
 
         // update loading screen once more
