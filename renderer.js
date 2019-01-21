@@ -152,6 +152,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
     console.log("Getting ready for file transmission...");
     setLoadingStatus("Getting ready for file transmission...");
     rTotalSize = parseInt(data[0]);
+    rProgressSize = 0;
     setLoadingDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
     resetLoadingProgress();
     showLoadingScreen(false);
@@ -202,6 +203,21 @@ ipcRenderer.on('receiver-saved-file', function(event, data) {
     startFileDropper();
 });
 
+function formSubmit(event) {
+    event.preventDefault();
+    ipcRenderer.send('peerid-entered', {
+        senderPeerId: document.getElementById('senderpeerid').value,
+        receiverName: document.getElementById('yourname').value
+    });
+    setLoadingStatus("Waiting for sender...");
+    resetLoadingProgress();
+    showLoadingScreen(true);
+    ipcRenderer.send('progress-update', true, 0, {
+        mode: "indeterminate"
+    });
+    return false;
+}
+
 let loadingTimeout = null;
 function domReady() {
     loadingTimeout = setTimeout(function() {
@@ -211,23 +227,10 @@ function domReady() {
         // start connecting to the main server here
     }, 3000);
 
-    document.getElementById("receiver-input-form").addEventListener("submit", function(event) {
-        ipcRenderer.send('peerid-entered', {
-            senderPeerId: document.getElementById('senderpeerid').value,
-            receiverName: document.getElementById('yourname').value
-        });
-        setLoadingStatus("Waiting for sender...");
-        resetLoadingProgress();
-        showLoadingScreen(true);
-        ipcRenderer.send('progress-update', true, 0, {
-            mode: "indeterminate"
-        });
-        return false;
-    });
-
     var drop = document.getElementById("fileChooser");
     drop.addEventListener("dragenter", change, false);
     drop.addEventListener("dragleave", change_back, false);
+    drop.addEventListener("change", change_back, false);
     
     var bg = document.getElementById("itemdropbox");
     var txt = document.getElementById("itemdrop");
@@ -328,6 +331,9 @@ function readFile(file) {
         // retrieve file contents in bytes
         fileAB = reader.result;
         totalSize = fileAB.byteLength;
+
+        // reset input
+        document.getElementById("fileChooser").value = "";
 
         // update loading screen once more
         setLoadingDetails(file.name + " &bull; " + prettySize(totalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');

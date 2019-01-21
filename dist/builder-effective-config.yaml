@@ -1,0 +1,11 @@
+directories:
+  output: dist
+  buildResources: build
+appId: science.assembl.desktop
+productName: Assembl Desktop
+copyright: Copyright © 2019 Assembl LLC
+extraFiles:
+  - filter:
+      - resources/*
+      - LICENSE.MD
+electronVersion: 4.0.1
