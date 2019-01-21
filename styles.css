@@ -111,7 +111,7 @@ input[type=text] {
     margin-top: 24px;
     margin-bottom: 24px;
     padding: 16px;
-    background-color: rgba(0,0,0,0.1);
+    background: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.15));
     color: #FFFFFF;
     font-size: 1em;
     width: 620px;
@@ -365,4 +365,9 @@ input#fileChooser {
     user-select: none;
     pointer-events: none;
     z-index: 9999;
+}
+
+/* PLACEHOLDER STYLING */
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+	color: rgba(255,255,255,0.1);
 }

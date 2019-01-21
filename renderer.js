@@ -28,6 +28,7 @@ function startSender() {
     if (!appClosing) {
         hideAllScreens();
         document.getElementById("sender").style.display = "block";
+        document.getElementById("yourpeerid").focus();
     }
 }
 
@@ -42,6 +43,7 @@ function startReceiver() {
     if (!appClosing) {
         hideAllScreens();
         document.getElementById("receiver").style.display = "block";
+        document.getElementById("senderpeerid").focus();
     }
 }
 
@@ -150,7 +152,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
     console.log("Getting ready for file transmission...");
     setLoadingStatus("Getting ready for file transmission...");
     rTotalSize = parseInt(data[0]);
-    setLoadingDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2));
+    setLoadingDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
     resetLoadingProgress();
     showLoadingScreen(false);
     setLoadingProgress(0, parseInt(data[0]));
@@ -209,7 +211,7 @@ function domReady() {
         // start connecting to the main server here
     }, 3000);
 
-    document.getElementById("connect-btn").addEventListener("click", function(event) {
+    document.getElementById("receiver-input-form").addEventListener("submit", function(event) {
         ipcRenderer.send('peerid-entered', {
             senderPeerId: document.getElementById('senderpeerid').value,
             receiverName: document.getElementById('yourname').value
@@ -220,6 +222,7 @@ function domReady() {
         ipcRenderer.send('progress-update', true, 0, {
             mode: "indeterminate"
         });
+        return false;
     });
 
     var drop = document.getElementById("fileChooser");

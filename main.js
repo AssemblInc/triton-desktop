@@ -7,6 +7,14 @@ const multiaddr = require('multiaddr');
 const WSStar = require('libp2p-websocket-star');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
+require('electron-context-menu')({
+    showCopyImageAddress: false,
+    showSaveImageAs: false,
+    showInspectElement: false,
+    shouldShowMenu: function(event, params) {
+        return params.isEditable || params.editFlags.canCopy;
+    }
+});
 
 class Node extends libp2p {
     constructor (_ws, _options) {
@@ -123,11 +131,6 @@ function createWindow() {
     // add event listeners
     mainWindow.on('page-title-updated', function(event, title) {
         mainWindow.title = title;
-    });
-    mainWindow.webContents.on('context-menu', function(event, params) {
-        // disable context menu
-        event.preventDefault();
-        return false;
     });
     mainWindow.on('close', function(event) {
         if (!mainWindowMayClose) {

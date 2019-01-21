@@ -40,7 +40,7 @@
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo">
                             <div>Give the following ID to the receiving party:</div>
-                            <input type="text" id="yourpeerid" readonly />
+                            <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
                         </div>
                     </td>
                 </tr>
@@ -79,12 +79,12 @@
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo">
-                            <form onsubmit="return false;" autocomplete="off" accept-charset="UTF-8">
+                            <form id="receiver-input-form" autocomplete="off" accept-charset="UTF-8">
+                                <div>Enter the sender ID:</div>
+                                <input type="text" id="senderpeerid" placeholder="QmXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" required pattern="^Qm([a-zA-z0-9]{44})$" title="The sender ID (QmXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)" maxlength="46" onpaste="setTimeout(function() { document.getElementById('yourname').focus(); }, 10);" />
                                 <div>Enter your name:</div>
-                                <input type="text" id="yourname" required />
-                                <div>Enter a sender ID:</div>
-                                <input type="text" id="senderpeerid" required /><br/>
-                                <button class="connect-button" id="connect-btn">connect</button>
+                                <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" /><br />
+                                <button type="submit" class="connect-button" id="connect-btn">connect</button>
                             </form>
                         </div>
                     </td>
