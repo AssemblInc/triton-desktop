@@ -1,6 +1,6 @@
 {
   "name": "assembl-desktop-demo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Assembl File transmitter for Desktop",
   "homepage": "https://assembl.science",
   "author": "Assembl LLC",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
     "electron-context-menu": "^0.10.1",
-    "electron-webrtc": "^0.3.0",
+    "js-sha3": "^0.8.0",
     "libp2p": "^0.24.4",
     "libp2p-websocket-star": "^0.10.2",
     "multiaddr": "^6.0.4",
@@ -35,7 +35,8 @@
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
     "prettysize": "^2.0.0",
-    "pull-stream": "^3.6.9"
+    "pull-stream": "^3.6.9",
+    "stellar-sdk": "^0.12.0"
   },
   "engines": {
     "node": "11.6.0",

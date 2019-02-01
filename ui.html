@@ -4,6 +4,8 @@
         <title>Assembl Desktop Demo</title>
         <link rel="stylesheet" href="styles.css" />
         <script src="renderer.js"></script>
+        <script src="rtc.js"></script>
+        <script src="stellar.js"></script>
     </head>
     <body onload="domReady();">
         <div class="screen" id="startup">
@@ -39,8 +41,37 @@
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo">
-                            <div>Give the following ID to the receiving party:</div>
-                            <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
+                            <div id="protocolselector">
+                                <div>Select a transfer method:</div>
+                                <select id="protocol" onchange="protocolChange(this.value);">
+                                    <option value="" disabled selected>Select a transfer method...</option>
+                                    <option value="websocket">Proxy</option>
+                                    <option value="webrtc">Direct</option>
+                                </select>
+                                <script>
+                                function protocolChange(prot) {
+                                    if (prot != "") {
+                                        protocolToUse = prot;
+                                        if (prot == "websocket") {
+                                            chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
+                                        }
+                                        else {
+                                            chunkSize = 16384;      // 16KB in bytes (max chunk size of WebRTC)
+                                        }
+                                        document.getElementById("protocolselector").style.display = "none";
+                                        document.getElementById("peeridfinder").style.display = "block";
+                                    }
+                                    else {
+                                        alert("Select a valid protocol.");
+                                    }
+                                }
+                                // protocolChange(document.getElementById("protocol").value);
+                                </script>
+                            </div>
+                            <div id="peeridfinder" style="display: none;">
+                                <div>Give the following ID to the receiving party:</div>
+                                <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
+                            </div>
                         </div>
                     </td>
                 </tr>
