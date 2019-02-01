@@ -99,8 +99,13 @@ function sendRTC(something) {
 }
 
 ipcRenderer.on('webrtc-offervalue-please', function(event) {
-    console.log("Creating an offerValue...");
-    createOffer();
+    if (protocolToUse == "webrtc") {
+        console.log("Creating an offerValue...");
+        createOffer();
+    }
+    else {
+        console.log("Not creating an offerValue, as the protocol to use is not set to 'webrtc'. It's been set to '" + protocolToUse + "' instead.");
+    }
 });
 
 ipcRenderer.on('webrtc-offervalue-received', function(event, offerValue) {

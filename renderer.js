@@ -300,6 +300,7 @@ function sendChunk() {
     }
     else {
         setLoadingStatus("Waiting for " + receiverName + " to save the file...");
+        setLoadingDetails(file.name + " &bull; " + prettySize(totalSize, true, false, 2));
         resetLoadingProgress();
         ipcRenderer.send('progress-update', true, 1, {
             mode: "indeterminate"
@@ -348,6 +349,7 @@ function readFile(file) {
         // hash it
         hash = keccak256(fileAB);
         console.log(hash);
+        hashMemo(null, hash);
 
         // reset input
         document.getElementById("fileChooser").value = "";

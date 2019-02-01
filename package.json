@@ -36,6 +36,7 @@
     "peer-info": "^0.15.1",
     "prettysize": "^2.0.0",
     "pull-stream": "^3.6.9",
+    "stellar-base": "^0.10.0",
     "stellar-sdk": "^0.12.0"
   },
   "engines": {
