@@ -262,19 +262,19 @@ input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
 .purpose-button {
     display: inline-block;
     cursor: pointer;
-    background: #97CED9;
+    background: #183b8c;
     border: none;
     border-radius: 3px;
     padding: 6px 12px;
     margin: 2px 4px;
-    color: #1A1A1A;
+    color: #EDEDED;
     transition: 0.35s;
     font-size: 1em;
 }
 
 .purpose-button:hover {
-    background: #ABE2ED;
-    color: #1A1A1A;
+    background: #004CFF;
+    color: #EDEDED;
     transition: 0.15s;
 }
 
@@ -287,19 +287,19 @@ input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
 .connect-button {
     display: inline-block;
     cursor: pointer;
-    background: #97CED9;
+    background: #183b8c;
     border: none;
     border-radius: 3px;
     padding: 6px 12px;
     margin: 2px 4px;
-    color: #1A1A1A;
+    color: #EDEDED;
     transition: 0.35s;
     font-size: 1em;
 }
 
 .connect-button:hover {
-    background: #ABE2ED;
-    color: #1A1A1A;
+    background: #004CFF;
+    color: #EDEDED;
     transition: 0.15s;
 }
 
