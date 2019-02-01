@@ -1,6 +1,8 @@
 const { ipcRenderer } = require('electron');
 const prettySize = require('prettysize');
+const keccak256 = require('js-sha3').keccak256;
 let appClosing = false;
+let protocolToUse = null;
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -272,17 +274,28 @@ ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
 
 /* for sender */
 let chunks = [];
-let chunkSize = 1048576;    // 1MB in bytes
+let chunkSize = null;
 let totalSize = 0;
 let currentChunk = 0;
 let fileAB = null;
+let hash = null;
 function sendChunk() {
     if (currentChunk < chunks.length) {
         console.log("Transmitting chunk " + (currentChunk+1) + " of " + chunks.length);
         console.log("Total progress: " + (currentChunk * chunkSize) + " bytes sent (out of " + totalSize + " total bytes)");
         setLoadingProgress(currentChunk * chunkSize, totalSize);
         convertedChunk = new Uint8Array(chunks[currentChunk]);
-        ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
+        switch(protocolToUse) {
+            case "webrtc":
+                sendRTC(convertedChunk);
+                break;
+            default:
+                console.warn("No protocol selected. Using websockets");
+                protocolToUse = "websocket";
+            case "websocket":
+                ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
+                break;
+        }
         currentChunk += 1;
     }
     else {
@@ -331,6 +344,10 @@ function readFile(file) {
         // retrieve file contents in bytes
         fileAB = reader.result;
         totalSize = fileAB.byteLength;
+
+        // hash it
+        hash = keccak256(fileAB);
+        console.log(hash);
 
         // reset input
         document.getElementById("fileChooser").value = "";

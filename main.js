@@ -7,6 +7,7 @@ const multiaddr = require('multiaddr');
 const WSStar = require('libp2p-websocket-star');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
+const keccak256 = require('js-sha3').keccak256;
 require('electron-context-menu')({
     showCopyImageAddress: false,
     showSaveImageAs: false,
@@ -39,6 +40,8 @@ let mainWindowMayClose = false;
 let node = null;
 let nodeStopped = false;
 let statInterval = null;
+let receivedChunks = [];
+let receivedFilename = null;
 
 function reallyClosingNow() {
     console.log("Closing websocket connections...");
@@ -109,6 +112,12 @@ function fullyCloseApp() {
 }
 
 function createWindow() {
+    console.log('App is ready!');
+    console.log('Node v' + process.versions.node);
+    console.log('Electron v' + process.versions.electron);
+    console.log('Chrome v' + process.versions.chrome);
+    console.log('Assembl Desktop v' + app.getVersion());
+
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
         width: 800,
@@ -119,7 +128,7 @@ function createWindow() {
         fullscreenable: false,
         title: "Assembl Desktop Demo",
         webPreferences: {
-            devTools: false,
+            devTools: true,
             defaultFontFamily: 'sansSerif',
             defaultFontSize: 17,
             nativeWindowOpen: false,             // do not support native window.open JS function
@@ -145,7 +154,7 @@ function createWindow() {
          // disable menu bar and maximize window
         mainWindow.setMenu(null);
         mainWindow.maximize();
-        // mainWindow.webContents.openDevTools();
+        mainWindow.webContents.openDevTools();
 
         setTimeout(function() {
                 // create p2p connector
@@ -219,6 +228,7 @@ function createWindow() {
                                 peerInfo.multiaddrs.add(multiaddr("/ip4/***REMOVED_ASSEMBL_SERVER_IP***/tcp/9090/ws/p2p-websocket-star/ipfs/"+peerInfo.id._idB58String));
                                 receiverPeerInfo = peerInfo;
                                 mainWindow.webContents.send('receiver-connected', _values[1]);
+                                mainWindow.webContents.send('webrtc-offervalue-please');
                             }
                         })
                     );
@@ -253,8 +263,6 @@ function createWindow() {
                 });
 
                 // for receiver
-                let receivedChunks = [];
-                let receivedFilename = null;
                 node.handle("/assemblfile/1.0.0", function(protocol, conn) {
                     console.log("Handling assemblfile protocol connection");
                     mainWindow.webContents.send('receiving-chunk', null);
@@ -269,8 +277,8 @@ function createWindow() {
                             }
                             else {
                                 console.log(_values);
-                                receivedChunks.push(_values[0]);
                                 if (_values[0] != undefined) {
+                                    receivedChunks.push(_values[0]);
                                     mainWindow.webContents.send('received-chunk', _values[0].byteLength);
                                 }
                             }
@@ -364,6 +372,49 @@ function createWindow() {
                     );
                 });
 
+                // for sender
+                node.handle("/assemblrtcanswer/1.0.0", function(protocol, conn) {
+                    console.log("Handling assemblrtcanswer protocol connection");
+                    console.log(conn);
+                    pull(
+                        pull.empty(),
+                        conn,
+                        pull.collect(function(error, _values) {
+                            if (error) {
+                                console.log(error);
+                                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                                fullyCloseApp();
+                            }
+                            else {
+                                console.log(_values);
+                                mainWindow.webContents.send('webrtc-answervalue-received', _values[0]);
+                            }
+                        })
+                    );
+                });
+
+                // for receiver
+                node.handle("/assemblrtcoffer/1.0.0", function(protocol, conn) {
+                    console.log("Handling assemblrtcoffer protocol connection");
+                    console.log(conn);
+                    pull(
+                        pull.empty(),
+                        conn,
+                        pull.collect(function(error, _values) {
+                            if (error) {
+                                console.log(error);
+                                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                                fullyCloseApp();
+                            }
+                            else {
+                                console.log(_values);
+                                mainWindow.webContents.send('webrtc-offervalue-received', _values[0]);
+                            }
+                        })
+                    );
+                });
+
+
                 node.on('peer:discovery', function(peer) {
                     // console.log("A peer has been discovered!");
                     // console.log(peer);
@@ -402,8 +453,8 @@ function createWindow() {
 // for both
 ipcMain.on('progress-update', function(event, active, progress, options) {
     if (active === true) {
-        console.log(progress);
-        console.log(options);
+        // console.log(progress);
+        // console.log(options);
         mainWindow.setProgressBar(progress, options);
     }
     else {
@@ -527,6 +578,60 @@ ipcMain.on('data-transfer-complete', function(event, data) {
     }
     else {
         console.log("receiverPeerInfo equals null");
+    }
+});
+
+// for sender to receiver
+ipcMain.on('webrtc-offervalue-ready', function(event, offerValue) {
+    if (receiverPeerInfo != null) {
+        node.dialProtocol(receiverPeerInfo, "/assemblrtcoffer/1.0.0", function(error, connection) {
+            if (error) {
+                console.log(error);
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                fullyCloseApp();
+            }
+            else {
+                pull(
+                    pull.once(offerValue),
+                    connection
+                );
+            }
+        });
+    }
+    else {
+        console.log("receiverPeerInfo equals null");
+    }
+});
+
+// for receiver to sender
+ipcMain.on('webrtc-answervalue-ready', function(event, answerValue) {
+    if (senderPeerInfo != null) {
+        node.dialProtocol(senderPeerInfo, "/assemblrtcanswer/1.0.0", function(error, connection) {
+            if (error) {
+                console.log(error);
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                fullyCloseApp();
+            }
+            else {
+                pull(
+                    pull.once(answerValue),
+                    connection
+                );
+            }
+        });
+    }
+    else {
+        console.log("senderPeerInfo equals null");
+    }
+});
+
+// for receiver
+ipcMain.on('webrtc-received-chunk', function(event, chunk) {
+    if (chunk != undefined && chunk != null) {
+        receivedChunks.push(chunk);
+        console.log(chunk);
+        console.log(chunk.byteLength);
+        mainWindow.webContents.send('received-chunk', chunk.byteLength);
     }
 });
 
