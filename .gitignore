@@ -4,3 +4,5 @@ resources/.DS_Store
 dist/win-unpacked/*
 dist/*.exe
 dist/*.blockmap
+package-lock.json
+package.json

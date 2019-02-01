@@ -21,7 +21,7 @@
     "pack": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^4.0.1",
+    "electron": "^4.0.3",
     "electron-builder": "^20.38.5"
   },
   "dependencies": {
@@ -30,8 +30,8 @@
     "js-sha3": "^0.8.0",
     "libp2p": "^0.24.4",
     "libp2p-websocket-star": "^0.10.2",
-    "multiaddr": "^6.0.3",
-    "node": "^11.6.0",
+    "multiaddr": "^6.0.4",
+    "node": "^11.9.0",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
     "prettysize": "^2.0.0",
