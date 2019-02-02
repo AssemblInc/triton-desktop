@@ -110,7 +110,8 @@ function formSubmit(event) {
         senderPeerId: document.getElementById('senderpeerid').value,
         receiverName: document.getElementById('yourname').value
     });
-    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
+    screens.loading.setStatus("Establishing a peer to peer connection...");
+    screens.loading.setDetails(document.getElementById('senderpeerid').value);
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
     ipcRenderer.send('progress-update', true, 0, {
@@ -121,6 +122,12 @@ function formSubmit(event) {
 
 function nameSubmit(event) {
     event.preventDefault();
+    // start generating a pgp keypair with the name
+    ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
+    screens.loading.setStatus("Generating a PGP keypair...");
+    screens.loading.setDetails("This might take a while. Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
     return false;
 }
 
@@ -136,15 +143,6 @@ function domReady() {
     }, 3000);
 
     fileHandler.init();
-
-    document.getElementById("name-set-btn").addEventListener("click", function(event) {
-        // start generating a pgp keypair with the name
-        ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
-        screens.loading.setStatus("Generating a PGP keypair...");
-        screens.loading.setDetails("This might take a while. Please wait...");
-        screens.loading.resetProgress();
-        screens.showLoadingScreen(true);
-    });
 }
 
 // for sender
@@ -154,10 +152,14 @@ ipcRenderer.on('data-ready-to-send', function(event, data) {
     fileHandler.startTransfer();
 });
 
+// for receiver
 ipcRenderer.on('other-name-received', function(event, other) {
     otherName = other;
+    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
+    screens.loading.setDetails("");
 });
 
+// for both
 ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
     publicKey = pubKey;
     // start connecting to the main server
@@ -165,6 +167,7 @@ ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
     screens.loading.setStatus("Establishing connection...");
 });
 
+// for both
 ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
     alert("An error occured while generating a PGP key. Assembl Desktop will now quit. Details: \n" + error);
     ipcRenderer.send('app-should-close');

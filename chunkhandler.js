@@ -56,10 +56,12 @@ exports.handleChunk = function(chunk) {
     }
     processedChunkAmount += 1;
 
-    if (finalChunkAmount > 0 && finalChunkAmount == processedChunkAmount && chunkAmount == processedChunkAmount) {
-        module.exports.finish();
-        module.exports.saveFile();
-    }
+    console.log("Chunk progress: "+processedChunkAmount+" progressed, "+finalChunkAmount+" total (according to sender)");
+};
+
+// check if file can be saved yet
+exports.fileReady = function() {
+    return (finalChunkAmount > 0 && finalChunkAmount == processedChunkAmount && chunkAmount == processedChunkAmount);
 };
 
 // finish the file and end the writestream

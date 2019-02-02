@@ -43,6 +43,7 @@ let node = null;
 let nodeStopped = false;
 let receivedChunks = [];
 let receivedFilename = null;
+let waitForCompletion = null;
 let userName = "Sebastien Mellen";
 let otherName = "Freek Bes";
 
@@ -590,35 +591,38 @@ ipcMain.on('can-connect-to-server', function(event) {
                     else {
                         console.log("Data transmission has been completed!");
                         chunkHandler.setFinalChunkAmount(parseInt(_values[0]));
-                        /*
                         mainWindow.webContents.send('received-file', null);
-                        chunkHandler.finish();
-                        chunkHandler.saveFile()
-                            .then(function() {
-                                console.log("Save successful");
-                            })
-                            .catch(function(err) {
-                                console.error(err);
-                            }).
-                            finally(function() {
-                                mainWindow.webContents.send('saved-file', null);
-                                if (senderPeerInfo != null) {
-                                    node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
-                                        if (error) {
-                                            console.log(error);
-                                            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
-                                            fullyCloseApp();
-                                        }
-                                        else {
-                                            pull(
-                                                pull.once('ready'),
-                                                connection
-                                            );
+                        waitForCompletion = setInterval(function() {
+                            if (chunkHandler.fileReady()) {
+                                clearInterval(waitForCompletion);
+                                chunkHandler.finish();
+                                chunkHandler.saveFile()
+                                    .then(function() {
+                                        console.log("Save successful");
+                                    })
+                                    .catch(function(err) {
+                                        console.error(err);
+                                    }).
+                                    finally(function() {
+                                        mainWindow.webContents.send('saved-file', null);
+                                        if (senderPeerInfo != null) {
+                                            node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
+                                                if (error) {
+                                                    console.log(error);
+                                                    dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                                                    fullyCloseApp();
+                                                }
+                                                else {
+                                                    pull(
+                                                        pull.once('ready'),
+                                                        connection
+                                                    );
+                                                }
+                                            });
                                         }
                                     });
                                 }
-                            });
-                        */
+                        }, 1000);
                     }
                 })
             );
