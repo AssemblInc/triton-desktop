@@ -196,13 +196,13 @@ ipcMain.on('peerid-entered', function(event, options) {
     node.dialProtocol(senderPeerInfo, "/assemblhi/1.0.0", function(error, connection) {
         if (error) {
             console.log(error);
-            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
             fullyCloseApp();
         }
         else {
             console.log(senderPeerInfo);
             pull(
-                pull.values([node.peerInfo.id._idB58String, options.receiverName]),
+                pull.values([node.peerInfo.id._idB58String, options.receiverName, pgpHandler.getPublicKey()]),
                 connection,
                 pull.collect(function(error, _values) {
                     otherName = _values.toString();
@@ -220,7 +220,7 @@ ipcMain.on('data-initialized', function(event, data) {
         node.dialProtocol(receiverPeerInfo, "/assemblfileinfo/1.0.0", function(error, connection) {
             if (error) {
                 console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             }
             else {
@@ -250,33 +250,42 @@ ipcMain.on('data-initialized', function(event, data) {
 });
 
 // for sender
-ipcMain.on('chunk-ready-for-transfer', function(event, data) {
+ipcMain.on('chunk-ready-for-transfer', function(event, chunk) {
     if (receiverPeerInfo != null) {
-        node.dialProtocol(receiverPeerInfo, "/assemblfile/1.0.0", function(error, connection) {
-            if (error) {
-                console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+        console.log(chunk);
+        // encrypt the chunk
+        pgpHandler.encryptChunk(chunk)
+            .then(function(encryptedMsg) {
+                node.dialProtocol(receiverPeerInfo, "/assemblfile/1.0.0", function(error, connection) {
+                    if (error) {
+                        console.log(error);
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                        fullyCloseApp();
+                    }
+                    else {
+                        pull(
+                            pull.once(encryptedMsg),
+                            connection,
+                            pull.collect(function(error, _values) {
+                                var callbackStr = _values.toString();
+                                if (callbackStr == "ready") {
+                                    console.log("Next chunk is ready to be sent!");
+                                    mainWindow.webContents.send('next-chunk-ready-to-send', null);
+                                }
+                                else {
+                                    console.log(callbackStr);
+                                    console.log("Not starting next data chunk transmission because chunk-ready-for-transfer callback didn't equal 'ready'");
+                                }
+                            })
+                        );
+                    }
+                });
+            })
+            .catch(function(err) {
+                console.error(err);
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
-            }
-            else {
-                console.log(data);
-                pull(
-                    pull.once(data),
-                    connection,
-                    pull.collect(function(error, _values) {
-                        var callbackStr = _values.toString();
-                        if (callbackStr == "ready") {
-                            console.log("Next chunk is ready to be sent!");
-                            mainWindow.webContents.send('next-chunk-ready-to-send', null);
-                        }
-                        else {
-                            console.log(callbackStr);
-                            console.log("Not starting next data chunk transmission because chunk-ready-for-transfer callback didn't equal 'ready'");
-                        }
-                    })
-                );
-            }
-        });
+            });
     }
     else {
         console.log("receiverPeerInfo equals null");
@@ -290,7 +299,7 @@ ipcMain.on('data-transfer-complete', function(event, data) {
         node.dialProtocol(receiverPeerInfo, "/assemblfilecomplete/1.0.0", function(error, connection) {
             if (error) {
                 console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             }
             else {
@@ -312,7 +321,7 @@ ipcMain.on('webrtc-offervalue-ready', function(event, offerValue) {
         node.dialProtocol(receiverPeerInfo, "/assemblrtcoffer/1.0.0", function(error, connection) {
             if (error) {
                 console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             }
             else {
@@ -334,7 +343,7 @@ ipcMain.on('webrtc-answervalue-ready', function(event, answerValue) {
         node.dialProtocol(senderPeerInfo, "/assemblrtcanswer/1.0.0", function(error, connection) {
             if (error) {
                 console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             }
             else {
@@ -351,14 +360,21 @@ ipcMain.on('webrtc-answervalue-ready', function(event, answerValue) {
 });
 
 // for receiver
-ipcMain.on('webrtc-received-chunk', function(event, chunk) {
-    if (chunk != undefined && chunk != null) {
+ipcMain.on('webrtc-received-chunk', function(event, encryptedChunk) {
+    if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         // receivedChunks.push(chunk);
-        chunkHandler.handleChunk(chunk);
-        console.log(chunk);
-        console.log(chunk.byteLength);
-        mainWindow.webContents.send('received-chunk', chunk.byteLength);
+        pgpHandler.decryptChunk(encryptedChunk)
+            .then(function(chunk) {
+                chunkHandler.handleChunk(chunk);
+                console.log(chunk);
+                mainWindow.webContents.send('received-chunk', chunk.byteLength);
+            })
+            .catch(function(err) {
+                console.log(err);
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                fullyCloseApp();
+            });
     }
 });
 
@@ -379,6 +395,17 @@ ipcMain.on('user-name-changed', function(event, newName) {
         });
 });
 
+// for sender
+ipcMain.on('pgp-encrypt-chunk', function(event, chunk) {
+    pgpHandler.encryptChunk(chunk)
+        .then(function(encryptedMsg) {
+            mainWindow.webContents.send('pgp-chunk-encrypted', encryptedMsg);
+        })
+        .catch(function(err) {
+            mainWindow.webContents.send('pgp-chunk-encryption-error', err);
+        });
+});
+
 // for both ends
 ipcMain.on('can-connect-to-server', function(event) {
     // create p2p connector
@@ -387,7 +414,7 @@ ipcMain.on('can-connect-to-server', function(event) {
     }, function(error, id) {
         if (error) {
             console.log(error);
-            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
             fullyCloseApp();
         }
 
@@ -442,7 +469,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -453,6 +480,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                         receiverPeerInfo = peerInfo;
                         otherName = _values[1];
                         console.log("Connected to " + otherName);
+                        pgpHandler.setOtherKeys(_values[2]);
                         mainWindow.webContents.send('receiver-connected', _values[1]);
                         mainWindow.webContents.send('webrtc-offervalue-please');
                     }
@@ -469,7 +497,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -498,15 +526,24 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
-                        console.log(_values);
                         if (_values[0] != undefined) {
                             // receivedChunks.push(_values[0]);
-                            chunkHandler.handleChunk(_values[0]);
-                            mainWindow.webContents.send('received-chunk', _values[0].byteLength);
+                            // decrypt chunk
+                            pgpHandler.decryptChunk(_values[0].toString())
+                                .then(function(chunk) {
+                                    console.log(chunk);
+                                    chunkHandler.handleChunk(chunk);
+                                    mainWindow.webContents.send('received-chunk', chunk.byteLength);
+                                })
+                                .catch(function(err) {
+                                    console.log(err);
+                                    dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                                    fullyCloseApp();
+                                });
                         }
                     }
                 })
@@ -522,7 +559,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -545,7 +582,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -565,7 +602,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                                     node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
                                         if (error) {
                                             console.log(error);
-                                            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                                            dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                                             fullyCloseApp();
                                         }
                                         else {
@@ -592,7 +629,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -613,7 +650,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                 pull.collect(function(error, _values) {
                     if (error) {
                         console.log(error);
-                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                        dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                         fullyCloseApp();
                     }
                     else {
@@ -643,7 +680,7 @@ ipcMain.on('can-connect-to-server', function(event) {
         node.start(function(error) {
             if (error) {
                 console.log(error);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             }
             else {

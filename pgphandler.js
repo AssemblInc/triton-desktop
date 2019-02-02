@@ -2,8 +2,15 @@ const kbpgp = require('kbpgp');
 const PGP = kbpgp["const"].openpgp;
 
 let opts;
+let keyManagers = {
+    me: null,
+    other: null
+};
 let keys = {
     private: null,
+    public: null
+};
+let otherKeys = {
     public: null
 };
 
@@ -13,6 +20,22 @@ exports.getPrivateKey = function() {
 
 exports.getPublicKey = function() {
     return keys.public;
+};
+
+exports.setOtherKeys = function(publicKey) {
+    otherKeys.public = publicKey;
+    kbpgp.KeyManager.import_from_armored_pgp({
+        armored: publicKey
+    }, function(err, keyManager) {
+        if (!err) {
+            keyManagers.other = keyManager;
+            console.log("Other keyManager has been imported into Assembl Desktop. We can now encrypt data.");
+        }
+        else {
+            console.warn("An error occured while importing the public key from the receiver into the KeyManager.");
+            console.error(err);
+        }
+    });
 };
 
 exports.createKeys = function(displayName, userId) {
@@ -52,10 +75,10 @@ exports.createKeys = function(displayName, userId) {
                     console.log("Keypair has not been generated yet.");
                 }
             }, 500);
-            kbpgp.KeyManager.generate(opts, function(err, sender) {
+            kbpgp.KeyManager.generate(opts, function(err, keyManager) {
                 if (!err) {
                     // sign subkeys
-                    sender.sign({}, function(err) {
+                    keyManager.sign({}, function(err) {
                         if (err) {
                             console.warn("Could not sign subkeys");
                             console.error(err);
@@ -63,7 +86,8 @@ exports.createKeys = function(displayName, userId) {
                             reject("Could not sign subkeys");
                             return;
                         }
-                        sender.export_pgp_private (
+                        keyManagers.me = keyManager;
+                        keyManager.export_pgp_private (
                             {
                                 passphrase: ''
                             },
@@ -79,7 +103,7 @@ exports.createKeys = function(displayName, userId) {
                                 keys.private = pgp_private;
                             }
                         );
-                        sender.export_pgp_public(
+                        keyManager.export_pgp_public(
                             {
 
                             },
@@ -102,6 +126,48 @@ exports.createKeys = function(displayName, userId) {
                     console.error(err);
                     clearInterval(checkForKeys);
                     reject("Could not generate a PGP keypair");
+                }
+            });
+        }
+    );
+};
+
+exports.encryptChunk = function(chunk) {
+    let buffer = new Buffer.from(chunk);
+    let params = {
+        msg: buffer,
+        encrypt_for: keyManagers.other,
+        // sign_with: keyManagers.me
+    };
+    return new Promise(
+        function(resolve, reject) {
+            kbpgp.box(params, function(err, result_string, result_buffer) {
+                if (err) {
+                    reject(err.message);
+                }
+                else {
+                    // send string through instead of buffer
+                    resolve(result_string);
+                }
+            });
+        }
+    );
+};
+
+// in the following function, chunk is a PGP message and not a Buffer nor ArrayBuffer
+exports.decryptChunk = function(pgp_msg) {
+    return new Promise(
+        function(resolve, reject) {
+            let keyRing = new kbpgp.keyring.KeyRing();
+            keyRing.add_key_manager(keyManagers.me);
+            kbpgp.unbox({ keyfetch: keyRing, armored: pgp_msg }, function(err, literals) {
+                if (err != null) {
+                    console.error(err);
+                    reject(err);
+                }
+                else {
+                    // send buffer through instead of string
+                    resolve(literals[0].toBuffer());
                 }
             });
         }

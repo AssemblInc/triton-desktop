@@ -71,7 +71,7 @@ ipcRenderer.on('receiving-chunk', function(event, data) {
 
 // for receiver
 ipcRenderer.on('received-chunk', function(event, progressIncrease) {
-    console.log("Received a chunk of " + progressIncrease + " bytes");
+    // console.log("Received a chunk of " + progressIncrease + " bytes");
     rProgressSize += progressIncrease;
     // screens.loading.setStatus("Receiving file...");
     screens.loading.setProgress(rProgressSize, rTotalSize);
@@ -141,7 +141,7 @@ function domReady() {
         // start generating a pgp keypair with the name
         ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
         screens.loading.setStatus("Generating a PGP keypair...");
-        screens.loading.setDetails("This might take a few seconds. Please wait...");
+        screens.loading.setDetails("This might take a while. Please wait...");
         screens.loading.resetProgress();
         screens.showLoadingScreen(true);
     });
@@ -172,8 +172,7 @@ ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
 
 // run this function when the sender states the next chunk is ready to be sent
 ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-    if (fileHandler.protocolToUse == "websocket") {
-        fileHandler.sendChunk(fileHandler.offset);
-    }
-    // webrtc does not need to use this event (everything is sent in one go)
+    // only used by websocket
+    // webrtc uses its own received event in rtc.js
+    fileHandler.sendChunk(fileHandler.offset);
 });

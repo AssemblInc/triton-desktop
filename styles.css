@@ -322,6 +322,21 @@ input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
 	height: 100%;
 }
 
+#filedropper .fakebtn {
+    background: #183b8c;
+    color: #EDEDED;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: 0.35s;
+}
+
+#filedropper:hover .fakebtn {
+    background: #004CFF;
+    color: #EDEDED;
+    transition: 0.15s;
+}
+
 #itemdropbox {
 	display: flex;
 	flex-direction: column;

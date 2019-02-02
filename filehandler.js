@@ -23,12 +23,11 @@ let fileHandler = {
             fileHandler.offset += event.target.result.byteLength;
             // update loading progress
             screens.loading.setProgress(fileHandler.offset, fileHandler.file.size);
+            // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
                     // send chunk over webrtc
-                    sendRTC(convertedChunk);
-                    // prepare and send the next chunk right away
-                    fileHandler.sendChunk(fileHandler.offset);
+                    sendRTC(convertedChunk, true);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");
@@ -91,7 +90,7 @@ let fileHandler = {
 
     sendChunk: function(o) {
         if (fileHandler.offset < fileHandler.file.size) {
-            console.log("Sending chunk starting at", o);
+            // console.log("Sending chunk starting at", o);
             // create chunk from file
             let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.chunkSize);
             // turn slice into an arraybuffer

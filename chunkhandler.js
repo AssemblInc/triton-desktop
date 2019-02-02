@@ -54,6 +54,8 @@ exports.getFileSize = function() {
 
 // delete temporary files
 exports.deleteTempFile = function(sync) {
+    console.warn("Deleting temporary files isn't supported as of yet.");
+    return;
     if (tempFile != null) {
         if (!sync) {
             fs.unlink(tempFile, function(err) {
@@ -114,6 +116,7 @@ exports.saveFile = function() {
                 else {
                     // otherwise, delete the temporary file from the disk
                     module.exports.deleteTempFile();
+                    reject("user pressed cancel on the save dialog");
                 }
             });
         }
