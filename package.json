@@ -1,7 +1,7 @@
 {
   "name": "assembl-desktop-demo",
-  "version": "1.0.4",
-  "description": "Assembl File transmitter for Desktop",
+  "version": "1.0.5",
+  "description": "Assembl Desktop allows you to transmit files directly to another person.",
   "homepage": "https://assembl.science",
   "author": "Assembl LLC",
   "license": "SEE LICENSE IN LICENSE.MD",
