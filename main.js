@@ -293,7 +293,7 @@ ipcMain.on('chunk-ready-for-transfer', function(event, chunk) {
 });
 
 // for sender
-ipcMain.on('data-transfer-complete', function(event, data) {
+ipcMain.on('data-transfer-complete', function(event, amountOfChunks) {
     console.log("File transfer is complete! No next chunk to send.");
     if (receiverPeerInfo != null) {
         node.dialProtocol(receiverPeerInfo, "/assemblfilecomplete/1.0.0", function(error, connection) {
@@ -304,7 +304,7 @@ ipcMain.on('data-transfer-complete', function(event, data) {
             }
             else {
                 pull(
-                    pull.once('done'),
+                    pull.once(amountOfChunks.toString()),
                     connection
                 );
             }
@@ -363,6 +363,7 @@ ipcMain.on('webrtc-answervalue-ready', function(event, answerValue) {
 ipcMain.on('webrtc-received-chunk', function(event, encryptedChunk) {
     if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
+        chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
         pgpHandler.decryptChunk(encryptedChunk)
             .then(function(chunk) {
@@ -519,6 +520,7 @@ ipcMain.on('can-connect-to-server', function(event) {
         // for receiver
         node.handle("/assemblfile/1.0.0", function(protocol, conn) {
             console.log("Handling assemblfile protocol connection");
+            chunkHandler.increaseChunkAmount();
             mainWindow.webContents.send('receiving-chunk', null);
             pull(
                 pull.once('ready'),
@@ -587,6 +589,8 @@ ipcMain.on('can-connect-to-server', function(event) {
                     }
                     else {
                         console.log("Data transmission has been completed!");
+                        chunkHandler.setFinalChunkAmount(parseInt(_values[0]));
+                        /*
                         mainWindow.webContents.send('received-file', null);
                         chunkHandler.finish();
                         chunkHandler.saveFile()
@@ -614,6 +618,7 @@ ipcMain.on('can-connect-to-server', function(event) {
                                     });
                                 }
                             });
+                        */
                     }
                 })
             );

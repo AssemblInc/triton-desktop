@@ -2,6 +2,7 @@ let fileHandler = {
     file: null,             // JS File Web API
     reader: null,           // JS FileReader Web API
     hash: null,             // a hash from emn178's sha3 rep
+    chunkAmount: null,      // amounts of chunks that have been sent through so far
     offset: null,           // the offset of the current chunk being read
     chunkSize: 16384,       // this chunksize can change depending on the transfer method!
     protocolToUse: null,    // the protocol to use (transfer method)
@@ -69,6 +70,7 @@ let fileHandler = {
             fileHandler.file = f;
             fileHandler.hash = keccak256.create();
             fileHandler.offset = 0;
+            fileHandler.chunkAmount = 0;
 
             // set loadingscreen
             screens.loading.setStatus("Preparing file for transfer...");
@@ -92,6 +94,7 @@ let fileHandler = {
         if (fileHandler.offset < fileHandler.file.size) {
             // console.log("Sending chunk starting at", o);
             // create chunk from file
+            fileHandler.chunkAmount += 1;
             let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.chunkSize);
             // turn slice into an arraybuffer
             fileHandler.reader.readAsArrayBuffer(slice);
@@ -107,7 +110,7 @@ let fileHandler = {
                 mode: "indeterminate"
             });
             screens.showLoadingScreen(true);
-            ipcRenderer.send('data-transfer-complete', null);
+            ipcRenderer.send('data-transfer-complete', fileHandler.chunkAmount);
             // reset the filechooser
             document.getElementById("fileChooser").value = "";
         }
