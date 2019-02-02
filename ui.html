@@ -3,7 +3,14 @@
     <head>
         <title>Assembl Desktop Demo</title>
         <link rel="stylesheet" href="styles.css" />
+        <script>
+        const { ipcRenderer } = require('electron');
+        const prettySize = require('prettysize');
+        const keccak256 = require('js-sha3').keccak256;
+        </script>
+        <script src="filehandler.js"></script>
         <script src="renderer.js"></script>
+        <script src="screens.js"></script>
         <script src="rtc.js"></script>
         <script src="stellar.js"></script>
     </head>
@@ -28,14 +35,14 @@
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
                             <div style="margin-bottom: 12px;">What would you like to do today?</div>
-                            <button class="purpose-button" onclick="startSender();">Send data</button><button class="purpose-button" onclick="startReceiver();">Receive data</button>
+                            <button class="purpose-button" onclick="screens.startSender();">Send data</button><button class="purpose-button" onclick="screens.startReceiver();">Receive data</button>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
         <div class="screen" id="sender" style="display: none;">
-            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="startPurposeSelector();" title="Go back" alt="Go back" />
+            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startPurposeSelector();" title="Go back" alt="Go back" />
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
@@ -44,22 +51,23 @@
                             <div id="protocolselector">
                                 <div>Select a transfer method:</div>
                                 <select id="protocol" onchange="protocolChange(this.value);">
-                                    <option value="" disabled selected>Select a transfer method...</option>
+                                    <option value="unset" disabled selected>Select a transfer method...</option>
                                     <option value="websocket">Proxy</option>
                                     <option value="webrtc">Direct</option>
                                 </select>
                                 <script>
                                 function protocolChange(prot) {
-                                    if (prot != "") {
-                                        protocolToUse = prot;
+                                    if (prot != "unset" && prot != "") {
+                                        fileHandler.protocolToUse = prot;
                                         if (prot == "websocket") {
-                                            chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
+                                            fileHandler.chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
                                         }
                                         else {
-                                            chunkSize = 16384;      // 16KB in bytes (max chunk size of WebRTC)
+                                            fileHandler.chunkSize = 16384;      // 16KB in bytes (max chunk size of WebRTC)
                                         }
                                         document.getElementById("protocolselector").style.display = "none";
                                         document.getElementById("peeridfinder").style.display = "block";
+                                        document.getElementById("yourpeerid").focus();
                                     }
                                     else {
                                         alert("Select a valid protocol.");
@@ -79,7 +87,7 @@
         </div>
         <div class="screen" id="dragdrop" style="display: none;">
             <div id="filedropper">
-                <input type="file" name="fileChooser" id="fileChooser" onchange="readFile(this.files[0])" required>
+                <input type="file" name="fileChooser" id="fileChooser" onchange="fileHandler.readFile(this.files[0])" required>
                 <div id="filedropperborder"></div>
                 <div id="itemdropbox">
                     <div id="filedropperdragbg"></div>
@@ -104,7 +112,7 @@
                 </table>
         </div>
         <div class="screen" id="receiver" style="display: none;">
-            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="startPurposeSelector();" title="Go back" alt="Go back" />
+            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startPurposeSelector();" title="Go back" alt="Go back" />
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">

@@ -140,6 +140,7 @@ select {
     cursor: pointer;
     user-select: initial;
     text-align: center;
+    text-align-last: center;
     transition: 0.15s;
     box-sizing: border-box;
 }
@@ -279,7 +280,7 @@ input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
 }
 
 /* sender */
-#yourpeerid {
+#yourpeerid, #protocol {
     margin-bottom: 0px;
 }
 

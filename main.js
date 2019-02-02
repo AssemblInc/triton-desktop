@@ -8,6 +8,7 @@ const WSStar = require('libp2p-websocket-star');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const keccak256 = require('js-sha3').keccak256;
+const chunkHandler = require('./chunkhandler.js');
 require('electron-context-menu')({
     showCopyImageAddress: false,
     showSaveImageAs: false,
@@ -278,7 +279,8 @@ function createWindow() {
                             else {
                                 console.log(_values);
                                 if (_values[0] != undefined) {
-                                    receivedChunks.push(_values[0]);
+                                    // receivedChunks.push(_values[0]);
+                                    chunkHandler.handleChunk(_values[0]);
                                     mainWindow.webContents.send('received-chunk', _values[0].byteLength);
                                 }
                             }
@@ -302,6 +304,8 @@ function createWindow() {
                                 let info = _values.toString().split(",");
                                 receivedFilename = info[1];
                                 mainWindow.webContents.send('data-initialized', info);
+                                chunkHandler.initChunks();
+                                chunkHandler.setFileName(receivedFilename);
                             }
                         })
                     );
@@ -322,51 +326,32 @@ function createWindow() {
                             else {
                                 console.log("Data transmission has been completed!");
                                 mainWindow.webContents.send('received-file', null);
-                                let totalBytes = 0;
-                                for (let i = 0, j = receivedChunks.length; i < j; i++) {
-                                    totalBytes += receivedChunks[i].byteLength;
-                                }
-                                let tmp = new Uint8Array(totalBytes);
-                                let processedBytes = 0;
-                                for (let i = 0, j = receivedChunks.length; i < j; i++) {
-                                    tmp.set(new Uint8Array(receivedChunks[i]), processedBytes);
-                                    processedBytes += receivedChunks[i].byteLength;
-                                }
-                                let defaultPath = app.getPath('downloads') + '\\' + receivedFilename;
-                                let extension = receivedFilename.split('.').pop();
-                                if (extension == null || extension == undefined) {
-                                    extension = "";
-                                }
-                                console.log(defaultPath);
-                                dialog.showSaveDialog({
-                                    defaultPath: defaultPath,
-                                    filters: [{ name: extension.toUpperCase(), extensions: [ extension ] }]
-                                }, function(savePath) {
-                                    if (savePath != undefined && savePath != null && savePath != "") {
-                                        fs.writeFile(savePath, tmp, function(error) {
-                                            if (error) {
-                                                console.log(error);
-                                            }
-                                            console.log("The file has been saved!");
-                                        });
-                                    }
-                                    mainWindow.webContents.send('saved-file', null);
-                                    if (senderPeerInfo != null) {
-                                        node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
-                                            if (error) {
-                                                console.log(error);
-                                                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
-                                                fullyCloseApp();
-                                            }
-                                            else {
-                                                pull(
-                                                    pull.once('ready'),
-                                                    connection
-                                                );
-                                            }
-                                        });
-                                    }
-                                });
+                                chunkHandler.finish();
+                                chunkHandler.saveFile()
+                                    .then(function() {
+                                        console.log("Save successful");
+                                    })
+                                    .catch(function(err) {
+                                        console.error(err);
+                                    }).
+                                    finally(function() {
+                                        mainWindow.webContents.send('saved-file', null);
+                                        if (senderPeerInfo != null) {
+                                            node.dialProtocol(senderPeerInfo, "/assemblsaved/1.0.0", function(error, connection) {
+                                                if (error) {
+                                                    console.log(error);
+                                                    dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now close."});
+                                                    fullyCloseApp();
+                                                }
+                                                else {
+                                                    pull(
+                                                        pull.once('ready'),
+                                                        connection
+                                                    );
+                                                }
+                                            });
+                                        }
+                                    });
                             }
                         })
                     );
@@ -628,7 +613,9 @@ ipcMain.on('webrtc-answervalue-ready', function(event, answerValue) {
 // for receiver
 ipcMain.on('webrtc-received-chunk', function(event, chunk) {
     if (chunk != undefined && chunk != null) {
-        receivedChunks.push(chunk);
+        mainWindow.webContents.send('receiving-chunk', null);
+        // receivedChunks.push(chunk);
+        chunkHandler.handleChunk(chunk);
         console.log(chunk);
         console.log(chunk.byteLength);
         mainWindow.webContents.send('received-chunk', chunk.byteLength);
