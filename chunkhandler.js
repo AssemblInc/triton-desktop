@@ -52,6 +52,35 @@ exports.getFileSize = function() {
     return stats["size"];
 };
 
+// delete temporary files
+exports.deleteTempFile = function(sync) {
+    if (tempFile != null) {
+        if (!sync) {
+            fs.unlink(tempFile, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    console.log("Temporary file has been deleted");
+                }
+            });
+        }
+        else {
+            fs.unlinkSync(tempFile, function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    console.log("Temporary file has been deleted");
+                }
+            });
+        }
+    }
+    else {
+        console.log("No temporary file to delete.");
+    }
+};
+
 // save the file to a location chosen by the user
 exports.saveFile = function() {
     // get the default downloads folder on the filesystem (used for the save dialog later)
@@ -78,20 +107,13 @@ exports.saveFile = function() {
                             return;
                         }
                         console.log("The file has been saved!");
+                        tempFile = null;
                         resolve();
                     });
                 }
                 else {
                     // otherwise, delete the temporary file from the disk
-                    fs.unlink(tempFile, function(err) {
-                        if (err) {
-                            console.log(err);
-                            // an error has occured. return a promise rejection
-                            reject(err.message);
-                            return;
-                        }
-                        reject("user cancelled the save dialog");
-                    });
+                    module.exports.deleteTempFile();
                 }
             });
         }

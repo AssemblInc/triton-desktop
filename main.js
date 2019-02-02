@@ -43,10 +43,11 @@ let node = null;
 let nodeStopped = false;
 let receivedChunks = [];
 let receivedFilename = null;
-let userName = "John Smith";
-let otherName = "John Smith";
+let userName = "Sebastien Mellen";
+let otherName = "Freek Bes";
 
 function reallyClosingNow() {
+    chunkHandler.deleteTempFile(true);
     if (node != null) {
         console.log("Closing websocket connections...");
         node.stop(function(error) {

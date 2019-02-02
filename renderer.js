@@ -167,6 +167,8 @@ ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
 
 // run this function when the sender states the next chunk is ready to be sent
 ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-    // sendChunk();
-    // fileHandler.sendChunk(fileHandler.offset);
+    if (fileHandler.protocolToUse == "websocket") {
+        fileHandler.sendChunk(fileHandler.offset);
+    }
+    // webrtc does not need to use this event (everything is sent in one go)
 });

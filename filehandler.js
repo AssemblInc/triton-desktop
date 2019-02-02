@@ -19,23 +19,25 @@ let fileHandler = {
             fileHandler.hash.update(event.target.result);
             // convert the chunk into an Uint8Array (for ipc transport to the main process)
             let convertedChunk = new Uint8Array(event.target.result);
+            // add current size of the chunk to the offset
+            fileHandler.offset += event.target.result.byteLength;
+            // update loading progress
+            screens.loading.setProgress(fileHandler.offset, fileHandler.file.size);
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
+                    // send chunk over webrtc
                     sendRTC(convertedChunk);
+                    // prepare and send the next chunk right away
+                    fileHandler.sendChunk(fileHandler.offset);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
+                    // send chunk over websocket (handled in main.js)
                     ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
                     break;
             }
-            // add current size of the chunk to the offset
-            fileHandler.offset += event.target.result.byteLength;
-            // update loading progress
-            screens.loading.setProgress(fileHandler.offset, fileHandler.file.size);
-            // prepare and send the next chunk
-            fileHandler.sendChunk(fileHandler.offset);
         });
 
         let bg = document.getElementById("itemdropbox");
