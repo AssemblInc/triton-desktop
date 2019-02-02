@@ -11,7 +11,8 @@ function fileDCinit() {
         // console.log("Received data from fileDC:", event.data);
         // console.log(event);
         if (event.data == "received") {
-            sendChunk();
+            // sendChunk();
+            // received doesn't really matter any more
         }
         else {
             sendRTC("received");

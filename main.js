@@ -206,6 +206,7 @@ ipcMain.on('peerid-entered', function(event, options) {
                 connection,
                 pull.collect(function(error, _values) {
                     otherName = _values.toString();
+                    mainWindow.webContents.send('other-name-received', otherName);
                     console.log("Connected to " + otherName);
                 })
             );

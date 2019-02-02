@@ -2,6 +2,7 @@
 let appClosing = false;
 let protocolToUse = null;
 let publicKey = null;
+let otherName = "";
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -65,7 +66,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
 // for receiver
 ipcRenderer.on('receiving-chunk', function(event, data) {
     // console.log("Receiving a chunk...");
-    screens.loading.setStatus("Receiving file...");
+    screens.loading.setStatus("Receiving file from " + strip(otherName) + "...");
 });
 
 // for receiver
@@ -87,7 +88,7 @@ ipcRenderer.on('received-file', function(event, data) {
 // for receiver
 ipcRenderer.on('saved-file', function(event, data) {
     console.log("File has been saved");
-    screens.loading.setStatus("Waiting for sender...");
+    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
     screens.loading.setDetails("");
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
@@ -109,7 +110,7 @@ function formSubmit(event) {
         senderPeerId: document.getElementById('senderpeerid').value,
         receiverName: document.getElementById('yourname').value
     });
-    screens.loading.setStatus("Waiting for sender...");
+    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
     ipcRenderer.send('progress-update', true, 0, {
@@ -151,6 +152,10 @@ function domReady() {
 // (data is ready to be sent once the file info has been confirmed received)
 ipcRenderer.on('data-ready-to-send', function(event, data) {
     fileHandler.startTransfer();
+});
+
+ipcRenderer.on('other-name-received', function(event, other) {
+    otherName = other;
 });
 
 ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {

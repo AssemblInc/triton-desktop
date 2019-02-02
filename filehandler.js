@@ -115,7 +115,7 @@ let fileHandler = {
     },
 
     startTransfer: function() {
-        screens.loading.setStatus("Transmitting file to " + strip(receiverName) + "...");
+        screens.loading.setStatus("Transferring file to " + strip(receiverName) + "...");
         screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
         // start sending the first chunk
         fileHandler.sendChunk(fileHandler.offset);
