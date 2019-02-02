@@ -22,20 +22,28 @@ var opts = {
   ]
 };
 
-kbpgp.KeyManager.generate(opts, function(err, alice) {
+kbpgp.KeyManager.generate(opts, function(err, sender) {
   if (!err) {
-    // sign alice's subkeys
-    alice.sign({}, function(err) {
-		console.log(alice);
+    // sign sender's subkeys
+    sender.sign({}, function(err) {
+		console.log(sender);
 		// export demo; dump the private with a passphrase
-		alice.export_pgp_private ({
+		sender.export_pgp_private ({
 		passphrase: ''
 		}, function(err, pgp_private) {
 		console.log("private key: ", pgp_private);
 		});
-		alice.export_pgp_public({}, function(err, pgp_public) {
+		sender.export_pgp_public({}, function(err, pgp_public) {
 		console.log("public key: ", pgp_public);
 		});
     });
   }
 });
+
+//var fileobject = node_file_object;
+//var reader = new FileReader();   // modern browsers have this
+//reader.readAsBinaryString(fileobject);
+//reader.onloadend = function(file) {
+//  var buffer = new kbpgp.Buffer(r.result);
+  // ... now process it using kbpgp
+//};
