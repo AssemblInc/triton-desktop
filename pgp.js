@@ -3,7 +3,7 @@ const kbpgp = require('kbpgp');
 var PGP = kbpgp["const"].openpgp;
 
 var opts = {
-  userid: "name entered in app" + " " + "<random.string@app-users.assembl.science>",
+  userid: "name entered in app" + " " + "<todo-user-id@users.assembl.science>",
   primary: {
     nbits: 4096,
     flags: PGP.certify_keys | PGP.sign_data | PGP.auth | PGP.encrypt_comm | PGP.encrypt_storage,
@@ -27,12 +27,14 @@ kbpgp.KeyManager.generate(opts, function(err, sender) {
     // sign sender's subkeys
     sender.sign({}, function(err) {
 		console.log(sender);
-		// export demo; dump the private with a passphrase
+    // export demo; dump the private with a passphrase
+    /*
 		sender.export_pgp_private ({
 		passphrase: ''
 		}, function(err, pgp_private) {
 		console.log("private key: ", pgp_private);
-		});
+    });
+    */
 		sender.export_pgp_public({}, function(err, pgp_public) {
 		console.log("public key: ", pgp_public);
 		});

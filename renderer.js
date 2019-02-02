@@ -1,6 +1,7 @@
 
 let appClosing = false;
 let protocolToUse = null;
+let publicKey = null;
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -21,7 +22,8 @@ ipcRenderer.on('websocket-connection-error', function(event, data) {
     console.warn("Websocket connection error");
     clearTimeout(loadingTimeout);
     loadingTimeout = null;
-    alert("Could not establish a connection.");
+    alert("Could not establish a connection. Assembl Desktop will now quit.");
+    ipcRenderer.send('app-should-close');
 });
 
 // for both
@@ -116,82 +118,55 @@ function formSubmit(event) {
     return false;
 }
 
+function nameSubmit(event) {
+    event.preventDefault();
+    return false;
+}
+
 let loadingTimeout = null;
 function domReady() {
     loadingTimeout = setTimeout(function() {
         var extraLoading = document.getElementById("extra-loading");
         extraLoading.style.height = "150px";
         extraLoading.style.marginTop = "72px";
-        // start connecting to the main server here
+        setTimeout(function() {
+            screens.startNameInputter();
+        }, 1000);
     }, 3000);
 
     fileHandler.init();
+
+    document.getElementById("name-set-btn").addEventListener("click", function(event) {
+        // start generating a pgp keypair with the name
+        ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
+        screens.loading.setStatus("Generating a PGP keypair...");
+        screens.loading.setDetails("This might take a few seconds. Please wait...");
+        screens.loading.resetProgress();
+        screens.showLoadingScreen(true);
+    });
 }
 
 // for sender
 // once data is ready to be sent, execute this
 // (data is ready to be sent once the file info has been confirmed received)
 ipcRenderer.on('data-ready-to-send', function(event, data) {
-    /*
-    let i, j;
-    for (i = 0, j = fileAB.byteLength; i<j; i+=chunkSize) {
-        chunks.push(fileAB.slice(i,i+chunkSize));
-    }
-    screens.loading.setStatus("Transmitting file to " + strip(receiverName) + "...");
-    screens.loading.setProgress(0, totalSize);
-    screens.showLoadingScreen(false);
-    sendChunk();
-    */
     fileHandler.startTransfer();
+});
+
+ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
+    publicKey = pubKey;
+    // start connecting to the main server
+    ipcRenderer.send('can-connect-to-server');
+    screens.loading.setStatus("Establishing connection...");
+});
+
+ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
+    alert("An error occured while generating a PGP key. Assembl Desktop will now quit. Details: \n" + error);
+    ipcRenderer.send('app-should-close');
 });
 
 // run this function when the sender states the next chunk is ready to be sent
 ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-    sendChunk();
+    // sendChunk();
+    // fileHandler.sendChunk(fileHandler.offset);
 });
-
-/* for sender */
-let chunks = [];
-let chunkSize = null;
-let fileName = "";
-let totalSize = 0;
-let currentChunk = 0;
-let fileAB = null;
-let hash = null;
-function sendChunk() {
-    return;
-    if (currentChunk < chunks.length) {
-        console.log("Transmitting chunk " + (currentChunk+1) + " of " + chunks.length);
-        console.log("Total progress: " + (currentChunk * chunkSize) + " bytes sent (out of " + totalSize + " total bytes)");
-        screens.loading.setProgress(currentChunk * chunkSize, totalSize);
-        convertedChunk = new Uint8Array(chunks[currentChunk]);
-        switch(protocolToUse) {
-            case "webrtc":
-                sendRTC(convertedChunk);
-                break;
-            default:
-                console.warn("No protocol selected. Using websockets");
-                protocolToUse = "websocket";
-            case "websocket":
-                ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
-                break;
-        }
-        currentChunk += 1;
-    }
-    else {
-        screens.loading.setStatus("Waiting for " + receiverName + " to save the file...");
-        screens.loading.setDetails(fileName + " &bull; " + prettySize(totalSize, true, false, 2));
-        screens.loading.resetProgress();
-        ipcRenderer.send('progress-update', true, 1, {
-            mode: "indeterminate"
-        });
-        screens.showLoadingScreen(true);
-        ipcRenderer.send('data-transfer-complete', null);
-        chunks = [];
-        currentChunk = 0;
-        totalSize = 0;
-    }
-}
-function readFile(file) {
-    
-}

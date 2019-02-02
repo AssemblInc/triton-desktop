@@ -162,6 +162,12 @@ input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
     font-size: 2.5vh;
 }
 
+#loading {
+    animation: splash 30s ease 0s infinite alternate;
+    background: linear-gradient(-45deg, #19285C, #193864, #19285C, #193864, #19285C);
+    background-size: 500% 500%;
+}
+
 @keyframes splash {
     0% {
         background-position: 0% 50%;
@@ -400,4 +406,9 @@ input#fileChooser {
 /* PLACEHOLDER STYLING */
 ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
 	color: rgba(255,255,255,0.1);
+}
+
+::selection {
+    background: #009FFF;
+    color: #EDEDED;
 }

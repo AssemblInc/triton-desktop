@@ -8,6 +8,13 @@ let screens = {
         }
     },
 
+    startNameInputter: function() {
+        if (!appClosing) {
+            screens.hideAll();
+            document.getElementById("nameinputter").style.display = "block";
+        }
+    },
+
     startPurposeSelector: function() {
         if (!appClosing) {
             screens.hideAll();
