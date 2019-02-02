@@ -11,11 +11,11 @@ function fileDCinit() {
         // console.log("Received data from fileDC:", event.data);
         // console.log(event);
         if (event.data == "received") {
-            sendChunk();
+            fileHandler.sendChunk(fileHandler.offset);
         }
         else {
-            sendRTC("received");
-            ipcRenderer.send('webrtc-received-chunk', new Uint8Array(event.data));
+            sendRTC("received", false);
+            ipcRenderer.send('webrtc-received-chunk', event.data);
         }
     }
     fileDC.onerror = function(err) {
@@ -93,10 +93,23 @@ function connectAnswer(answerValue) {
     });
 }
 
-function sendRTC(something) {
-    fileDC.send(something);
+function sendRTC(something, isChunk) {
+    if (!isChunk) {
+        fileDC.send(something);
+    }
+    else {
+        ipcRenderer.send('pgp-encrypt-chunk', something);
+    }
     // console.log("Sent through fileDC:", something);
 }
+
+ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedMsg) {
+    fileDC.send(encryptedMsg);
+});
+
+ipcRenderer.on('pgp-chunk-encryption-error', function(event, err) {
+    console.error("An error occured encrypting the chunk", err);
+});
 
 ipcRenderer.on('webrtc-offervalue-please', function(event) {
     if (fileHandler.protocolToUse == "webrtc") {

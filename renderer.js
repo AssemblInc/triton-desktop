@@ -2,6 +2,7 @@
 let appClosing = false;
 let protocolToUse = null;
 let publicKey = null;
+let otherName = "";
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -65,12 +66,12 @@ ipcRenderer.on('data-initialized', function(event, data) {
 // for receiver
 ipcRenderer.on('receiving-chunk', function(event, data) {
     // console.log("Receiving a chunk...");
-    screens.loading.setStatus("Receiving file...");
+    screens.loading.setStatus("Receiving file from " + strip(otherName) + "...");
 });
 
 // for receiver
 ipcRenderer.on('received-chunk', function(event, progressIncrease) {
-    console.log("Received a chunk of " + progressIncrease + " bytes");
+    // console.log("Received a chunk of " + progressIncrease + " bytes");
     rProgressSize += progressIncrease;
     // screens.loading.setStatus("Receiving file...");
     screens.loading.setProgress(rProgressSize, rTotalSize);
@@ -87,7 +88,7 @@ ipcRenderer.on('received-file', function(event, data) {
 // for receiver
 ipcRenderer.on('saved-file', function(event, data) {
     console.log("File has been saved");
-    screens.loading.setStatus("Waiting for sender...");
+    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
     screens.loading.setDetails("");
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
@@ -109,7 +110,7 @@ function formSubmit(event) {
         senderPeerId: document.getElementById('senderpeerid').value,
         receiverName: document.getElementById('yourname').value
     });
-    screens.loading.setStatus("Waiting for sender...");
+    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
     ipcRenderer.send('progress-update', true, 0, {
@@ -140,7 +141,7 @@ function domReady() {
         // start generating a pgp keypair with the name
         ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
         screens.loading.setStatus("Generating a PGP keypair...");
-        screens.loading.setDetails("This might take a few seconds. Please wait...");
+        screens.loading.setDetails("This might take a while. Please wait...");
         screens.loading.resetProgress();
         screens.showLoadingScreen(true);
     });
@@ -151,6 +152,10 @@ function domReady() {
 // (data is ready to be sent once the file info has been confirmed received)
 ipcRenderer.on('data-ready-to-send', function(event, data) {
     fileHandler.startTransfer();
+});
+
+ipcRenderer.on('other-name-received', function(event, other) {
+    otherName = other;
 });
 
 ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
@@ -167,8 +172,7 @@ ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
 
 // run this function when the sender states the next chunk is ready to be sent
 ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
-    if (fileHandler.protocolToUse == "websocket") {
-        fileHandler.sendChunk(fileHandler.offset);
-    }
-    // webrtc does not need to use this event (everything is sent in one go)
+    // only used by websocket
+    // webrtc uses its own received event in rtc.js
+    fileHandler.sendChunk(fileHandler.offset);
 });
