@@ -8,8 +8,8 @@ const WSStar = require('libp2p-websocket-star');
 const defaultsDeep = require('@nodeutils/defaults-deep');
 const pull = require('pull-stream');
 const keccak256 = require('js-sha3').keccak256;
-const pgpHandler = require('./pgphandler.js');
-const chunkHandler = require('./chunkhandler.js');
+const pgpHandler = require('./resources/js_modules/pgphandler.js');
+const chunkHandler = require('./resources/js_modules/chunkhandler.js');
 require('electron-context-menu')({
     showCopyImageAddress: false,
     showSaveImageAs: false,
