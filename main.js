@@ -388,9 +388,26 @@ ipcMain.on('app-should-close', function(event) {
 // for both ends
 ipcMain.on('user-name-changed', function(event, newName) {
     userName = newName;
-    pgpHandler.createKeys(newName, null)
-        .then(function(pubKey) {
-            mainWindow.webContents.send('pgp-keys-generated', pubKey);
+    pgpHandler.hasOldValidKeys()
+        .then(function(hasOldValidKeys) {
+            if (hasOldValidKeys) {
+                pgpHandler.importOldKeys(newName, null)
+                    .then(function(pubKey) {
+                        mainWindow.webContents.send('pgp-keys-generated', pubKey);
+                    })
+                    .catch(function(reason) {
+                        mainWindow.webContents.send('pgp-keys-generation-error', reason);
+                    });
+            }
+            else {
+                pgpHandler.createKeys(newName, null)
+                    .then(function(pubKey) {
+                        mainWindow.webContents.send('pgp-keys-generated', pubKey);
+                    })
+                    .catch(function(reason) {
+                        mainWindow.webContents.send('pgp-keys-generation-error', reason);
+                    });
+            }
         })
         .catch(function(reason) {
             mainWindow.webContents.send('pgp-keys-generation-error', reason);
