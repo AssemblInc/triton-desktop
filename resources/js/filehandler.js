@@ -68,7 +68,8 @@ let fileHandler = {
         console.log("File changed!");
         if (f != null && f.size > 0) {
             fileHandler.file = f;
-            fileHandler.hash = sha3_256.create();
+            fileHandler.hash = keccak256.create();
+            // fileHandler.hash = crypto.createHash('sha256');
             fileHandler.offset = 0;
             fileHandler.chunkAmount = 0;
 
@@ -103,7 +104,7 @@ let fileHandler = {
         else {
             // retrieve the final hash
             console.log("Hash is ready:", fileHandler.hash.hex());
-            hashMemo(null, fileHandler.hash);
+            hashMemo(null, fileHandler.hash.hex());
             screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
             screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
             screens.loading.resetProgress();
