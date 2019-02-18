@@ -68,7 +68,7 @@ let fileHandler = {
         console.log("File changed!");
         if (f != null && f.size > 0) {
             fileHandler.file = f;
-            fileHandler.hash = keccak256.create();
+            fileHandler.hash = sha3_256.create();
             fileHandler.offset = 0;
             fileHandler.chunkAmount = 0;
 
