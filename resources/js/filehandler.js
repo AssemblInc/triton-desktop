@@ -104,7 +104,7 @@ let fileHandler = {
         else {
             // retrieve the final hash
             console.log("Hash is ready:", fileHandler.hash.hex());
-            hashMemo(null, fileHandler.hash.hex());
+            // hashMemo(null, fileHandler.hash.hex());
             screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
             screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
             screens.loading.resetProgress();
