@@ -22,6 +22,9 @@ var wsHandler = {
         wsHandler.socket.on('connect_error', function(timeout) {
             console.warn("Websocket connection attempt timed out");
         });
+        wsHandler.socket.on('welcome', function(welcomeMsg) {
+            console.log(welcomeMsg);
+        });
     }
 };
 
