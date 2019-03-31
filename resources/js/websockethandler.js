@@ -3,7 +3,7 @@ var wsHandler = {
     connections: [],
 
     init: function() {
-        wsHandler.socket = io('https://socket.assembl.science:8080');
+        wsHandler.socket = io('https://socket.assembl.science:2998');
         wsHandler.socket.on('connect', function() {
             console.log("Websocket connected");
         });

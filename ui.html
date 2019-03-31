@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Assembl Desktop Demo</title>
+        <title>Assembl Desktop</title>
         <link rel="stylesheet" href="styles.css" />
         <script>
         const { ipcRenderer } = require('electron');
         const prettySize = require('prettysize');
         const keccak256 = require('js-sha3').keccak256;
         </script>
+        <script src="resources/js/socket.io.js"></script>
         <script src="resources/js/filehandler.js"></script>
         <script src="resources/js/renderer.js"></script>
         <script src="resources/js/screens.js"></script>
@@ -146,6 +147,6 @@
                 </tr>
             </table>
         </div>
-        <div id="copyright">Assembl Desktop Demo &copy; Assembl Inc. 2019</div>
+        <div id="copyright">Assembl Desktop &copy; Assembl Inc. 2019</div>
     </body>
 </html>

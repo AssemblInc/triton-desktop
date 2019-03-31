@@ -13,6 +13,7 @@ require('electron-context-menu')({
 let mainWindow = null;
 let mainWindowMayClose = false;
 let node = null;
+let orcidData = null;
 
 function reallyClosingNow() {
     chunkHandler.deleteTempFile(true);
@@ -47,13 +48,85 @@ function fullyCloseApp() {
     }
 }
 
-function createWindow() {
+function appReady() {
     console.log('App is ready!');
     console.log('Node v' + process.versions.node);
     console.log('Electron v' + process.versions.electron);
     console.log('Chrome v' + process.versions.chrome);
     console.log('Assembl Desktop v' + app.getVersion());
 
+    app.on('browser-window-created', function(e, window) {
+        window.setMenu(null);
+    });
+
+    signIn();
+}
+
+function signIn() {
+    console.log("Creating sign in window...");
+    let signInWindow = new BrowserWindow({
+        width: 500,
+        height: 680,
+        backgroundColor: '#193864',
+        show: false,
+        center: true,
+        fullscreenable: false,
+        title: "Loading...",
+        webPreferences: {
+            nodeIntegration: false,
+            devTools: true,
+            defaultFontFamily: 'sansSerif',
+            defaultFontSize: 17,
+            nativeWindowOpen: false,
+            experimentalFeatures: false
+        },
+        icon: __dirname + "/build/icon.ico"
+    });
+
+    signInWindow.once('ready-to-show', function() {
+        signInWindow.show();
+    });
+    signInWindow.on('page-title-updated', function(event, title) {
+        event.preventDefault();
+    });
+
+    signInWindow.webContents.on('dom-ready', function(event) {
+        let url = signInWindow.webContents.getURL();
+        if (url.indexOf("code=") > -1) {
+            signInWindow.webContents.executeJavaScript('document.body.innerText')
+                .then(function(result) {
+                    orcidData = JSON.parse(result);
+                    console.log("ORCID iD data received:");
+                    console.log(orcidData);
+                    startApplication();
+                    console.log("Closing sign in window...");
+                    signInWindow.close();
+                })
+                .catch(function(err) {
+                    dialog.showMessageBox(signInWindow, {
+                        type: "warning",
+                        title: "Could not sign in",
+                        message: "Something went wrong. Details: could not retrieve document body"
+                    });
+                    app.close();
+                });
+        }
+
+        if (url.indexOf('//orcid.org/') > -1) {
+            signInWindow.setTitle('Sign in to Assembl with your ORCID iD');
+        }
+        else if (url.indexOf('//accounts.assembl.science/') > -1) {
+            signInWindow.setTitle('Sign in to Assembl');
+        }
+        else {
+            signInWindow.setTitle('Assembl Desktop');
+        }
+    });
+
+    signInWindow.loadURL('https://accounts.assembl.science/signin/?json');
+}
+
+function startApplication() {
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
         width: 800,
@@ -62,12 +135,13 @@ function createWindow() {
         show: false,
         center: true,
         fullscreenable: false,
-        title: "Assembl Desktop Demo",
+        title: "Assembl Desktop",
         webPreferences: {
+            nodeIntegration: true,
             devTools: true,
             defaultFontFamily: 'sansSerif',
             defaultFontSize: 17,
-            nativeWindowOpen: false,             // do not support native window.open JS function
+            nativeWindowOpen: false,            // do not support native window.open JS function
             experimentalFeatures: true          // use experimental chromium features
         },
         icon: __dirname + "/build/icon.ico"
@@ -75,7 +149,7 @@ function createWindow() {
 
     // add event listeners
     mainWindow.on('page-title-updated', function(event, title) {
-        mainWindow.title = title;
+        // window title is always equal to page title unless event.preventDefault() is called here
     });
     mainWindow.on('close', function(event) {
         if (!mainWindowMayClose) {
@@ -87,8 +161,6 @@ function createWindow() {
     });
     mainWindow.once('ready-to-show', function() {
         mainWindow.show();
-         // disable menu bar and maximize window
-        mainWindow.setMenu(null);
         mainWindow.maximize();
         mainWindow.webContents.openDevTools();
     });
@@ -174,4 +246,4 @@ ipcMain.on('pgp-encrypt-chunk', function(event, chunk) {
         });
 });
 
-app.on('ready', createWindow);
+app.on('ready', appReady);
