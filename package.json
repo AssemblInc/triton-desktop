@@ -3,13 +3,13 @@
   "version": "1.0.6",
   "description": "Assembl Desktop allows you to transmit files directly to another person.",
   "homepage": "https://assembl.science",
-  "author": "Assembl LLC",
+  "author": "Assembl Inc.",
   "license": "SEE LICENSE IN LICENSE.MD",
   "main": "main.js",
   "build": {
     "appId": "science.assembl.desktop",
     "productName": "Assembl Desktop",
-    "copyright": "Copyright © 2019 Assembl LLC",
+    "copyright": "Copyright © 2019 Assembl Inc.",
     "extraFiles": [
       "resources/*",
       "LICENSE.MD"
