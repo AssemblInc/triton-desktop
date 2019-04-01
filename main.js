@@ -101,6 +101,10 @@ function signIn() {
                     startApplication();
                     console.log("Closing sign in window...");
                     signInWindow.close();
+                    console.log("Checking if username is there...");
+                    if (orcidData.name != null && orcidData.name.length > 0) {
+                        userName = orcidData.name;
+                    }
                 })
                 .catch(function(err) {
                     dialog.showMessageBox(signInWindow, {
@@ -181,6 +185,16 @@ ipcMain.on('progress-update', function(event, active, progress, options) {
     }
 });
 
+// for both
+ipcMain.on('username-request', function(event) {
+    event.returnValue = userName;
+});
+
+// for both
+ipcMain.on('assemblid-request', function(event) {
+    event.returnValue = orcidData["assembl_id"];
+});
+
 // for receiver
 ipcMain.on('webrtc-received-chunk', function(event, encryptedChunk) {
     if (encryptedChunk != undefined && encryptedChunk != null) {
@@ -206,13 +220,11 @@ ipcMain.on('app-should-close', function(event) {
     fullyCloseApp();
 });
 
-// for both ends
-ipcMain.on('user-name-changed', function(event, newName) {
-    userName = newName;
+function loadPGP() {
     pgpHandler.hasOldValidKeys()
         .then(function(hasOldValidKeys) {
             if (hasOldValidKeys) {
-                pgpHandler.importOldKeys(newName, null)
+                pgpHandler.importOldKeys(userName, null)
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
@@ -221,7 +233,7 @@ ipcMain.on('user-name-changed', function(event, newName) {
                     });
             }
             else {
-                pgpHandler.createKeys(newName, null)
+                pgpHandler.createKeys(userName, null)
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
@@ -233,6 +245,12 @@ ipcMain.on('user-name-changed', function(event, newName) {
         .catch(function(reason) {
             mainWindow.webContents.send('pgp-keys-generation-error', reason);
         });
+}
+
+// for both ends
+ipcMain.on('user-name-changed', function(event, newName) {
+    userName = newName;
+    loadPGP();
 });
 
 // for sender

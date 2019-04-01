@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "electron": "^4.0.3",
-    "electron-builder": "^20.38.5"
+    "electron-builder": "^20.39.0"
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",

@@ -12,6 +12,10 @@ let screens = {
         if (!appClosing) {
             screens.hideAll();
             document.getElementById("nameinputter").style.display = "block";
+            var curUserName = ipcRenderer.sendSync('username-request');
+            if (curUserName != null && curUserName.length > 0) {
+                document.getElementById("yourname").value = curUserName;
+            }
         }
     },
 
@@ -29,6 +33,7 @@ let screens = {
             document.getElementById("peeridfinder").style.display = "none";
             document.getElementById("protocolselector").style.display = "block";
             document.getElementById("protocol").value = "unset";
+            document.getElementById("yourpeerid").value = ipcRenderer.sendSync('assemblid-request');
         }
     },
 

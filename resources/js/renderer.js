@@ -137,12 +137,11 @@ function domReady() {
         var extraLoading = document.getElementById("extra-loading");
         extraLoading.style.height = "150px";
         extraLoading.style.marginTop = "72px";
-        setTimeout(function() {
-            screens.startNameInputter();
-        }, 1000);
     }, 3000);
 
     fileHandler.init();
+
+    wsHandler.init();
 }
 
 // for sender
@@ -162,9 +161,7 @@ ipcRenderer.on('other-name-received', function(event, other) {
 // for both
 ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
     publicKey = pubKey;
-    // start connecting to the main server
-    ipcRenderer.send('can-connect-to-server');
-    screens.loading.setStatus("Establishing connection...");
+    screens.startPurposeSelector();
 });
 
 // for both

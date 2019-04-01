@@ -3,9 +3,16 @@ var wsHandler = {
     connections: [],
 
     init: function() {
+        screens.loading.setStatus("Establishing connection...");
+        screens.loading.setDetails("");
+        screens.loading.resetProgress();
+        screens.showLoadingScreen(true);
         wsHandler.socket = io('https://socket.assembl.science:2998');
         wsHandler.socket.on('connect', function() {
             console.log("Websocket connected");
+            setTimeout(function() {
+                screens.startNameInputter();
+            }, 1000);
         });
         wsHandler.socket.on('disconnect', function() {
             console.warn("Websocket disconnected");
@@ -21,11 +28,11 @@ var wsHandler = {
         });
         wsHandler.socket.on('connect_error', function(timeout) {
             console.warn("Websocket connection attempt timed out");
+            alert("Could not establish a connection. Assembl Desktop will now quit.");
+            ipcRenderer.send('app-should-close');
         });
         wsHandler.socket.on('welcome', function(welcomeMsg) {
             console.log(welcomeMsg);
         });
     }
 };
-
-wsHandler.init();
