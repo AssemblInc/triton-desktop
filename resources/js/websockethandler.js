@@ -102,6 +102,7 @@ var wsHandler = {
             console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
             alert("A connection with " + userName + " has been established.");
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
+            screens.startFileDropper();
         });
 
         // for receiver
@@ -112,6 +113,7 @@ var wsHandler = {
             otherName = userName;      // otherName is set in renderer.js
             screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
             screens.loading.setDetails("");
+            screens.showLoadingScreen(true);
         });
     },
 
