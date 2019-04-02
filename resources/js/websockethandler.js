@@ -45,7 +45,8 @@ var wsHandler = {
             console.log("as_welcome: " + welcomeMsg);
             wsHandler.socket.emit("as_my_data", {
                 assembl_id: ipcRenderer.sendSync('assemblid-request'),
-                user_name: ipcRenderer.sendSync('username-request')
+                user_name: ipcRenderer.sendSync('username-request'),
+                orcid_id: ipcRenderer.sendSync('orcid-request')
             });
         });
 
@@ -59,9 +60,13 @@ var wsHandler = {
             switch(eventName) {
                 case "data_initialized":
                     ipcRenderer.send('renderer-fileinfo', data);
+                    wsHandler.sendEventToSender("fileinfo_received", null);
                     break;
                 case "data_transfer_complete":
                     ipcRenderer.send('renderer-filecomplete', data);
+                    break;
+                case "public_key":
+                    ipcRenderer.send('other-public-key-received', data);
                     break;
                 default:
                     console.warn("Unimplemented event " + eventName);
@@ -80,14 +85,33 @@ var wsHandler = {
                     screens.loading.resetProgress();
                     screens.startFileDropper();
                     break;
+                case "fileinfo_received":
+                    fileHandler.startTransfer();
+                    break;
+                case "public_key":
+                    ipcRenderer.send('other-public-key-received', data);
+                    break;
                 default:
                     console.warn("Unimplemented event " + eventName);
                     break;
             }
         });
 
-        wsHandler.socket.on('as_connection_made', function(assemblID, userData) {
-            alert("A connection with " + userData["user_name"] + " has been established.");
+        // for sender
+        wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
+            console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
+            alert("A connection with " + userName + " has been established.");
+            wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
+        });
+
+        // for receiver
+        wsHandler.socket.on('as_connected_to', function(assemblID, userName, orcidID) {
+            console.log("Outgoing connection: " + assemblID + " " + userName + "("+orcidID+")");
+            wsHandler.sendEventToSender("public_key", ipcRenderer.sendSync('publickey-request'));
+            alert("A connection with " + userName + " has been established.");
+            otherName = userName;      // otherName is set in renderer.js
+            screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
+            screens.loading.setDetails("");
         });
     },
 

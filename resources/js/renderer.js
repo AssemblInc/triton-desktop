@@ -177,20 +177,6 @@ function domReady() {
     screens.startPasswordInputter();
 }
 
-// for sender
-// once data is ready to be sent, execute this
-// (data is ready to be sent once the file info has been confirmed received)
-ipcRenderer.on('data-ready-to-send', function(event, data) {
-    fileHandler.startTransfer();
-});
-
-// for receiver
-ipcRenderer.on('other-name-received', function(event, other) {
-    otherName = other;
-    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
-    screens.loading.setDetails("");
-});
-
 // for both
 ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
     publicKey = pubKey;

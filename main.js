@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const userDataHandler = require('./resources/js_modules/userdatahandler.js');
 const pgpHandler = require('./resources/js_modules/pgphandler.js');
+pgpHandler.setUserDataHandler(userDataHandler);
 const chunkHandler = require('./resources/js_modules/chunkhandler.js');
 require('electron-context-menu')({
     showCopyImageAddress: false,
@@ -237,6 +238,22 @@ ipcMain.on('username-request', function(event) {
 ipcMain.on('assemblid-request', function(event) {
     event.returnValue = orcidData["assembl_id"];
 });
+
+// for both
+ipcMain.on('orcid-request', function(event) {
+    event.returnValue = orcidData["orcid"];
+});
+
+// for both
+ipcMain.on('publickey-request', function(event) {
+    console.log(pgpHandler.getPublicKey());
+    event.returnValue = pgpHandler.getPublicKey();
+});
+
+// for both
+ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
+    pgpHandler.setOtherKeys(otherPublicKey);
+});7
 
 // for receiver
 ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {

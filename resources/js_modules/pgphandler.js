@@ -5,6 +5,7 @@ const PGP = kbpgp["const"].openpgp;
 const fs = require('fs');
 
 let keyFile = path.join(app.getPath('userData'), 'keys.assemblkey');
+let userDataHandler = null;
 let opts;
 let keyManagers = {
     me: null,
@@ -14,8 +15,13 @@ let keys = {
     private: null,
     public: null
 };
+let validUntil = null;
 let otherKeys = {
     public: null
+};
+
+exports.setUserDataHandler = function(handler) {
+    userDataHandler = handler;
 };
 
 exports.getPrivateKey = function() {
@@ -113,7 +119,7 @@ exports.createKeys = function(displayName, userId) {
     opts = {
         userid: displayName + " <" + userId + "@users.assembl.science>",
         primary: {
-            nbits: 4096,
+            nbits: 2048,
             flags: PGP.certify_keys | PGP.sign_data | PGP.auth | PGP.encrypt_comm | PGP.encrypt_storage,
             expire_in: 86400 * 42       // 42 days
         },
@@ -144,6 +150,7 @@ exports.createKeys = function(displayName, userId) {
                             reject("Could not sign subkeys");
                         }
                         else {
+                            validUntil = Date.now() + (86400 * 21 * 1000);   // 21 days
                             loadKeys(keyManager, true)
                                 .then(function(publicKey) {
                                     resolve(publicKey);
@@ -167,6 +174,7 @@ exports.createKeys = function(displayName, userId) {
 exports.importOldKeys = function(displayName, userId) {
     return new Promise(
         function(resolve, reject) {
+            /*
             console.log("Importing old keys... Reading file...");
             fs.readFile(keyFile, { encoding: 'utf8' }, function(err, data) {
                 if (err) {
@@ -210,6 +218,35 @@ exports.importOldKeys = function(displayName, userId) {
                     }
                 }
             });
+            */
+            console.log("Importing old keys...");
+            kbpgp.KeyManager.import_from_armored_pgp({
+                armored: userDataHandler.loadData("public_key")
+            }, function(err, keyManager) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                }
+                else {
+                    keyManager.merge_pgp_private({
+                        armored: userDataHandler.loadData("private_key")
+                    }, function(err) {
+                        if (err) {
+                            console.error(err);
+                            reject(err);
+                        }
+                        else {
+                            loadKeys(keyManager, false)
+                                .then(function(publicKey) {
+                                    resolve(publicKey);
+                                })
+                                .catch(function(err) {
+                                    reject(err);
+                                });
+                        }
+                    });
+                }
+            });
         }
     );
 };
@@ -217,6 +254,7 @@ exports.importOldKeys = function(displayName, userId) {
 function saveKeys() {
     return new Promise(
         function(resolve, reject) {
+            /*
             console.log("Writing keys to appdata (" + keyFile + ')...');
             fs.writeFile(keyFile, keys.public + "~~~" + keys.private, function(err) {
                 if (err) {
@@ -228,6 +266,11 @@ function saveKeys() {
                     resolve();
                 }
             });
+            */
+            userDataHandler.saveData("public_key", keys.public);
+            userDataHandler.saveData("private_key", keys.private);
+            userDataHandler.saveData("keys_valid_until", validUntil);
+            resolve();
         }
     );
 };
@@ -235,6 +278,7 @@ function saveKeys() {
 exports.hasOldValidKeys = function() {
     return new Promise(
         function(resolve, reject) {
+            /*
             fs.exists(keyFile, function(exists) {
                 if (exists) {
                     fs.stat(keyFile, function(err, stats) {
@@ -243,16 +287,6 @@ exports.hasOldValidKeys = function() {
                             reject(err);
                         }
                         else {
-                            /*
-                            *   There should be a better way to check if a key is still valid,
-                            *   instead of using the last modified value of the file itself.
-                            *   Keybase has a expire_in value (as seen as in the createKey function),
-                            *   which might have a function to allow checking for expiration.
-                            *   If there is anything like that, we should use this. However, the API
-                            *   explanations of kbpgp are very, very bad, and don't include every function
-                            *   on its own (they just give a few general examples and that's it)
-                            *   so I haven't been able to find it yet.
-                            */
                             if (stats.mtimeMs < Date.now() - 1814400000) {
                                 console.log("Old keys are older than 21 days and should no longer be valid. Deleting them...");
                                 fs.unlink(keyFile, function(err) {
@@ -278,6 +312,8 @@ exports.hasOldValidKeys = function() {
                     resolve(false);
                 }
             });
+            */
+            resolve(userDataHandler.hasData("public_key") && userDataHandler.hasData("private_key") && userDataHandler.hasData("keys_valid_until") && userDataHandler.loadData("keys_valid_until") > Date.now());
         }
     );
 };
