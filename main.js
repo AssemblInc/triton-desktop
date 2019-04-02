@@ -88,6 +88,7 @@ function signIn() {
         event.preventDefault();
     });
     signInWindow.on('closed', function() {
+        console.log("Closed signIn window, so showing mainWindow.");
         mainWindow.show();
     });
 
@@ -171,6 +172,7 @@ function startApplication() {
         // window title is always equal to page title unless event.preventDefault() is called here
     });
     mainWindow.on('close', function(event) {
+        console.log("mainWindow close event");
         if (!mainWindowMayClose) {
             event.preventDefault();
             event.returnValue = false;
