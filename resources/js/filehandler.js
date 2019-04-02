@@ -34,10 +34,30 @@ let fileHandler = {
                     console.warn("No protocol selected. Using websockets");
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
-                    // send chunk over websocket (handled in main.js)
-                    ipcRenderer.send('chunk-ready-for-transfer', convertedChunk);
+                    // send chunk over websocket
+                    wsHandler.sendChunk(convertedChunk, true, false);
                     break;
             }
+        });
+
+        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedMsg) {
+            switch(fileHandler.protocolToUse) {
+                case "webrtc":
+                    // send chunk over webrtc
+                    rtcHandler.send(convertedChunk, true, true);
+                    break;
+                default:
+                    console.warn("No protocol selected. Using websockets");
+                    fileHandler.protocolToUse = "websocket";
+                case "websocket":
+                    // send chunk over websocket
+                    wsHandler.sendChunk(convertedChunk, true, true);
+                    break;
+            }
+        });
+        
+        ipcRenderer.on('pgp-chunk-encryption-error', function(event, err) {
+            console.error("An error occured encrypting the chunk", err);
         });
 
         let bg = document.getElementById("itemdropbox");
@@ -80,7 +100,7 @@ let fileHandler = {
             screens.showLoadingScreen(false);
 
             // send data initialized event to receiver with file details
-            ipcRenderer.send('data-initialized', [
+            wsHandler.sendEvent('data_initialized', [
                 fileHandler.file.size.toString(),
                 fileHandler.file.name,
                 fileHandler.file.type
@@ -112,7 +132,7 @@ let fileHandler = {
                 mode: "indeterminate"
             });
             screens.showLoadingScreen(true);
-            ipcRenderer.send('data-transfer-complete', fileHandler.chunkAmount);
+            wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
             // reset the filechooser
             document.getElementById("fileChooser").value = "";
         }

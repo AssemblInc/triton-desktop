@@ -17,7 +17,7 @@ var rtcHandler = {
             }
             else {
                 rtcHandler.send("received", false, false);
-                ipcRenderer.send('webrtc-received-chunk', event.data);
+                ipcRenderer.send('renderer-received-chunk', event.data);
             }
         };
         rtcHandler.fileChannel.onerror = function(err) {
@@ -43,14 +43,6 @@ var rtcHandler = {
             rtcHandler.fileChannel = event.channel;
             rtcHandler.initFileChannel();
         };
-
-        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedMsg) {
-            rtcHandler.send(encryptedMsg, true, true);
-        });
-        
-        ipcRenderer.on('pgp-chunk-encryption-error', function(event, err) {
-            console.error("An error occured encrypting the chunk", err);
-        });
         
         ipcRenderer.on('webrtc-offervalue-please', function(event) {
             if (fileHandler.protocolToUse == "webrtc") {

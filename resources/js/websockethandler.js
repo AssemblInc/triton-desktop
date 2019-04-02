@@ -1,6 +1,6 @@
 var wsHandler = {
     socket: null,
-    connections: [],
+    isOpen: false,
 
     init: function() {
         screens.loading.setStatus("Establishing connection...");
@@ -9,13 +9,15 @@ var wsHandler = {
         screens.showLoadingScreen(true);
         wsHandler.socket = io('https://socket.assembl.science:2998');
         wsHandler.socket.on('connect', function() {
-            console.log("Websocket connected");
+            console.log("Websocket connected: " + wsHandler.socket.id);
             setTimeout(function() {
                 screens.startNameInputter();
             }, 1000);
+            wsHandler.isOpen = true;
         });
         wsHandler.socket.on('disconnect', function() {
             console.warn("Websocket disconnected");
+            wsHandler.isOpen = false;
         });
         wsHandler.socket.on('reconnect_attempt', function(attemptNumber) {
             console.log("Attempting to reconnect to websocket ("+attemptNumber+")...");
@@ -31,8 +33,102 @@ var wsHandler = {
             alert("Could not establish a connection. Assembl Desktop will now quit.");
             ipcRenderer.send('app-should-close');
         });
-        wsHandler.socket.on('welcome', function(welcomeMsg) {
-            console.log(welcomeMsg);
+
+        wsHandler.socket.on('as_error', function(err, errDesc) {
+            console.error("as_error " + err + ": " + errDesc);
         });
+        wsHandler.socket.on('as_success', function(succ, succDesc) {
+            console.log("as_success " + succ + ": " + succDesc);
+        });
+
+        wsHandler.socket.on('as_welcome', function(welcomeMsg) {
+            console.log("as_welcome: " + welcomeMsg);
+            wsHandler.socket.emit("as_my_data", {
+                assembl_id: ipcRenderer.sendSync('assemblid-request'),
+                user_name: ipcRenderer.sendSync('username-request')
+            });
+        });
+
+        wsHandler.socket.on('as_chunk_for_receiver', function(chunk) {
+            wsHandler.sendEventToSender("chunk_received", null);
+            ipcRenderer.send('renderer-received-chunk', chunk);
+        });
+
+        wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {
+            console.log("as_event_for_receiver " + eventName + ": ", data);
+            switch(eventName) {
+                case "data_initialized":
+                    ipcRenderer.send('renderer-fileinfo', data);
+                    break;
+                case "data_transfer_complete":
+                    ipcRenderer.send('renderer-filecomplete', data);
+                    break;
+                default:
+                    console.warn("Unimplemented event " + eventName);
+                    break;
+            }
+        });
+
+        wsHandler.socket.on('as_event_for_sender', function(eventName, data) {
+            console.log("as_event_for_sender " + eventName + ": ", data);
+            switch(eventName) {
+                case "chunk_received":
+                    fileHandler.sendChunk(fileHandler.offset);
+                    break;
+                case "file_saved":
+                    console.log("File has been saved by the receiver");
+                    screens.loading.resetProgress();
+                    screens.startFileDropper();
+                    break;
+                default:
+                    console.warn("Unimplemented event " + eventName);
+                    break;
+            }
+        });
+
+        wsHandler.socket.on('as_connection_made', function(assemblID, userData) {
+            alert("A connection with " + userData["user_name"] + " has been established.");
+        });
+    },
+
+    connectTo: function(assemblID) {
+        if (wsHandler.isOpen) {
+            wsHandler.socket.emit("as_connect_to", assemblID);
+        }
+        else {
+            console.warn("Tried connecting over websocket while the connection has not been established yet.");
+        }
+    },
+
+    sendEventToSender: function(eventName, data) {
+        if (wsHandler.isOpen) {
+            wsHandler.socket.emit("as_send_event_to_sender", eventName, data);
+        }
+        else {
+            console.warn("Tried sending event to sender over websocket while the connection has not been established yet.");
+        }
+    },
+
+    sendEvent: function(eventName, data) {
+        if (wsHandler.isOpen) {
+            wsHandler.socket.emit("as_send_event", eventName, data);
+        }
+        else {
+            console.warn("Tried sending event over websocket while the connection has not been established yet.");
+        }
+    },
+
+    sendChunk: function(chunk, isEncrypted) {
+        if (wsHandler.isOpen) {
+            if (isEncrypted) {
+                wsHandler.socket.emit("as_send_chunk", chunk);
+            }
+            else {
+                ipcRenderer.send('pgp-encrypt-chunk', chunk);
+            }
+        }
+        else {
+            console.warn("Tried sending chunk over websocket while the connection has not been established yet.");
+        }
     }
 };

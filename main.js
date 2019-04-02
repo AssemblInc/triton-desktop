@@ -14,6 +14,7 @@ require('electron-context-menu')({
 let mainWindow = null;
 let mainWindowMayClose = false;
 let orcidData = null;
+let waitForCompletion = null;
 
 function reallyClosingNow() {
     console.log("Deleting temporary files...");
@@ -238,7 +239,7 @@ ipcMain.on('assemblid-request', function(event) {
 });
 
 // for receiver
-ipcMain.on('webrtc-received-chunk', function(event, encryptedChunk) {
+ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
     if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
@@ -255,6 +256,35 @@ ipcMain.on('webrtc-received-chunk', function(event, encryptedChunk) {
                 fullyCloseApp();
             });
     }
+});
+
+// for receiver
+ipcMain.on('renderer-fileinfo', function(event, fileInfo) {
+    mainWindow.webContents.send('data-initialized', fileInfo);
+    chunkHandler.initChunks();
+    chunkHandler.setFileName(fileInfo[1]);
+});
+
+// for receiver
+ipcMain.on('renderer-filecomplete', function(event, finalChunkAmount) {
+    chunkHandler.setFinalChunkAmount(parseInt(finalChunkAmount));
+    mainWindow.webContents.send('received-file', null);
+    waitForCompletion = setInterval(function() {
+        if (chunkHandler.fileReady()) {
+            clearInterval(waitForCompletion);
+            chunkHandler.finish();
+            chunkHandler.saveFile()
+                .then(function() {
+                    console.log("Save succesful");
+                })
+                .catch(function(err) {
+                    console.error(err);
+                })
+                .finally(function() {
+                    mainWindow.webContents.send('saved-file', null);
+                });
+        }
+    }, 1000);
 });
 
 // for both ends

@@ -88,6 +88,7 @@ ipcRenderer.on('received-file', function(event, data) {
 // for receiver
 ipcRenderer.on('saved-file', function(event, data) {
     console.log("File has been saved");
+    wsHandler.sendEventToSender('file_saved', null);
     screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
     screens.loading.setDetails("");
     screens.loading.resetProgress();
@@ -97,23 +98,13 @@ ipcRenderer.on('saved-file', function(event, data) {
     });
 });
 
-// for sender
-ipcRenderer.on('receiver-saved-file', function(event, data) {
-    console.log("File has been saved by the receiver");
-    screens.loading.resetProgress();
-    screens.startFileDropper();
-});
-
 function formSubmit(event) {
     event.preventDefault();
     screens.loading.setStatus("Establishing a peer to peer connection...");
     screens.loading.setDetails(document.getElementById('senderpeerid').value);
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
-    ipcRenderer.send('peerid-entered', {
-        senderPeerId: document.getElementById('senderpeerid').value,
-        receiverName: document.getElementById('yourname').value
-    });
+    wsHandler.connectTo(document.getElementById('senderpeerid').value);
     ipcRenderer.send('progress-update', true, 0, {
         mode: "indeterminate"
     });
