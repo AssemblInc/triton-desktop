@@ -8,6 +8,26 @@ let screens = {
         }
     },
 
+    startPasswordInputter: function(err) {
+        if (!appClosing) {
+            screens.hideAll();
+            document.getElementById("passwordinputter").style.display = "block";
+            if (err) {
+                document.getElementById("password-error").innerHTML = strip(err);
+            }
+            else {
+                document.getElementById("password-error").innerHTML = "";
+            }
+        }
+    },
+
+    startFreshStarter: function() {
+        if (!appClosing) {
+            screens.hideAll();
+            document.getElementById("freshstarter").style.display = "block";
+        }
+    },
+
     startNameInputter: function() {
         if (!appClosing) {
             screens.hideAll();
@@ -68,13 +88,13 @@ let screens = {
     loading: {
         setStatus: function(text) {
             if (!appClosing) {
-                document.getElementById("loading-status").innerHTML = text;
+                document.getElementById("loading-status").innerHTML = strip(text);
             }
         },
 
         setDetails: function(text) {
             if (!appClosing) {
-                document.getElementById("loading-details").innerHTML = text;
+                document.getElementById("loading-details").innerHTML = strip(text);
             }
         },
 
@@ -84,7 +104,7 @@ let screens = {
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
                 let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
                 if (textBar.length > 0) {
-                    textBar[0].innerHTML = progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")";
+                    textBar[0].innerHTML = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")");
                 }
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"

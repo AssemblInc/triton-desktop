@@ -106,27 +106,69 @@ ipcRenderer.on('receiver-saved-file', function(event, data) {
 
 function formSubmit(event) {
     event.preventDefault();
-    ipcRenderer.send('peerid-entered', {
-        senderPeerId: document.getElementById('senderpeerid').value,
-        receiverName: document.getElementById('yourname').value
-    });
     screens.loading.setStatus("Establishing a peer to peer connection...");
     screens.loading.setDetails(document.getElementById('senderpeerid').value);
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
+    ipcRenderer.send('peerid-entered', {
+        senderPeerId: document.getElementById('senderpeerid').value,
+        receiverName: document.getElementById('yourname').value
+    });
     ipcRenderer.send('progress-update', true, 0, {
         mode: "indeterminate"
     });
     return false;
 }
 
+function passwordSubmit(event) {
+    event.preventDefault();
+    screens.loading.setStatus("Loading your data...");
+    screens.loading.setDetails("This might take a while. Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
+    ipcRenderer.send('password-set', document.getElementById('password').value);
+    return false;
+}
+
+ipcRenderer.on('userdata-loaded', function(event) {
+    screens.loading.setStatus("Loading...");
+    screens.loading.setDetails("Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
+});
+
+ipcRenderer.on('userdata-loading-error', function(event, err) {
+    screens.startPasswordInputter(err);
+});
+
+function freshPasswordSubmit(event) {
+    event.preventDefault();
+    screens.loading.setStatus("Creating your data...");
+    screens.loading.setDetails("Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
+    ipcRenderer.send('password-set-fresh', document.getElementById('freshpassword').value);
+    return false;
+}
+
+ipcRenderer.on('userdata-created', function(event) {
+    screens.loading.setStatus("Loading...");
+    screens.loading.setDetails("Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
+});
+
+ipcRenderer.on('signed-in', function(event) {
+    wsHandler.init();
+});
+
 function nameSubmit(event) {
     event.preventDefault();
     // start generating a pgp keypair with the name
-    ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
     screens.loading.setStatus("Generating a PGP keypair...");
     screens.loading.setDetails("This might take a while. Please wait...");
     screens.loading.resetProgress();
+    ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
     screens.showLoadingScreen(true);
     return false;
 }
@@ -141,7 +183,7 @@ function domReady() {
 
     fileHandler.init();
 
-    wsHandler.init();
+    screens.startPasswordInputter();
 }
 
 // for sender

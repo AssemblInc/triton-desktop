@@ -31,6 +31,41 @@
                 </tr>
             </table>
         </div>
+        <div class="screen" id="passwordinputter">
+            <table style="width: 100%; height: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
+                        <div class="underthelogo" id="purpose-selector">
+                            <form id="receiver-input-form" onsubmit="passwordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                                <div>Enter your password:</div>
+                                <input type="password" id="password" placeholder="" required minlength="8" maxlength="46" /><br />
+                                <div id="password-error"></div>
+                                <button type="submit" class="connect-button" id="password-btn">continue</button>
+                            </form>
+                            <div>Forgot your password, or don't have one yet?</div>
+                            <button type="button" class="connect-button" id="start-fresh-btn" onclick="screens.startFreshStarter();">start fresh</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="screen" id="freshstarter">
+                <table style="width: 100%; height: 100%;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
+                            <div class="underthelogo" id="purpose-selector">
+                                <form id="receiver-input-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                                    <div>Enter a new password:</div>
+                                    <input type="password" id="freshpassword" placeholder="" required minlength="8" maxlength="46" /><br />
+                                    <button type="submit" class="connect-button" id="fresh-btn">start</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         <div class="screen" id="nameinputter">
             <table style="width: 100%; height: 100%;">
                 <tr>
@@ -40,7 +75,7 @@
                             <form id="receiver-input-form" onsubmit="nameSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your name:</div>
                                 <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" /><br />
-                                <button type="submit" class="connect-button" id="name-set-btn">start</button>
+                                <button type="submit" class="connect-button" id="name-set-btn">continue</button>
                             </form>
                         </div>
                     </td>

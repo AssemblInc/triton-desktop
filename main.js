@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const userDataHandler = require('./resources/js_modules/userdatahandler.js');
 const pgpHandler = require('./resources/js_modules/pgphandler.js');
 const chunkHandler = require('./resources/js_modules/chunkhandler.js');
 require('electron-context-menu')({
@@ -12,30 +13,24 @@ require('electron-context-menu')({
 
 let mainWindow = null;
 let mainWindowMayClose = false;
-let node = null;
 let orcidData = null;
 
 function reallyClosingNow() {
+    console.log("Deleting temporary files...");
     chunkHandler.deleteTempFile(true);
-    if (node != null) {
-        console.log("Closing websocket connections...");
-        node.stop(function(error) {
-            if (error) {
-                console.log(error);
-            }
-            else {
-                console.log("Successfully closed websocket connections.");
-            }
-            console.log("Quitting application...");
-            mainWindowMayClose = true;
-            app.quit();
-        });
+    if (userDataHandler.isInitialized()) {
+        console.log("Saving user data...");
+        try {
+            userDataHandler.finalize();
+        }
+        catch(err) {
+            console.log("Could not save user data");
+            console.log(err);
+        }
     }
-    else {
-        console.log("Quitting application...");
-        mainWindowMayClose = true;
-        app.quit();
-    }
+    console.log("Quitting application...");
+    mainWindowMayClose = true;
+    app.quit();
 }
 
 function fullyCloseApp() {
@@ -59,7 +54,7 @@ function appReady() {
         window.setMenu(null);
     });
 
-    signIn();
+    startApplication();
 }
 
 function signIn() {
@@ -84,10 +79,14 @@ function signIn() {
     });
 
     signInWindow.once('ready-to-show', function() {
+        mainWindow.hide();
         signInWindow.show();
     });
     signInWindow.on('page-title-updated', function(event, title) {
         event.preventDefault();
+    });
+    signInWindow.on('closed', function() {
+        mainWindow.show();
     });
 
     signInWindow.webContents.on('dom-ready', function(event) {
@@ -95,24 +94,33 @@ function signIn() {
         if (url.indexOf("code=") > -1) {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
-                    orcidData = JSON.parse(result);
-                    console.log("ORCID iD data received:");
-                    console.log(orcidData);
-                    startApplication();
-                    console.log("Closing sign in window...");
-                    signInWindow.close();
-                    console.log("Checking if username is there...");
-                    if (orcidData.name != null && orcidData.name.length > 0) {
-                        userName = orcidData.name;
+                    try {
+                        orcidData = JSON.parse(result);
+                        console.log("ORCID iD data received:");
+                        console.log(orcidData);
+                        userDataHandler.saveData("assembl_id", orcidData["assembl_id"]);
+                        userDataHandler.saveData("orcid_id", orcidData["orcid"]);
+                        console.log("Checking if username is there...");
+                        if (orcidData.name != null && orcidData.name.length > 0) {
+                            userDataHandler.saveData("username", orcidData.name);
+                        }
+                        else {
+                            userDataHandler.saveData("username", "");
+                        }
+                        console.log("Closing sign in window...");
+                        signInWindow.close();
+                        mainWindow.webContents.send('signed-in');
+                    }
+                    catch(err) {
+                        console.log(err);
+                        dialog.showMessageBox(signInWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                        fullyCloseApp();
                     }
                 })
                 .catch(function(err) {
-                    dialog.showMessageBox(signInWindow, {
-                        type: "warning",
-                        title: "Could not sign in",
-                        message: "Something went wrong. Details: could not retrieve document body"
-                    });
-                    app.close();
+                    console.log(err);
+                    dialog.showMessageBox(signInWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                    fullyCloseApp();
                 });
         }
 
@@ -127,7 +135,12 @@ function signIn() {
         }
     });
 
-    signInWindow.loadURL('https://accounts.assembl.science/signin/?json');
+    let signInUrl = 'https://accounts.assembl.science/signin/?json';
+    if (userDataHandler.hasData("orcid_id")) {
+        signInUrl += '&orcid=' + userDataHandler.loadData("orcid_id");
+    }
+
+    signInWindow.loadURL(signInUrl);
 }
 
 function startApplication() {
@@ -174,6 +187,35 @@ function startApplication() {
 }
 
 // for both
+ipcMain.on('password-set', function(event, password) {
+    userDataHandler.init(password, false)
+        .then(function() {
+            console.log("Userdata loaded");
+            mainWindow.webContents.send('userdata-loaded');
+            signIn();
+        })
+        .catch(function(err) {
+            console.log("Could not load UserData");
+            console.log(err);
+            mainWindow.webContents.send('userdata-loading-error', err);
+        });
+});
+
+// for both
+ipcMain.on('password-set-fresh', function(event, password) {
+    userDataHandler.init(password, true)
+        .then(function() {
+            console.log("Userdata created");
+            mainWindow.webContents.send('userdata-created');
+            signIn();
+        })
+        .catch(function(err) {
+            console.log("Could not create UserData");
+            console.log(err);
+        });
+});
+
+// for both
 ipcMain.on('progress-update', function(event, active, progress, options) {
     if (active === true) {
         // console.log(progress);
@@ -187,7 +229,7 @@ ipcMain.on('progress-update', function(event, active, progress, options) {
 
 // for both
 ipcMain.on('username-request', function(event) {
-    event.returnValue = userName;
+    event.returnValue = userDataHandler.loadData("username");
 });
 
 // for both
@@ -224,7 +266,7 @@ function loadPGP() {
     pgpHandler.hasOldValidKeys()
         .then(function(hasOldValidKeys) {
             if (hasOldValidKeys) {
-                pgpHandler.importOldKeys(userName, null)
+                pgpHandler.importOldKeys(userDataHandler.loadData("username"), null)
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
@@ -233,7 +275,7 @@ function loadPGP() {
                     });
             }
             else {
-                pgpHandler.createKeys(userName, null)
+                pgpHandler.createKeys(userDataHandler.loadData("username"), null)
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
@@ -249,7 +291,7 @@ function loadPGP() {
 
 // for both ends
 ipcMain.on('user-name-changed', function(event, newName) {
-    userName = newName;
+    userDataHandler.saveData("username", newName);
     loadPGP();
 });
 

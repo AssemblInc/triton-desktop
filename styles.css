@@ -106,7 +106,7 @@ a:hover, a:focus, a:active {
     margin-top: 72px;
 }
 
-input[type=text] {
+input[type=text], input[type=password] {
     display: inline-block;
     margin-top: 24px;
     margin-bottom: 24px;
@@ -149,8 +149,14 @@ select option {
     color: #1A1A1A;
 }
 
-input[type=text]:focus, select:focus, input[type=text]:hover, select:hover {
+input[type=text]:focus, select:focus, input[type=password]:focus, input[type=text]:hover, select:hover, input[type=password]:hover {
     border: 1px solid #004CFF;
+}
+
+#password-error {
+    font-size: 17px;
+    color: #DC143C;
+    font-weight: 400;
 }
 
 /* startup screen (splash screen) */
