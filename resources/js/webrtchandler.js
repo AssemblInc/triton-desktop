@@ -16,7 +16,6 @@ var rtcHandler = {
                 fileHandler.sendChunk(fileHandler.offset);
             }
             else {
-                rtcHandler.send("received", false, false);
                 ipcRenderer.send('renderer-received-chunk', event.data);
             }
         };

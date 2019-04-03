@@ -51,7 +51,6 @@ var wsHandler = {
         });
 
         wsHandler.socket.on('as_chunk_for_receiver', function(chunk) {
-            wsHandler.sendEventToSender("chunk_received", null);
             console.log("Sending chunk to main thread...");
             ipcRenderer.send('renderer-received-chunk', chunk);
             console.log("Chunk sent to main thread");

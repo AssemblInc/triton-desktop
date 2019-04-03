@@ -75,6 +75,19 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
     rProgressSize += progressIncrease;
     // screens.loading.setStatus("Receiving file...");
     screens.loading.setProgress(rProgressSize, rTotalSize);
+    switch(fileHandler.protocolToUse) {
+        case "webrtc":
+            // send chunk over webrtc
+            rtcHandler.send("received", false, false);
+            break;
+        default:
+            console.warn("No protocol selected. Using websockets");
+            fileHandler.protocolToUse = "websocket";
+        case "websocket":
+            // send chunk over websocket
+            wsHandler.sendEventToSender("chunk_received", null);
+            break;
+    }
 });
 
 // for receiver
