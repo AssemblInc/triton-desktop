@@ -51,6 +51,7 @@ var wsHandler = {
         });
 
         wsHandler.socket.on('as_chunk_for_receiver', function(chunk) {
+            alert("CHUNK RECEIVED TEMP");
             wsHandler.sendEventToSender("chunk_received", null);
             ipcRenderer.send('renderer-received-chunk', chunk);
         });
