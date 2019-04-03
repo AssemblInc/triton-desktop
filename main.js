@@ -1,4 +1,24 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const isSingleInstance = app.requestSingleInstanceLock();
+if (!isSingleInstance) {
+    console.log("Another instance of Assembl Desktop is already running. Quitting...");
+    app.quit();
+}
+else {
+    app.on('second-instance', function(event, commandLine, workingDirectory) {
+        console.log("Tried to run a second instance. Focusing this instance instead...");
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
+            mainWindow.focus();
+        }
+        else {
+            console.log("MainWindow is not set! Quitting instead...");
+            app.quit();
+        }
+    });
+}
 const userDataHandler = require('./resources/js_modules/userdatahandler.js');
 const pgpHandler = require('./resources/js_modules/pgphandler.js');
 pgpHandler.setUserDataHandler(userDataHandler);
@@ -11,7 +31,6 @@ require('electron-context-menu')({
         return params.isEditable || params.editFlags.canCopy;
     }
 });
-
 let mainWindow = null;
 let mainWindowMayClose = false;
 let orcidData = null;
@@ -53,7 +72,7 @@ function appReady() {
     console.log('Assembl Desktop v' + app.getVersion());
 
     app.on('browser-window-created', function(e, window) {
-        window.setMenu(null);
+        // window.setMenu(null);
     });
 
     startApplication();
@@ -183,7 +202,7 @@ function startApplication() {
     mainWindow.once('ready-to-show', function() {
         mainWindow.show();
         mainWindow.maximize();
-        mainWindow.webContents.openDevTools();
+        // mainWindow.webContents.openDevTools();
     });
 
     // load the user interface
