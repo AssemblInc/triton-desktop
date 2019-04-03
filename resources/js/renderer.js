@@ -65,13 +65,13 @@ ipcRenderer.on('data-initialized', function(event, data) {
 
 // for receiver
 ipcRenderer.on('receiving-chunk', function(event, data) {
-    // console.log("Receiving a chunk...");
+    console.log("Receiving a chunk...");
     screens.loading.setStatus("Receiving file from " + strip(otherName) + "...");
 });
 
 // for receiver
 ipcRenderer.on('received-chunk', function(event, progressIncrease) {
-    // console.log("Received a chunk of " + progressIncrease + " bytes");
+    console.log("Received a chunk of " + progressIncrease + " bytes");
     rProgressSize += progressIncrease;
     // screens.loading.setStatus("Receiving file...");
     screens.loading.setProgress(rProgressSize, rTotalSize);

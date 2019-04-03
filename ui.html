@@ -113,7 +113,7 @@
                                 function protocolChange(prot) {
                                     if (prot != "unset" && prot != "") {
                                         fileHandler.protocolToUse = prot;
-                                        if (prot == "websocket") {
+                                        if (prot == "websocket" && false) {
                                             fileHandler.chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
                                         }
                                         else {

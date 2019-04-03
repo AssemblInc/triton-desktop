@@ -278,12 +278,15 @@ ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
 
 // for receiver
 ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
+    console.log("Received a chunk from renderer thread");
     if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
+        console.log("Decrypting chunk...");
         pgpHandler.decryptChunk(encryptedChunk)
             .then(function(chunk) {
+                console.log("Chunk decrypted");
                 chunkHandler.handleChunk(chunk);
                 console.log(chunk);
                 mainWindow.webContents.send('received-chunk', chunk.byteLength);
@@ -293,6 +296,9 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
                 dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
                 fullyCloseApp();
             });
+    }
+    else {
+        console.warn("Chunk is undefined or null!");
     }
 });
 
