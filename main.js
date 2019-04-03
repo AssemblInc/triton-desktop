@@ -278,10 +278,8 @@ ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
 
 // for receiver
 ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
+    // CAUTION: encryptedChunk is a string here because of encryption
     console.log("Received a chunk from renderer thread");
-    console.log(encryptedChunk);
-    console.log(typeof encryptedChunk);
-    console.log(encryptedChunk.length);
     if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();

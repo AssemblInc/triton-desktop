@@ -113,8 +113,8 @@
                                 function protocolChange(prot) {
                                     if (prot != "unset" && prot != "") {
                                         fileHandler.protocolToUse = prot;
-                                        if (prot == "websocket" && false) {
-                                            fileHandler.chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
+                                        if (prot == "websocket") {
+                                            fileHandler.chunkSize = 5242880;     // 5MB in bytes (for websockets)
                                         }
                                         else {
                                             fileHandler.chunkSize = 16384;      // 16KB in bytes (max chunk size of WebRTC)
