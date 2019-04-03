@@ -40,18 +40,18 @@ let fileHandler = {
             }
         });
 
-        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedMsg) {
+        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk) {
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
                     // send chunk over webrtc
-                    rtcHandler.send(convertedChunk, true, true);
+                    rtcHandler.send(encryptedChunk, true, true);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
                     // send chunk over websocket
-                    wsHandler.sendChunk(convertedChunk, true, true);
+                    wsHandler.sendChunk(encryptedChunk, true, true);
                     break;
             }
         });
