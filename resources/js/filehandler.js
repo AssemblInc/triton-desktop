@@ -35,7 +35,7 @@ let fileHandler = {
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
                     // send chunk over websocket
-                    wsHandler.sendChunk(convertedChunk, true, false);
+                    wsHandler.sendChunk(convertedChunk, false);
                     break;
             }
         });

@@ -52,6 +52,7 @@ var wsHandler = {
 
         wsHandler.socket.on('as_chunk_for_receiver', function(chunk) {
             console.log(chunk);
+            console.log("Chunk is of type " + typeof chunk);
             alert("CHUNK RECEIVED TEMP");
             wsHandler.sendEventToSender("chunk_received", null);
             console.log("Sending chunk to main thread...");
