@@ -117,7 +117,7 @@ let fileHandler = {
 
             // set loadingscreen
             screens.loading.setStatus("Preparing file for transfer...");
-            screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
+            screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
             screens.loading.resetProgress();
             screens.showLoadingScreen(false);
 
@@ -148,7 +148,7 @@ let fileHandler = {
             console.log("Hash is ready:", fileHandler.hash.hex());
             // hashMemo(null, fileHandler.hash.hex());
             screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
-            screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
+            screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
             screens.loading.resetProgress();
             ipcRenderer.send('progress-update', true, 1, {
                 mode: "indeterminate"
@@ -162,7 +162,7 @@ let fileHandler = {
 
     startTransfer: function() {
         screens.loading.setStatus("Transferring file to " + strip(receiverName) + "...");
-        screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
+        screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
         // start sending the first chunk
         fileHandler.sendChunk(fileHandler.offset);
     },

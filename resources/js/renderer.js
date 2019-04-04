@@ -3,6 +3,7 @@ let appClosing = false;
 let protocolToUse = null;
 let publicKey = null;
 let otherName = "";
+let receiverName = "";
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -37,15 +38,6 @@ ipcRenderer.on('app-closing', function(event, data) {
     appClosing = true;
 });
 
-// for sender
-let receiverName = "";
-ipcRenderer.on('receiver-connected', function(event, name) {
-    console.log("A receiver connected");
-    receiverName = name;
-    alert('Connection established with ' + receiverName + '! You can now select a file to transfer.');
-    screens.startFileDropper();
-});
-
 // for receiver
 let rTotalSize = 0;
 let rProgressSize = 0;
@@ -54,7 +46,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
     screens.loading.setStatus("Getting ready for file transmission...");
     rTotalSize = parseInt(data[0]);
     rProgressSize = 0;
-    screens.loading.setDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
+    screens.loading.setDetails(strip(data[1]) + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
     screens.loading.resetProgress();
     screens.showLoadingScreen(false);
     screens.loading.setProgressWithFileSize(0, parseInt(data[0]));
@@ -94,7 +86,7 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
 ipcRenderer.on('received-file', function(event, finalChunkAmount) {
     console.log("File has been fully received! Finalizing...");
     screens.loading.setStatus("Merging chunks...");
-    screens.loading.setDetails(data[1] + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
+    screens.loading.setDetails(strip(data[1]) + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
     screens.loading.resetProgress();
     screens.loading.setProgress(0, finalChunkAmount);
     screens.showLoadingScreen(false);
@@ -131,7 +123,7 @@ ipcRenderer.on('saved-file', function(event, data) {
 function formSubmit(event) {
     event.preventDefault();
     screens.loading.setStatus("Establishing a peer to peer connection...");
-    screens.loading.setDetails(document.getElementById('senderpeerid').value);
+    screens.loading.setDetails(strip(document.getElementById('senderpeerid').value));
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
     wsHandler.connectTo(document.getElementById('senderpeerid').value);

@@ -103,6 +103,7 @@ var wsHandler = {
         // for sender
         wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
             console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
+            receiverName = userName;
             alert("A connection with " + userName + " has been established.");
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             screens.startFileDropper();

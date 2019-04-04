@@ -88,13 +88,13 @@ let screens = {
     loading: {
         setStatus: function(text) {
             if (!appClosing) {
-                document.getElementById("loading-status").innerHTML = strip(text);
+                document.getElementById("loading-status").innerHTML = text;
             }
         },
 
         setDetails: function(text) {
             if (!appClosing) {
-                document.getElementById("loading-details").innerHTML = strip(text);
+                document.getElementById("loading-details").innerHTML = text;
             }
         },
 
@@ -118,7 +118,7 @@ let screens = {
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
                 let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
                 if (textBar.length > 0) {
-                    textBar[0].innerHTML = strip(progressPerc + "% (" + progress + " / " + max + ")");
+                    textBar[0].innerHTML = progressPerc + "% (" + progress + " / " + max + ")";
                 }
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
