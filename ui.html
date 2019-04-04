@@ -113,12 +113,6 @@
                                 function protocolChange(prot) {
                                     if (prot != "unset" && prot != "") {
                                         fileHandler.protocolToUse = prot;
-                                        if (prot == "websocket") {
-                                            fileHandler.chunkSize = 1048576;     // 1MB in bytes (tested to be the fastest)
-                                        }
-                                        else {
-                                            fileHandler.chunkSize = 16384;      // 16KB in bytes (max chunk size of WebRTC)
-                                        }
                                         document.getElementById("protocolselector").style.display = "none";
                                         document.getElementById("peeridfinder").style.display = "block";
                                         document.getElementById("yourpeerid").focus();

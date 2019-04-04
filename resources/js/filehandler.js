@@ -4,9 +4,22 @@ let fileHandler = {
     hash: null,                 // a hash from emn178's sha3 rep
     chunkAmount: null,          // amounts of chunks that have been sent through so far
     offset: null,               // the offset of the current chunk being read
-    chunkSize: 16384,           // this chunksize can change depending on the transfer method!
     protocolToUse: null,        // the protocol to use (transfer method)
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
+
+    getChunkSize: function() {
+        if (fileHandler.protocolToUse == "webrtc") {
+            return 16384;           // 16KB
+        }
+        else {
+            if (fileHandler.encryptionEnabled) {
+                return 1048576;     // 1MB
+            }
+            else {
+                return 10485760;    // 10MB
+            }
+        }
+    },
 
     init: function() {
         fileHandler.reader = new FileReader();
@@ -122,7 +135,7 @@ let fileHandler = {
             // console.log("Sending chunk starting at", o);
             // create chunk from file
             fileHandler.chunkAmount += 1;
-            let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.chunkSize);
+            let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.getChunkSize());
             // turn slice into an arraybuffer
             fileHandler.reader.readAsArrayBuffer(slice);
             // the sending part happens in the "onload" event of the FileReader
