@@ -293,15 +293,12 @@ ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
 // for receiver
 ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
     // CAUTION: encryptedChunk is a string here because of encryption
-    console.log("Received a chunk from renderer thread");
     if (encryptedChunk != undefined && encryptedChunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
-        console.log("Decrypting chunk...");
         pgpHandler.decryptChunk(encryptedChunk, number)
             .then(function(chunk) {
-                console.log("Chunk decrypted");
                 chunkHandler.handleChunk(chunk, false, number);
                 mainWindow.webContents.send('received-chunk', chunk.byteLength);
             })
@@ -318,7 +315,6 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
 
 // for receiver
 ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number) {
-    console.log("Received a chunk from renderer thread");
     if (chunk != undefined && chunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
