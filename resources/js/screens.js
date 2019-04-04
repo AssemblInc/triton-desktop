@@ -18,6 +18,7 @@ let screens = {
             else {
                 document.getElementById("password-error").innerHTML = "";
             }
+            document.getElementById("password").focus();
         }
     },
 
@@ -25,6 +26,7 @@ let screens = {
         if (!appClosing) {
             screens.hideAll();
             document.getElementById("freshstarter").style.display = "block";
+            document.getElementById("freshpassword").focus();
         }
     },
 
@@ -36,6 +38,7 @@ let screens = {
             if (curUserName != null && curUserName.length > 0) {
                 document.getElementById("yourname").value = curUserName;
             }
+            document.getElementById("yourname").focus();
         }
     },
 
@@ -53,6 +56,7 @@ let screens = {
             document.getElementById("peeridfinder").style.display = "none";
             document.getElementById("protocolselector").style.display = "block";
             document.getElementById("protocol").value = "unset";
+            document.getElementById("protocol").focus();
             document.getElementById("yourpeerid").value = ipcRenderer.sendSync('assemblid-request');
         }
     },

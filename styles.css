@@ -76,11 +76,13 @@ a:hover, a:focus, a:active {
     z-index: 999;
     pointer-events: initial;
     opacity: 0.8;
+    transform: scale(1);
 }
 
-.screen-back:hover {
+.screen-back:hover, .screen-back:active, .screen-back:focus {
     transition: 0.15s;
     opacity: 1;
+    transform: scale(1.2);
 }
 
 .assembl-logo-icon {
@@ -285,7 +287,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     font-size: 1em;
 }
 
-.purpose-button:hover {
+.purpose-button:hover, .purpose-button:focus, .purpose-button:active {
     background: #004CFF;
     color: #EDEDED;
     transition: 0.15s;
@@ -310,7 +312,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     font-size: 1em;
 }
 
-.connect-button:hover {
+.connect-button:hover, .connect-button:focus, .connect-button:active {
     background: #004CFF;
     color: #EDEDED;
     transition: 0.15s;
@@ -337,7 +339,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     transition: 0.35s;
 }
 
-#filedropper:hover .fakebtn {
+#filedropper:hover .fakebtn, #filedropper:active .fakebtn, #filedropper:focus .fakebtn {
     background: #004CFF;
     color: #EDEDED;
     transition: 0.15s;
@@ -395,7 +397,7 @@ input#fileChooser {
     z-index: 3;
 }
 
-#fileToUpload:hover + #filedropperborder, #filedropperborder.active {
+#fileToUpload:hover + #filedropperborder, #fileToUpload:active + #filedropperborder, #fileToUpload:focus + #filedropperborder, #filedropperborder.active {
     border-color: rgba(237, 244, 244, 0.8) !important;
 }
 
