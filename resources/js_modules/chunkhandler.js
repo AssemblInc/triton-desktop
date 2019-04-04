@@ -102,12 +102,14 @@ exports.fileReady = function() {
 exports.finish = function(win) {
     return new Promise(function(resolve, reject) {
         let chunkFile = null;
+        let mergedChunks = 0;
         for (let f = 0; f < finalChunkAmount; f++) {
             chunkFile = path.join(chunkPath, "filetransfer-"+startTimestamp+"-"+f+".assemblchunk");
             if (fs.existsSync(chunkFile)) {
                 console.log("Appending chunk " + f + "...");
                 let tempChunk = fs.readFileSync(chunkFile);
                 writer.write(tempChunk);
+                mergedChunks += 1;
                 win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
             }
             else {
