@@ -49,7 +49,7 @@ let fileHandler = {
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
                     // send chunk over websocket
-                    if (fileHandler.useEncryption) {
+                    if (fileHandler.encryptionEnabled) {
                         wsHandler.sendChunk(convertedChunk, false);
                     }
                     else {
