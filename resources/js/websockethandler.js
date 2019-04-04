@@ -51,19 +51,11 @@ var wsHandler = {
         });
 
         wsHandler.socket.on('as_chunk_for_receiver', function(chunk, number) {
-            console.log("Sending chunk to main thread...");
             ipcRenderer.send('renderer-received-chunk', chunk, number);
-            console.log("Chunk sent to main thread");
         });
 
         wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk, number) {
-            console.log(typeof chunk);
-            console.log(chunk);
-            console.log("Converting chunk...");
-            let convertedChunk = new Uint8Array(Object.values(chunk));
-            console.log("Sending converted chunk to main thread...");
-            ipcRenderer.send('renderer-received-unencrypted-chunk', convertedChunk, number);
-            console.log("Chunk sent to main thread");
+            ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(Object.values(chunk)), number);
         });
 
         wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {

@@ -303,7 +303,6 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
             .then(function(chunk) {
                 console.log("Chunk decrypted");
                 chunkHandler.handleChunk(chunk, false, number);
-                console.log(chunk);
                 mainWindow.webContents.send('received-chunk', chunk.byteLength);
             })
             .catch(function(err) {
@@ -320,8 +319,6 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
 // for receiver
 ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number) {
     console.log("Received a chunk from renderer thread");
-    console.log(typeof chunk);
-    console.log(chunk);
     if (chunk != undefined && chunk != null) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
