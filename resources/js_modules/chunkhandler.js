@@ -112,8 +112,11 @@ exports.finish = function(win) {
             }
             else {
                 console.warn("Chunk not found: chunk number" + f);
+                reject("Chunk " + f + " not found");
             }
         }
+        writer.end();
+        resolve();
         /*
         console.log("Reading files in transfer folder...");
         fs.readdir(chunkPath, function(err, files) {
