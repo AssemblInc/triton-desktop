@@ -101,6 +101,20 @@ exports.fileReady = function() {
 // finish the file and end the writestream
 exports.finish = function(win) {
     return new Promise(function(resolve, reject) {
+        let chunkFile = null;
+        for (let f = 0; f < finalChunkAmount; f++) {
+            chunkFile = path.join(chunkPath, "filetransfer-"+startTimestamp+"-"+f+".assemblchunk");
+            if (fs.existsSync(chunkFile)) {
+                console.log("Appending chunk " + f + "...");
+                let tempChunk = fs.readFileSync(chunkFile);
+                writer.write(tempChunk);
+                win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+            }
+            else {
+                console.warn("Chunk not found: chunk number" + f);
+            }
+        }
+        /*
         console.log("Reading files in transfer folder...");
         fs.readdir(chunkPath, function(err, files) {
             if (err) {
@@ -108,23 +122,29 @@ exports.finish = function(win) {
                 reject(err);
             }
             else {
-                files.sort();
-                console.log(files);
+                files.sort(function(a, b) {
+                    console.log(parseInt(a.split(".")[0].split("-").pop()));
+                    console.log(parseInt(b.split(".")[0].split("-").pop()));
+                    return parseInt(a.split(".")[0].split("-").pop()) - parseInt(b.split(".")[0].split("-").pop());
+                });
                 let mergedChunks = 0;
-                for (const file in files) {
-                    if (file.split(".").pop() == "assemblchunk") {
-                        let tempChunk = fs.readFileSync(path.join(chunkPath, file));
+                let filesLength = files.length;
+                for (let f = 0; f < filesLength; f++) {
+                    if (files[f].split(".").pop() == "assemblchunk") {
+                        console.log("Appending chunk " + files[f] + "...");
+                        let tempChunk = fs.readFileSync(path.join(chunkPath, files[f]));
                         writer.write(tempChunk);
                         win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
                     }
                     else {
-                        console.warn("Unknown file found in transfer folder: " + file);
+                        console.warn("Unknown file found in transfer folder: " + files[f]);
                     }
                 }
                 writer.end();
                 resolve();
             }
         });
+        */
     });
 };
 
@@ -152,7 +172,11 @@ exports.deleteTempFiles = function() {
             else {
                 console.log("Deleting temporary files in the transfer folder...");
                 for (const file of files) {
-                    fs.unlinkSync(path.join(chunkPath, file));
+                    fs.unlink(path.join(chunkPath, file), function(err) {
+                        if (err) {
+                            console.error(err);
+                        }
+                    });
                 }
                 resolve();
             }
