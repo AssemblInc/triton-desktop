@@ -16,7 +16,7 @@ let fileHandler = {
                 return 1048576;     // 1MB
             }
             else {
-                return 10485760;    // 10MB
+                return 5242880;     // 5MB
             }
         }
     },
