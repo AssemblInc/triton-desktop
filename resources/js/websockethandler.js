@@ -56,6 +56,14 @@ var wsHandler = {
             console.log("Chunk sent to main thread");
         });
 
+        wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk) {
+            console.log(typeof chunk);
+            console.log(chunk);
+            console.log("Sending unencrypted chunk to main thread...");
+            ipcRenderer.send('renderer-received-unencrypted-chunk', chunk);
+            console.log("Chunk sent to main thread");
+        });
+
         wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {
             console.log("as_event_for_receiver " + eventName + ": ", data);
             switch(eventName) {
@@ -156,6 +164,15 @@ var wsHandler = {
         }
         else {
             console.warn("Tried sending chunk over websocket while the connection has not been established yet.");
+        }
+    },
+
+    sendUnencryptedChunk: function(chunk) {
+        if (wsHandler.isOpen) {
+            wsHandler.socket.emit("as_send_unencrypted_chunk", chunk);
+        }
+        else {
+            console.warn("Tried sending unencrypted chunk over websocket while the connection has not been established yet.");
         }
     }
 };

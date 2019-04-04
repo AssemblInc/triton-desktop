@@ -1,11 +1,12 @@
 let fileHandler = {
-    file: null,             // JS File Web API
-    reader: null,           // JS FileReader Web API
-    hash: null,             // a hash from emn178's sha3 rep
-    chunkAmount: null,      // amounts of chunks that have been sent through so far
-    offset: null,           // the offset of the current chunk being read
-    chunkSize: 16384,       // this chunksize can change depending on the transfer method!
-    protocolToUse: null,    // the protocol to use (transfer method)
+    file: null,                 // JS File Web API
+    reader: null,               // JS FileReader Web API
+    hash: null,                 // a hash from emn178's sha3 rep
+    chunkAmount: null,          // amounts of chunks that have been sent through so far
+    offset: null,               // the offset of the current chunk being read
+    chunkSize: 16384,           // this chunksize can change depending on the transfer method!
+    protocolToUse: null,        // the protocol to use (transfer method)
+    encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
 
     init: function() {
         fileHandler.reader = new FileReader();
@@ -35,7 +36,12 @@ let fileHandler = {
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
                     // send chunk over websocket
-                    wsHandler.sendChunk(convertedChunk, false);
+                    if (fileHandler.useEncryption) {
+                        wsHandler.sendChunk(convertedChunk, false);
+                    }
+                    else {
+                        wsHandler.sendUnencryptedChunk(convertedChunk);
+                    }
                     break;
             }
         });
@@ -143,5 +149,9 @@ let fileHandler = {
         screens.loading.setDetails(fileHandler.file.name + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
         // start sending the first chunk
         fileHandler.sendChunk(fileHandler.offset);
+    },
+
+    useEncryption(useIt) {
+        fileHandler.encryptionEnabled = useIt;
     }
 };

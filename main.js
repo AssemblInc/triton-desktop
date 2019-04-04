@@ -304,6 +304,23 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
 });
 
 // for receiver
+ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk) {
+    console.log("Received a chunk from renderer thread");
+    console.log(typeof chunk);
+    console.log(chunk);
+    if (chunk != undefined && chunk != null) {
+        mainWindow.webContents.send('receiving-chunk', null);
+        chunkHandler.increaseChunkAmount();
+        // receivedChunks.push(chunk);
+        chunkHandler.handleChunk(chunk);
+        mainWindow.webContents.send('received-chunk', chunk.byteLength);
+    }
+    else {
+        console.warn("Chunk is undefined or null!");
+    }
+});
+
+// for receiver
 ipcMain.on('renderer-fileinfo', function(event, fileInfo) {
     mainWindow.webContents.send('data-initialized', fileInfo);
     chunkHandler.initChunks();
