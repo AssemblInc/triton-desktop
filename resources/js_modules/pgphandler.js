@@ -318,7 +318,7 @@ exports.hasOldValidKeys = function() {
     );
 };
 
-exports.encryptChunk = function(chunk) {
+exports.encryptChunk = function(chunk, number) {
     let buffer = new Buffer.from(chunk);
     let params = {
         msg: buffer,
@@ -333,7 +333,7 @@ exports.encryptChunk = function(chunk) {
                 }
                 else {
                     // send string through instead of buffer
-                    resolve(result_string);
+                    resolve(result_string, number);
                 }
             });
         }
@@ -341,7 +341,7 @@ exports.encryptChunk = function(chunk) {
 };
 
 // in the following function, chunk is a PGP message and not a Buffer nor ArrayBuffer
-exports.decryptChunk = function(pgp_msg) {
+exports.decryptChunk = function(pgp_msg, number) {
     return new Promise(
         function(resolve, reject) {
             let keyRing = new kbpgp.keyring.KeyRing();
@@ -353,7 +353,7 @@ exports.decryptChunk = function(pgp_msg) {
                 }
                 else {
                     // send buffer through instead of string
-                    resolve(literals[0].toBuffer());
+                    resolve(literals[0].toBuffer(), number);
                 }
             });
         }

@@ -2,17 +2,24 @@ const { app, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const mv = require('mv');
-let tempFile, receivedFilename, writer, chunkAmount, processedChunkAmount, finalChunkAmount;
+const chunkPath = path.join(app.getPath('userData'), 'temp', 'chunks');
+let receivedFilename, tempFile, startTimestamp, writer, chunkAmount, receivedByteAmount, processedChunkAmount, finalChunkAmount;
 
 // function to initialize chunks
 // call this once the data transfer is about to begin, not when opening the program,
-// as a timestamp is included in the temporary file
-exports.initChunks = function(useFileSystem) {
+// as a timestamp is included in the temporary files
+exports.initChunks = function() {
     receivedFilename = null;
     chunkAmount = 0;
     processedChunkAmount = 0;
     finalChunkAmount = 0;
-    tempFile = path.join(app.getPath('temp'), 'filetransfer-'+Date.now()+'.assembltemp');
+    receivedByteAmount = 0;
+    startTimestamp = Date.now();
+    if (!fs.existsSync(chunkPath)) {
+        fs.mkdirSync(chunkPath);
+    }
+    console.log("Chunks initialized");
+    tempFile = path.join(app.getPath('userData'), 'temp', 'filetransfer-'+Date.now()+'.assembltemp');
     writer = fs.createWriteStream(tempFile, { encoding: 'utf8', flags: 'a', autoClose: false });
     console.log("Temporary file created at " + tempFile);
     writer.on('error', function(err) {
@@ -29,6 +36,7 @@ exports.resetChunks = module.exports.initChunks;
 // handle filename set
 exports.setFileName = function(name) {
     receivedFilename = name;
+    return receivedFilename;
 };
 
 // retrieve filename
@@ -50,7 +58,8 @@ exports.setFinalChunkAmount = function(amount) {
 
 // handle a received chunk
 // chunk should be an arraybuffer
-exports.handleChunk = function(chunk, isUint8Array) {
+exports.handleChunk = function(chunk, isUint8Array, number) {
+    /*
     if (writer.writable) {
         if (!isUint8Array) {
             writer.write(new Uint8Array(chunk));
@@ -59,6 +68,26 @@ exports.handleChunk = function(chunk, isUint8Array) {
             writer.write(chunk);
         }
     }
+    */
+    
+    let tempChunkFile = path.join(chunkPath, 'filetransfer-'+startTimestamp+'-'+number+'.assemblchunk');
+    chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
+    chunkWriter.on('error', function(err) {
+        console.warn("An error occured within the fs writestream!");
+        console.error(err);
+        chunkWriter.end();
+    });
+    if (!isUint8Array) {
+        let tempChunk = new Uint8Array(chunk);
+        receivedByteAmount += tempChunk.byteLength;
+        chunkWriter.write(tempChunk);
+    }
+    else {
+        receivedByteAmount += chunk.byteLength;
+        chunkWriter.write(chunk);
+    }
+    chunkWriter.end();
+
     processedChunkAmount += 1;
 
     console.log("Chunk progress: "+processedChunkAmount+" progressed, "+finalChunkAmount+" total (according to sender)");
@@ -70,45 +99,65 @@ exports.fileReady = function() {
 };
 
 // finish the file and end the writestream
-exports.finish = function() {
-    writer.end();
+exports.finish = function(win) {
+    return new Promise(function(resolve, reject) {
+        console.log("Reading files in transfer folder...");
+        fs.readdir(chunkPath, function(err, files) {
+            if (err) {
+                console.error(err);
+                reject(err);
+            }
+            else {
+                files.sort();
+                console.log(files);
+                let mergedChunks = 0;
+                for (const file in files) {
+                    if (file.split(".").pop() == "assemblchunk") {
+                        let tempChunk = fs.readFileSync(path.join(chunkPath, file));
+                        writer.write(tempChunk);
+                        win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+                    }
+                    else {
+                        console.warn("Unknown file found in transfer folder: " + file);
+                    }
+                }
+                writer.end();
+                resolve();
+            }
+        });
+    });
 };
 
 // get total (received) file size in bytes
 exports.getFileSize = function() {
-    let stats = fs.statSync(tempFile);
-    return stats["size"];
+   return receivedByteAmount;
 };
 
 // delete temporary files
-exports.deleteTempFile = function(sync) {
-    console.warn("Deleting temporary files isn't supported as of yet.");
-    return;
-    if (tempFile != null) {
-        if (!sync) {
-            fs.unlink(tempFile, function(err) {
-                if (err) {
-                    console.log(err);
-                }
-                else {
-                    console.log("Temporary file has been deleted");
-                }
-            });
+exports.deleteTempFiles = function() {
+    return new Promise(function(resolve, reject) {
+        console.log("Deleting temporary final file if it exists...");
+        if (writer != null && writer.writable) {
+            writer.end();
         }
-        else {
-            fs.unlinkSync(tempFile, function(err) {
-                if (err) {
-                    console.log(err);
-                }
-                else {
-                    console.log("Temporary file has been deleted");
-                }
-            });
+        if (fs.existsSync(tempFile)) {
+            fs.unlinkSync(tempFile);
         }
-    }
-    else {
-        console.log("No temporary file to delete.");
-    }
+        console.log("Reading files in transfer folder...");
+        fs.readdir(chunkPath, function(err, files) {
+            if (err) {
+                console.error(err);
+                reject(err);
+            }
+            else {
+                console.log("Deleting temporary files in the transfer folder...");
+                for (const file of files) {
+                    fs.unlinkSync(path.join(chunkPath, file));
+                }
+                resolve();
+            }
+        });
+    });
 };
 
 // save the file to a location chosen by the user
@@ -121,32 +170,30 @@ exports.saveFile = function() {
         // used for LICENSE files and some Linux scripts, for example.
         extension = "";
     }
-    return new Promise(
-        function(resolve, reject) {
-            dialog.showSaveDialog({
-                defaultPath: defaultPath,
-                filters: [{ name: extension.toUpperCase(), extensions: [ extension ] }]
-            }, function(savePath) {
-                if (savePath != undefined && savePath != null && savePath != "") {
-                    // if the user didn't press cancel, move file to right location
-                    mv(tempFile, savePath, function(err) {
-                        if (err) {
-                            console.log(err);
-                            // an error has occured. return a promise rejection
-                            reject(err.message);
-                            return;
-                        }
-                        console.log("The file has been saved!");
-                        tempFile = null;
-                        resolve();
-                    });
-                }
-                else {
-                    // otherwise, delete the temporary file from the disk
-                    module.exports.deleteTempFile();
-                    reject("user pressed cancel on the save dialog");
-                }
-            });
-        }
-    );
+    return new Promise(function(resolve, reject) {
+        dialog.showSaveDialog({
+            defaultPath: defaultPath,
+            filters: [{ name: extension.toUpperCase(), extensions: [ extension ] }]
+        }, function(savePath) {
+            if (savePath != undefined && savePath != null && savePath != "") {
+                // if the user didn't press cancel, move file to right location
+                mv(tempFile, savePath, function(err) {
+                    if (err) {
+                        console.log(err);
+                        // an error has occured. return a promise rejection
+                        reject(err.message);
+                        return;
+                    }
+                    console.log("The file has been saved!");
+                    tempFile = null;
+                    resolve();
+                });
+            }
+            else {
+                // otherwise, delete the temporary files from the disk
+                module.exports.deleteTempFiles();
+                reject("user pressed cancel on the save dialog");
+            }
+        });
+    });
 };

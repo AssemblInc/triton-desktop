@@ -98,13 +98,27 @@ let screens = {
             }
         },
 
-        setProgress: function(progress, max) {
+        setProgressWithFileSize: function(progress, max) {
             if (!appClosing) {
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
                 let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
                 if (textBar.length > 0) {
                     textBar[0].innerHTML = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")");
+                }
+                ipcRenderer.send('progress-update', true, progress / max, {
+                    mode: "normal"
+                });
+            }
+        },
+
+        setProgress: function(progress, max) {
+            if (!appClosing) {
+                let progressPerc = ((progress / max) * 100).toFixed(1);
+                document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
+                let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
+                if (textBar.length > 0) {
+                    textBar[0].innerHTML = strip(progressPerc + "% (" + progress + " / " + max + ")");
                 }
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"

@@ -1,4 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const fs = require('fs');
+const path = require('path');
 const isSingleInstance = app.requestSingleInstanceLock();
 if (!isSingleInstance) {
     console.log("Another instance of Assembl Desktop is already running. Quitting...");
@@ -38,20 +40,28 @@ let waitForCompletion = null;
 
 function reallyClosingNow() {
     console.log("Deleting temporary files...");
-    chunkHandler.deleteTempFile(true);
-    if (userDataHandler.isInitialized()) {
-        console.log("Saving user data...");
-        try {
-            userDataHandler.finalize();
-        }
-        catch(err) {
-            console.log("Could not save user data");
+    chunkHandler.deleteTempFiles()
+        .then(function() {
+            console.log("Temporary files deleted");
+        })
+        .catch(function(err) {
             console.log(err);
-        }
-    }
-    console.log("Quitting application...");
-    mainWindowMayClose = true;
-    app.quit();
+        })
+        .finally(function() {
+            if (userDataHandler.isInitialized()) {
+                console.log("Saving user data...");
+                try {
+                    userDataHandler.finalize();
+                }
+                catch(err) {
+                    console.log("Could not save user data");
+                    console.log(err);
+                }
+            }
+            console.log("Quitting application...");
+            mainWindowMayClose = true;
+            app.quit();
+        });
 }
 
 function fullyCloseApp() {
@@ -203,6 +213,10 @@ function startApplication() {
         mainWindow.show();
         mainWindow.maximize();
         // mainWindow.webContents.openDevTools();
+        let tempPath = path.join(app.getPath('userData'), 'temp');
+        if (!fs.existsSync(tempPath)) {
+            fs.mkdirSync(tempPath);
+        }
     });
 
     // load the user interface
@@ -277,7 +291,7 @@ ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
 });7
 
 // for receiver
-ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
+ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
     // CAUTION: encryptedChunk is a string here because of encryption
     console.log("Received a chunk from renderer thread");
     if (encryptedChunk != undefined && encryptedChunk != null) {
@@ -285,10 +299,10 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
         chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
         console.log("Decrypting chunk...");
-        pgpHandler.decryptChunk(encryptedChunk)
+        pgpHandler.decryptChunk(encryptedChunk, number)
             .then(function(chunk) {
                 console.log("Chunk decrypted");
-                chunkHandler.handleChunk(chunk, false);
+                chunkHandler.handleChunk(chunk, false, number);
                 console.log(chunk);
                 mainWindow.webContents.send('received-chunk', chunk.byteLength);
             })
@@ -304,7 +318,7 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
 });
 
 // for receiver
-ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk) {
+ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number) {
     console.log("Received a chunk from renderer thread");
     console.log(typeof chunk);
     console.log(chunk);
@@ -312,7 +326,7 @@ ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
-        chunkHandler.handleChunk(chunk, true);
+        chunkHandler.handleChunk(chunk, true, number);
         mainWindow.webContents.send('received-chunk', chunk.byteLength);
     }
     else {
@@ -334,16 +348,23 @@ ipcMain.on('renderer-filecomplete', function(event, finalChunkAmount) {
     waitForCompletion = setInterval(function() {
         if (chunkHandler.fileReady()) {
             clearInterval(waitForCompletion);
-            chunkHandler.finish();
-            chunkHandler.saveFile()
+            chunkHandler.finish(mainWindow)
                 .then(function() {
-                    console.log("Save succesful");
+                    chunkHandler.saveFile()
+                        .then(function() {
+                            console.log("Save succesful");
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                        })
+                        .finally(function() {
+                            mainWindow.webContents.send('saved-file', null);
+                        });
                 })
                 .catch(function(err) {
-                    console.error(err);
-                })
-                .finally(function() {
-                    mainWindow.webContents.send('saved-file', null);
+                    console.log(err);
+                    dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
+                    fullyCloseApp();
                 });
         }
     }, 1000);
@@ -388,10 +409,10 @@ ipcMain.on('user-name-changed', function(event, newName) {
 });
 
 // for sender
-ipcMain.on('pgp-encrypt-chunk', function(event, chunk) {
-    pgpHandler.encryptChunk(chunk)
+ipcMain.on('pgp-encrypt-chunk', function(event, chunk, number) {
+    pgpHandler.encryptChunk(chunk, number)
         .then(function(encryptedMsg) {
-            mainWindow.webContents.send('pgp-chunk-encrypted', encryptedMsg);
+            mainWindow.webContents.send('pgp-chunk-encrypted', encryptedMsg, number);
         })
         .catch(function(err) {
             mainWindow.webContents.send('pgp-chunk-encryption-error', err);

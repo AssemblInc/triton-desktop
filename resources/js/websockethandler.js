@@ -50,19 +50,19 @@ var wsHandler = {
             });
         });
 
-        wsHandler.socket.on('as_chunk_for_receiver', function(chunk) {
+        wsHandler.socket.on('as_chunk_for_receiver', function(chunk, number) {
             console.log("Sending chunk to main thread...");
-            ipcRenderer.send('renderer-received-chunk', chunk);
+            ipcRenderer.send('renderer-received-chunk', chunk, number);
             console.log("Chunk sent to main thread");
         });
 
-        wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk) {
+        wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk, number) {
             console.log(typeof chunk);
             console.log(chunk);
             console.log("Converting chunk...");
             let convertedChunk = new Uint8Array(Object.values(chunk));
             console.log("Sending converted chunk to main thread...");
-            ipcRenderer.send('renderer-received-unencrypted-chunk', convertedChunk);
+            ipcRenderer.send('renderer-received-unencrypted-chunk', convertedChunk, number);
             console.log("Chunk sent to main thread");
         });
 
@@ -89,7 +89,7 @@ var wsHandler = {
             console.log("as_event_for_sender " + eventName + ": ", data);
             switch(eventName) {
                 case "chunk_received":
-                    fileHandler.sendChunk(fileHandler.offset);
+                    // fileHandler.sendChunk(fileHandler.offset);
                     break;
                 case "file_saved":
                     console.log("File has been saved by the receiver");
@@ -155,13 +155,13 @@ var wsHandler = {
         }
     },
 
-    sendChunk: function(chunk, isEncrypted) {
+    sendChunk: function(chunk, isEncrypted, number) {
         if (wsHandler.isOpen) {
             if (isEncrypted) {
-                wsHandler.socket.emit("as_send_chunk", chunk);
+                wsHandler.socket.emit("as_send_chunk", chunk, number);
             }
             else {
-                ipcRenderer.send('pgp-encrypt-chunk', chunk);
+                ipcRenderer.send('pgp-encrypt-chunk', chunk, number);
             }
         }
         else {
@@ -169,11 +169,9 @@ var wsHandler = {
         }
     },
 
-    sendUnencryptedChunk: function(chunk) {
+    sendUnencryptedChunk: function(chunk, number) {
         if (wsHandler.isOpen) {
-            console.log(typeof chunk);
-            console.log(chunk);
-            wsHandler.socket.emit("as_send_unencrypted_chunk", chunk);
+            wsHandler.socket.emit("as_send_unencrypted_chunk", chunk, number);
         }
         else {
             console.warn("Tried sending unencrypted chunk over websocket while the connection has not been established yet.");

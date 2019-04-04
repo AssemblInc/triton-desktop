@@ -54,10 +54,10 @@ ipcRenderer.on('data-initialized', function(event, data) {
     screens.loading.setStatus("Getting ready for file transmission...");
     rTotalSize = parseInt(data[0]);
     rProgressSize = 0;
-    screens.loading.setDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
+    screens.loading.setDetails(data[1] + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
     screens.loading.resetProgress();
     screens.showLoadingScreen(false);
-    screens.loading.setProgress(0, parseInt(data[0]));
+    screens.loading.setProgressWithFileSize(0, parseInt(data[0]));
     ipcRenderer.send('progress-update', true, 0, {
         mode: "indeterminate"
     });
@@ -74,7 +74,7 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
     console.log("Received a chunk of " + progressIncrease + " bytes");
     rProgressSize += progressIncrease;
     // screens.loading.setStatus("Receiving file...");
-    screens.loading.setProgress(rProgressSize, rTotalSize);
+    screens.loading.setProgressWithFileSize(rProgressSize, rTotalSize);
     switch(fileHandler.protocolToUse) {
         case "webrtc":
             // send chunk over webrtc
@@ -85,17 +85,34 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
             fileHandler.protocolToUse = "websocket";
         case "websocket":
             // send chunk over websocket
-            wsHandler.sendEventToSender("chunk_received", null);
+            // wsHandler.sendEventToSender("chunk_received", null);
             break;
     }
 });
 
 // for receiver
-ipcRenderer.on('received-file', function(event, data) {
-    console.log("File has been fully received!");
-    screens.loading.setStatus("File has been received successfully!");
-    screens.loading.setProgress(rTotalSize, rTotalSize);
+ipcRenderer.on('received-file', function(event, finalChunkAmount) {
+    console.log("File has been fully received! Finalizing...");
+    screens.loading.setStatus("Merging chunks...");
+    screens.loading.setDetails(data[1] + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
+    screens.loading.resetProgress();
+    screens.loading.setProgress(0, finalChunkAmount);
     screens.showLoadingScreen(false);
+});
+
+// for receiver
+ipcRenderer.on('chunks-merged', function(event, progress, total) {
+    if (progress == total) {
+        screens.loading.setStatus("Saving file...");
+        screens.loading.resetProgress();
+        screens.showLoadingScreen(true);
+        ipcRenderer.send('progress-update', true, 0, {
+            mode: "indeterminate"
+        });
+    }
+    else {
+        screens.loading.setProgress(progress, total);
+    }
 });
 
 // for receiver

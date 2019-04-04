@@ -2,7 +2,8 @@ let fileHandler = {
     file: null,                 // JS File Web API
     reader: null,               // JS FileReader Web API
     hash: null,                 // a hash from emn178's sha3 rep
-    chunkAmount: null,          // amounts of chunks that have been sent through so far
+    chunkAmount: null,          // amount of chunks that have been handled so far
+    sentChunkAmount: null,      // amount of chunks that have been sent through so far
     offset: null,               // the offset of the current chunk being read
     protocolToUse: null,        // the protocol to use (transfer method)
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
@@ -37,7 +38,7 @@ let fileHandler = {
             // add current size of the chunk to the offset
             fileHandler.offset += event.target.result.byteLength;
             // update loading progress
-            screens.loading.setProgress(fileHandler.offset, fileHandler.file.size);
+            screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
             // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
@@ -50,16 +51,18 @@ let fileHandler = {
                 case "websocket":
                     // send chunk over websocket
                     if (fileHandler.encryptionEnabled) {
-                        wsHandler.sendChunk(convertedChunk, false);
+                        wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
                     }
                     else {
-                        wsHandler.sendUnencryptedChunk(convertedChunk);
+                        wsHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
                     }
                     break;
             }
+            fileHandler.sentChunkAmount += 1;
+            fileHandler.sendChunk(fileHandler.offset);
         });
 
-        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk) {
+        ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk, number) {
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
                     // send chunk over webrtc
@@ -70,7 +73,7 @@ let fileHandler = {
                     fileHandler.protocolToUse = "websocket";
                 case "websocket":
                     // send chunk over websocket
-                    wsHandler.sendChunk(encryptedChunk, true, true);
+                    wsHandler.sendChunk(encryptedChunk, true, number);
                     break;
             }
         });
