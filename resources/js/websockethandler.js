@@ -36,6 +36,18 @@ var wsHandler = {
 
         wsHandler.socket.on('as_error', function(err, errDesc) {
             console.error("as_error " + err + ": " + errDesc);
+            switch(err) {
+                case "client_not_connected":
+                    alert("Could not establish a connection: " + errDesc);
+                    screens.startReceiver();
+                    screens.loading.resetProgress();
+                    break;
+                case "invalid_assembl_id":
+                    alert("Could not establish a connection: " + errDesc);
+                    screens.startReceiver();
+                    screens.loading.resetProgress();
+                    break;
+            }
         });
         wsHandler.socket.on('as_success', function(succ, succDesc) {
             console.log("as_success " + succ + ": " + succDesc);
