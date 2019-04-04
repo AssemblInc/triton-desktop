@@ -59,8 +59,10 @@ var wsHandler = {
         wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk) {
             console.log(typeof chunk);
             console.log(chunk);
-            console.log("Sending unencrypted chunk to main thread...");
-            ipcRenderer.send('renderer-received-unencrypted-chunk', chunk);
+            console.log("Converting chunk...");
+            let convertedChunk = new Uint8Array(Object.values(chunk));
+            console.log("Sending converted chunk to main thread...");
+            ipcRenderer.send('renderer-received-unencrypted-chunk', convertedChunk);
             console.log("Chunk sent to main thread");
         });
 
@@ -169,6 +171,8 @@ var wsHandler = {
 
     sendUnencryptedChunk: function(chunk) {
         if (wsHandler.isOpen) {
+            console.log(typeof chunk);
+            console.log(chunk);
             wsHandler.socket.emit("as_send_unencrypted_chunk", chunk);
         }
         else {

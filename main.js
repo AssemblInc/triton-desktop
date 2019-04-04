@@ -288,7 +288,7 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk) {
         pgpHandler.decryptChunk(encryptedChunk)
             .then(function(chunk) {
                 console.log("Chunk decrypted");
-                chunkHandler.handleChunk(chunk);
+                chunkHandler.handleChunk(chunk, false);
                 console.log(chunk);
                 mainWindow.webContents.send('received-chunk', chunk.byteLength);
             })
@@ -312,7 +312,7 @@ ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk) {
         mainWindow.webContents.send('receiving-chunk', null);
         chunkHandler.increaseChunkAmount();
         // receivedChunks.push(chunk);
-        chunkHandler.handleChunk(chunk);
+        chunkHandler.handleChunk(chunk, true);
         mainWindow.webContents.send('received-chunk', chunk.byteLength);
     }
     else {

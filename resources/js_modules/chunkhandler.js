@@ -50,9 +50,14 @@ exports.setFinalChunkAmount = function(amount) {
 
 // handle a received chunk
 // chunk should be an arraybuffer
-exports.handleChunk = function(chunk) {
+exports.handleChunk = function(chunk, isUint8Array) {
     if (writer.writable) {
-        writer.write(new Uint8Array(chunk));
+        if (!isUint8Array) {
+            writer.write(new Uint8Array(chunk));
+        }
+        else {
+            writer.write(chunk);
+        }
     }
     processedChunkAmount += 1;
 
