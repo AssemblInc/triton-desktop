@@ -12,7 +12,7 @@ let fileHandler = {
             return 16384;           // 16KB
         }
         else {
-            if (fileHandler.encryptionEnabled) {
+            if (fileHandler.encryptionEnabled || true) {
                 return 1048576;     // 1MB
             }
             else {
