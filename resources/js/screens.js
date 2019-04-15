@@ -13,7 +13,19 @@ let screens = {
             screens.hideAll();
             document.getElementById("passwordinputter").style.display = "block";
             if (err) {
-                document.getElementById("password-error").innerHTML = strip(err);
+                let passwordErr = err;
+                switch(err) {
+                    case "incorrect_password":
+                        passwordErr = "Incorrect password. Forgot your password? <a href='javascript:screens.startFreshStarter();'>Start fresh</a>";
+                        break;
+                    case "corrupted_data":
+                        passwordErr = "Your user data has been corrupted. You will have to <a href='javascript:screens.startFreshStarter();'>start fresh</a>.";
+                        break;
+                    case "already_initialized":
+                        passwordErr = "Your user data has already been loaded.";
+                        break;
+                }
+                document.getElementById("password-error").innerHTML = passwordErr;
             }
             else {
                 document.getElementById("password-error").innerHTML = "";
