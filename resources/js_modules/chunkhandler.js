@@ -168,24 +168,30 @@ exports.deleteTempFiles = function() {
         if (fs.existsSync(tempFile)) {
             fs.unlinkSync(tempFile);
         }
-        console.log("Reading files in transfer folder...");
-        fs.readdir(chunkPath, function(err, files) {
-            if (err) {
-                console.error(err);
-                reject(err);
-            }
-            else {
-                console.log("Deleting temporary files in the transfer folder...");
-                for (const file of files) {
-                    fs.unlink(path.join(chunkPath, file), function(err) {
-                        if (err) {
-                            console.error(err);
-                        }
-                    });
+        if (fs.existsSync(chunkPath)) {
+            console.log("Reading files in transfer folder...");
+            fs.readdir(chunkPath, function(err, files) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
                 }
-                resolve();
-            }
-        });
+                else {
+                    console.log("Deleting temporary files in the transfer folder...");
+                    for (const file of files) {
+                        fs.unlink(path.join(chunkPath, file), function(err) {
+                            if (err) {
+                                console.error(err);
+                            }
+                        });
+                    }
+                    resolve();
+                }
+            });
+        }
+        else {
+            console.log("Transfer folder does not exist. Nothing to read and delete there.");
+            resolve();
+        }
     });
 };
 
