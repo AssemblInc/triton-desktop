@@ -191,6 +191,7 @@
                 </tr>
             </table>
         </div>
-        <div id="copyright">Assembl Desktop &copy; Assembl Inc. 2019</div>
+        <div id="copyright">Assembl Desktop v<span id="app-version"></span> &copy; Assembl Inc. 2019</div>
+        <script> document.getElementById("app-version").innerHTML = ipcRenderer.sendSync('appversion-request'); </script>
     </body>
 </html>

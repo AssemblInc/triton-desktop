@@ -278,6 +278,11 @@ ipcMain.on('progress-update', function(event, active, progress, options) {
 });
 
 // for both
+ipcMain.on('appversion-request', function(event) {
+    event.returnValue = app.getVersion();
+});
+
+// for both
 ipcMain.on('prevsession-exists', function(event) {
     event.returnValue = userDataHandler.previousSessionExists();
 });
