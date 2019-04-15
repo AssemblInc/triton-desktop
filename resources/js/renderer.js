@@ -4,6 +4,7 @@ let protocolToUse = null;
 let publicKey = null;
 let otherName = "";
 let receiverName = "";
+let fileName = "";
 
 function strip(text) {
    var tmp = document.createElement("div");
@@ -35,7 +36,8 @@ ipcRenderer.on('data-initialized', function(event, data) {
     screens.loading.setStatus("Getting ready for file transmission...");
     rTotalSize = parseInt(data[0]);
     rProgressSize = 0;
-    screens.loading.setDetails(strip(data[1]) + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
+    fileName = data[1];
+    screens.loading.setDetails(strip(fileName) + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
     screens.loading.resetProgress();
     screens.showLoadingScreen(false);
     screens.loading.setProgressWithFileSize(0, parseInt(data[0]));
@@ -75,7 +77,7 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
 ipcRenderer.on('received-file', function(event, finalChunkAmount) {
     console.log("File has been fully received! Finalizing...");
     screens.loading.setStatus("Merging chunks...");
-    screens.loading.setDetails(strip(data[1]) + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
+    screens.loading.setDetails(strip(fileName) + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
     screens.loading.resetProgress();
     screens.loading.setProgress(0, finalChunkAmount);
     screens.showLoadingScreen(false);

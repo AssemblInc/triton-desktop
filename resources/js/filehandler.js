@@ -9,6 +9,7 @@ let fileHandler = {
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
 
     getChunkSize: function() {
+        return 800;               // temporary 800 bytes
         if (fileHandler.protocolToUse == "webrtc" || true) {
             return 16384;           // 16KB
         }
