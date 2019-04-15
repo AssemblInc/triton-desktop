@@ -64,7 +64,9 @@ let fileHandler = {
                     break;
             }
             fileHandler.sentChunkAmount += 1;
-            fileHandler.prepareChunk(fileHandler.offset);
+            setTimeout(function() {
+                fileHandler.prepareChunk(fileHandler.offset);
+            }, 100);
         });
 
         ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk, number) {
