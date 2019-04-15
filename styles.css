@@ -225,7 +225,6 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
 	border: none;
 	border-radius: 2px;
 	color: #004CFF;
-	transition: color 1s;
     background-color: rgba(255,255,255,0.1);
     white-space: nowrap;
     position: relative;
@@ -252,7 +251,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     height: inherit;
     position: absolute;
     left: 0;
-    transition: 1s;
+    transition: 0.1s;
     transition-timing-function: linear;
     border-radius: 2px;
 }
