@@ -4,6 +4,7 @@ const path = require('path');
 const mv = require('mv');
 const chunkPath = path.join(app.getPath('userData'), 'temp', 'chunks');
 let receivedFilename, tempFile, startTimestamp, writer, chunkAmount, receivedByteAmount, processedChunkAmount, finalChunkAmount;
+let chunkMergInterval;
 
 // function to initialize chunks
 // call this once the data transfer is about to begin, not when opening the program,
@@ -103,53 +104,30 @@ exports.finish = function(win) {
     return new Promise(function(resolve, reject) {
         let chunkFile = null;
         let mergedChunks = 0;
-        for (let f = 0; f < finalChunkAmount; f++) {
-            chunkFile = path.join(chunkPath, "filetransfer-"+startTimestamp+"-"+f+".assemblchunk");
-            if (fs.existsSync(chunkFile)) {
-                console.log("Appending chunk " + f + "...");
-                let tempChunk = fs.readFileSync(chunkFile);
-                writer.write(tempChunk);
-                mergedChunks += 1;
-                win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+        let f = 0;
+        chunkMergInterval = setInterval(function() {
+            if (f < finalChunkAmount) {
+                chunkFile = path.join(chunkPath, "filetransfer-"+startTimestamp+"-"+f+".assemblchunk");
+                if (fs.existsSync(chunkFile)) {
+                    console.log("Appending chunk " + f + "...");
+                    let tempChunk = fs.readFileSync(chunkFile);
+                    writer.write(tempChunk);
+                    mergedChunks += 1;
+                    win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+                }
+                else {
+                    console.warn("Chunk not found: chunk number" + f);
+                    reject("Chunk " + f + " not found");
+                }
+                f++;
             }
             else {
-                console.warn("Chunk not found: chunk number" + f);
-                reject("Chunk " + f + " not found");
+                clearInterval(chunkMergInterval);
+                chunkMergInterval = null;
             }
-        }
+        }, 25);
         writer.end();
         resolve();
-        /*
-        console.log("Reading files in transfer folder...");
-        fs.readdir(chunkPath, function(err, files) {
-            if (err) {
-                console.error(err);
-                reject(err);
-            }
-            else {
-                files.sort(function(a, b) {
-                    console.log(parseInt(a.split(".")[0].split("-").pop()));
-                    console.log(parseInt(b.split(".")[0].split("-").pop()));
-                    return parseInt(a.split(".")[0].split("-").pop()) - parseInt(b.split(".")[0].split("-").pop());
-                });
-                let mergedChunks = 0;
-                let filesLength = files.length;
-                for (let f = 0; f < filesLength; f++) {
-                    if (files[f].split(".").pop() == "assemblchunk") {
-                        console.log("Appending chunk " + files[f] + "...");
-                        let tempChunk = fs.readFileSync(path.join(chunkPath, files[f]));
-                        writer.write(tempChunk);
-                        win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
-                    }
-                    else {
-                        console.warn("Unknown file found in transfer folder: " + files[f]);
-                    }
-                }
-                writer.end();
-                resolve();
-            }
-        });
-        */
     });
 };
 

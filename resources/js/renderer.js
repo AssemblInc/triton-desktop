@@ -48,7 +48,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
 
 // for receiver
 ipcRenderer.on('receiving-chunk', function(event, data) {
-    console.log("Receiving a chunk...");
+    // console.log("Receiving a chunk...");
     screens.loading.setStatus("Receiving file from " + strip(otherName) + "...");
 });
 
