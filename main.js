@@ -36,7 +36,6 @@ require('electron-context-menu')({
 });
 let mainWindow = null;
 let mainWindowMayClose = false;
-let orcidData = null;
 let waitForCompletion = null;
 
 function reallyClosingNow() {
@@ -128,7 +127,7 @@ function signIn() {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
                     try {
-                        orcidData = JSON.parse(result);
+                        let orcidData = JSON.parse(result);
                         console.log("ORCID iD data received:");
                         console.log(orcidData);
                         userDataHandler.saveData("assembl_id", orcidData["assembl_id"]);
@@ -236,7 +235,12 @@ ipcMain.on('password-set', function(event, password) {
         .then(function() {
             console.log("Userdata loaded");
             mainWindow.webContents.send('userdata-loaded');
-            signIn();
+            if (userDataHandler.hasData("orcid_access_token")) {
+                mainWindow.webContents.send('signed-in');
+            }
+            else {
+                signIn();
+            }
         })
         .catch(function(err) {
             console.log("Could not load UserData");
@@ -283,12 +287,12 @@ ipcMain.on('username-request', function(event) {
 
 // for both
 ipcMain.on('assemblid-request', function(event) {
-    event.returnValue = orcidData["assembl_id"];
+    event.returnValue = userDataHandler.loadData("assembl_id");
 });
 
 // for both
 ipcMain.on('orcid-request', function(event) {
-    event.returnValue = orcidData["orcid"];
+    event.returnValue = userDataHandler.loadData("orcid_id");
 });
 
 // for both
