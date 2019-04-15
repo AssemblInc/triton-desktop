@@ -43,7 +43,12 @@ let fileHandler = {
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
                     // send chunk over webrtc
-                    rtcHandler.send(convertedChunk, true, false);
+                    if (fileHandler.encryptionEnabled) {
+                        rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                    }
+                    else {
+                        rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                    }
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");

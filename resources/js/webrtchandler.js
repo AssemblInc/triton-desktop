@@ -10,6 +10,7 @@ var rtcHandler = {
             rtcHandler.isOpen = true;
         };
         rtcHandler.fileChannel.onmessage = function(event) {
+            console.log(event.data);
             try {
                 let data = JSON.parse(event.data);
                 switch(data.type) {
