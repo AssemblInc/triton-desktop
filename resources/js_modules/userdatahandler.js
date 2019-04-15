@@ -10,6 +10,7 @@ const keccak256 = require('js-sha3').keccak256;
 const AppendInitVect = require('./appendInitVect');
 
 const file = path.join(app.getPath('userData'), 'userdata.assemblsec');
+const prevSessionExists = fs.existsSync(file);
 console.log(file);
 console.log("Available ciphers:");
 console.log(crypto.getCiphers());
@@ -23,6 +24,10 @@ function getCipherKey(password) {
 
 exports.isInitialized = function() {
     return initialized;
+};
+
+exports.previousSessionExists = function() {
+    return prevSessionExists;
 };
 
 exports.init = function(password, reset) {
@@ -97,7 +102,8 @@ exports.loadData = function(key) {
 };
 
 exports.hasData = function(key) {
-    return Object.keys(savedData).indexOf(key) > -1;
+    // return Object.keys(savedData).indexOf(key) > -1;
+    return key in savedData;
 };
 
 exports.resetSave = function() {
