@@ -82,6 +82,16 @@ var wsHandler = {
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);
                     break;
+                case "webrtc_offer_ready":
+                    rtcHandler.createAnswer(data)
+                        .then(function(answer) {
+                            wsHandler.sendEventToSender("webrtc_answer_ready", answer);
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                            // error screens are handled within createAnswer itself
+                        });
+                    break;
                 default:
                     console.warn("Unimplemented event " + eventName);
                     break;
@@ -105,6 +115,17 @@ var wsHandler = {
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);
                     break;
+                case "webrtc_answer_ready":
+                    rtcHandler.connectAnswer(data)
+                        .then(function() {
+                            alert("A connection with " + receiverName + " has been established.");
+                            screens.startFileDropper();
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                            // error screens are handled within connectAnswer itself
+                        });
+                    break;
                 default:
                     console.warn("Unimplemented event " + eventName);
                     break;
@@ -115,9 +136,32 @@ var wsHandler = {
         wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
             console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
             receiverName = userName;
-            alert("A connection with " + userName + " has been established.");
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
-            screens.startFileDropper();
+            switch(fileHandler.protocolToUse) {
+                case "websocket": {
+                    alert("A connection with " + receiverName + " has been established.");
+                    screens.startFileDropper();
+                    break;
+                }
+                case "webrtc": {
+                    screens.loading.setStatus("Establishing connection with " + strip(receiverName) + "...");
+                    screens.loading.setDetails("Sending WebRTC offer...");
+                    screens.showLoadingScreen(true);
+                    rtcHandler.createOffer()
+                        .then(function(offer) {
+                            wsHandler.sendEvent("webrtc_offer_ready", offer);
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                            screens.showErrorScreen("0x2003");
+                        });
+                    break;
+                }
+                default: {
+                    screens.showErrorScreen("0x2002");
+                    break;
+                }
+            }
         });
 
         // for receiver

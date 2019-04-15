@@ -8,7 +8,27 @@
         "fix": "Restart the application and try again"
     },
     "0x2001": {
-        "details": "Could not establish a connection",
+        "details": "Could not establish a connection with the Assembl server",
+        "fix": "Restart the application and try again"
+    },
+    "0x2002": {
+        "details": "Unknown protocol",
+        "fix": "Restart the application and try again using a supported protocol"
+    },
+    "0x2003": {
+        "details": "Could not generate a WebRTC offer",
+        "fix": "Restart the application and try again"
+    },
+    "0x2004": {
+        "details": "WebRTC signaling state does not equal stable",
+        "fix": "Restart the application and try again"
+    },
+    "0x2005": {
+        "details": "Could not establish a WebRTC connection",
+        "fix": "Restart the application and try again"
+    },
+    "0x2006": {
+        "details": "WebRTC signaling state does not equal have-local-offer",
         "fix": "Restart the application and try again"
     },
     "0x3001": {
