@@ -64,6 +64,10 @@ a:hover, a:focus, a:active {
     background: linear-gradient(-45deg, #19285C, #193864);
 }
 
+.screen#errorscreen {
+    background: linear-gradient(-45deg, #46000D, #9C1731);
+}
+
 .screen-back {
     display: block;
     position: fixed;
@@ -159,6 +163,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     font-size: 17px;
     color: #DC143C;
     font-weight: 400;
+    margin-bottom: 24px;
 }
 
 /* startup screen (splash screen) */
@@ -277,6 +282,8 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     display: inline-block;
     cursor: pointer;
     background: #183b8c;
+    font-family: 'Didact Gothic', Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: .2px;
     border: none;
     border-radius: 3px;
     padding: 6px 12px;
@@ -297,10 +304,11 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     margin-bottom: 0px;
 }
 
-/* receiver */
 .connect-button {
     display: inline-block;
     cursor: pointer;
+    font-family: 'Didact Gothic', Roboto, Helvetica, Arial, sans-serif;
+    letter-spacing: .2px;
     background: #183b8c;
     border: none;
     border-radius: 3px;
@@ -315,6 +323,14 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     background: #004CFF;
     color: #EDEDED;
     transition: 0.15s;
+}
+
+.connect-button#error-btn {
+    background: #9B0120;
+}
+
+.connect-button#error-btn:hover, .connect-button#error-btn:focus, .connect-button#error-btn:active {
+    background: #BA0025;
 }
 
 /* file dropper */

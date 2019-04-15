@@ -36,11 +36,10 @@
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
-                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
                             <div style="margin-bottom: 12px;">An error occured</div>
-                            <div><span id="error-details" style="margin-bottom: 4px;">The error failed to load</span>. Error code <span id="error-code">0x0000</span></div>
-                            <div id="error-fix" style="margin-bottom: 12px;">This should never happen. If it does, restart the application.</div>
+                            <div style="font-size: 0.8em;"><span id="error-details" style="margin-bottom: 4px;">The error failed to load</span>. Error code <span id="error-code">0x0000</span></div>
+                            <div id="error-fix" style="margin-bottom: 12px; font-size: 0.8em;">This should never happen. If it does, restart the application.</div>
                             <button type="button" class="connect-button" id="error-btn" onclick="ipcRenderer.send('app-should-close');">Quit Assembl Desktop</button>
                         </div>
                     </td>
@@ -59,29 +58,29 @@
                                 <div id="password-error"></div>
                                 <button type="submit" class="connect-button" id="password-btn">continue</button>
                             </form>
-                            <div>Forgot your password, or don't have one yet?</div>
-                            <button type="button" class="connect-button" id="start-fresh-btn" onclick="screens.startFreshStarter();">start fresh</button>
+                            <div style="margin-top: 32px; font-size: 0.8em;">Forgot your password, or don't have one yet? <a id="start-fresh-btn" href="javascript:screens.startFreshStarter();">Start fresh</a></div>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
         <div class="screen" id="freshstarter">
-                <table style="width: 100%; height: 100%;">
-                    <tr>
-                        <td style="text-align: center;">
-                            <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
-                            <div class="underthelogo" id="purpose-selector">
-                                <form id="receiver-input-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
-                                    <div>Enter a new password:</div>
-                                    <input type="password" id="freshpassword" placeholder="Enter a new password" required minlength="8" maxlength="46" /><br />
-                                    <button type="submit" class="connect-button" id="fresh-btn">start</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startPasswordInputter();" onkeydown="screens.startPasswordInputter();" title="Go back" alt="Go back" tabindex="0" />
+            <table style="width: 100%; height: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
+                        <div class="underthelogo" id="purpose-selector">
+                            <form id="receiver-input-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                                <div>Enter a new password:</div>
+                                <input type="password" id="freshpassword" placeholder="Enter a new password" required minlength="8" maxlength="46" /><br />
+                                <button type="submit" class="connect-button" id="fresh-btn">start</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <div class="screen" id="nameinputter">
             <table style="width: 100%; height: 100%;">
                 <tr>
