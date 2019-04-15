@@ -48,7 +48,7 @@ var rtcHandler = {
     init: function() {
         rtcHandler.connection = new RTCPeerConnection({ iceServers: [ rtcHandler.iceServer ]});
         rtcHandler.connection.oniceconnectionstatechange = function(event) {
-            console.log("New ICEConnectionState:", pc.iceConnectionState);
+            console.log("New ICEConnectionState:", rtcHandler.connection.iceConnectionState);
         };
         rtcHandler.connection.ondatachannel = function(event) {
             console.log("Datachannel received");
@@ -98,13 +98,11 @@ var rtcHandler = {
                     reject(reason);
                 });
                 rtcHandler.connection.onicecandidate = function(event) {
-                if (event.candidate) {
-                    reject("Unknown error, what happened here again?");
-                }
-                // the following is the answerValue
-                console.log("answerValue:", rtcHandler.connection.localDescription.sdp);
-                resolve(rtcHandler.connection.localDescription.sdp)
-            };
+                    console.log(event);
+                    // the following is the answerValue
+                    console.log("answerValue:", rtcHandler.connection.localDescription.sdp);
+                    resolve(rtcHandler.connection.localDescription.sdp)
+                };
         });
     },
 
