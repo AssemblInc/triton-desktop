@@ -30,8 +30,7 @@ var wsHandler = {
         });
         wsHandler.socket.on('connect_error', function(timeout) {
             console.warn("Websocket connection attempt timed out");
-            alert("Could not establish a connection. Assembl Desktop will now quit.");
-            ipcRenderer.send('app-should-close');
+            screens.showErrorScreen('0x2001');
         });
 
         wsHandler.socket.on('as_error', function(err, errDesc) {

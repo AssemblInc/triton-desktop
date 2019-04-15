@@ -12,23 +12,6 @@ function strip(text) {
 }
 
 // for both
-ipcRenderer.on('websocket-connected', function(event, data) {
-    console.log("Websocket connected!");
-    clearTimeout(loadingTimeout);
-    loadingTimeout = null;
-    screens.startPurposeSelector();
-});
-
-// for both
-ipcRenderer.on('websocket-connection-error', function(event, data) {
-    console.warn("Websocket connection error");
-    clearTimeout(loadingTimeout);
-    loadingTimeout = null;
-    alert("Could not establish a connection. Assembl Desktop will now quit.");
-    ipcRenderer.send('app-should-close');
-});
-
-// for both
 ipcRenderer.on('app-closing', function(event, data) {
     console.warn("App is closing!");
     screens.loading.resetProgress();
@@ -196,7 +179,13 @@ function domReady() {
 
     fileHandler.init();
 
-    screens.startPasswordInputter();
+    // screens.startPasswordInputter();
+    if (ipcRenderer.sendSync('prevsession-exists') === true) {
+        screens.startPasswordInputter();
+    }
+    else {
+        screens.startFreshStarter();
+    }
 }
 
 // for both
@@ -207,8 +196,8 @@ ipcRenderer.on('pgp-keys-generated', function(event, pubKey) {
 
 // for both
 ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
-    alert("An error occured while generating a PGP key. Assembl Desktop will now quit. Details: \n" + error);
-    ipcRenderer.send('app-should-close');
+    console.error(error);
+    screens.showErrorScreen("0x3001");
 });
 
 // run this function when the sender states the next chunk is ready to be sent

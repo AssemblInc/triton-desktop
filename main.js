@@ -23,6 +23,7 @@ else {
 }
 const userDataHandler = require('./resources/js_modules/userdatahandler.js');
 const pgpHandler = require('./resources/js_modules/pgphandler.js');
+const errors = require('./resources/json/errors.json');
 pgpHandler.setUserDataHandler(userDataHandler);
 const chunkHandler = require('./resources/js_modules/chunkhandler.js');
 require('electron-context-menu')({
@@ -132,9 +133,15 @@ function signIn() {
                         console.log(orcidData);
                         userDataHandler.saveData("assembl_id", orcidData["assembl_id"]);
                         userDataHandler.saveData("orcid_id", orcidData["orcid"]);
+                        userDataHandler.saveData("orcid_token_type", orcidData["token_type"]);
+                        userDataHandler.saveData("orcid_access_token", orcidData["access_token"]);
+                        userDataHandler.saveData("orcid_refresh_token", orcidData["refresh_token"]);
+                        userDataHandler.saveData("orcid_expires_in", Math.floor(Date.now() * 0.001) + orcidData["expires_in"]);
+                        // TODO: handle expires_in. Currently, tokens expire after 20 years, so it is not something we need to work on very quickly.
+                        userDataHandler.saveData("orcid_scope", orcidData["scope"]);
                         console.log("Checking if username is there...");
-                        if (orcidData.name != null && orcidData.name.length > 0) {
-                            userDataHandler.saveData("username", orcidData.name);
+                        if (orcidData["name"] != null && orcidData["name"].length > 0) {
+                            userDataHandler.saveData("username", orcidData["name"]);
                         }
                         else {
                             userDataHandler.saveData("username", "");
@@ -262,6 +269,11 @@ ipcMain.on('progress-update', function(event, active, progress, options) {
     else {
         mainWindow.setProgressBar(-1);
     }
+});
+
+// for both
+ipcMain.on('prevsession-exists', function(event) {
+    event.returnValue = userDataHandler.previousSessionExists();
 });
 
 // for both

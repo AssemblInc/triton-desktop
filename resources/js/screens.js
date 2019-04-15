@@ -76,6 +76,23 @@ let screens = {
         }
     },
 
+    showErrorScreen: function(errorCode) {
+        if (!appClosing) {
+            // errors is a global variable set in ui.html
+            if (errorCode in errors) {
+                screens.hideAll();
+                document.getElementById("errorscreen").style.display = "block";
+                let error = errors[errorCode];
+                document.getElementById("error-details").innerHTML = strip(error["details"]);
+                document.getElementById("error-code").innerHTML = strip(errorCode);
+                document.getElementById("error-fix").innerHTML = strip(error["fix"]);
+            }
+            else {
+                screens.showErrorScreen('0x0000');
+            }
+        }
+    },
+
     showLoadingScreen: function(indeterminatable) {
         if (!appClosing) {
             screens.hideAll();
