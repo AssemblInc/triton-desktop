@@ -12,6 +12,12 @@ function strip(text) {
 }
 
 // for both
+ipcRenderer.on('error-occurred', function(event, errorCode) {
+    console.warn("An error occurred in the main process!");
+    screens.showErrorScreen(errorCode);
+});
+
+// for both
 ipcRenderer.on('app-closing', function(event, data) {
     console.warn("App is closing!");
     screens.loading.resetProgress();

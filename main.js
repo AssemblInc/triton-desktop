@@ -151,14 +151,14 @@ function signIn() {
                     }
                     catch(err) {
                         console.log(err);
-                        dialog.showMessageBox(signInWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
-                        fullyCloseApp();
+                        signInWindow.close();
+                        mainWindow.webContents.send('error-occurred', '0x4001');
                     }
                 })
                 .catch(function(err) {
                     console.log(err);
-                    dialog.showMessageBox(signInWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
-                    fullyCloseApp();
+                    signInWindow.close();
+                    mainWindow.webContents.send('error-occurred', '0x4002');
                 });
         }
 
@@ -320,8 +320,7 @@ ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
             })
             .catch(function(err) {
                 console.log(err);
-                dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
-                fullyCloseApp();
+                mainWindow.webContents.send('error-occurred', '0x3002');
             });
     }
     else {
@@ -372,8 +371,7 @@ ipcMain.on('renderer-filecomplete', function(event, finalChunkAmount) {
                 })
                 .catch(function(err) {
                     console.log(err);
-                    dialog.showMessageBox(mainWindow, {type: "error", message: "An error occured and Assembl Desktop will now quit."});
-                    fullyCloseApp();
+                    mainWindow.webContents.send('error-occurred', '0x5001');
                 });
         }
     }, 1000);

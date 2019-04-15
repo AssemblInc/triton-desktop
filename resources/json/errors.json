@@ -14,5 +14,21 @@
     "0x3001": {
         "details": "Could not generate a PGP keypair",
         "fix": "Restart the application and try again"
+    },
+    "0x3002": {
+        "details": "Could not decrypt chunk",
+        "fix": "Restart the application and try again"
+    },
+    "0x4001": {
+        "details": "Could not handle sign in results",
+        "fix": "Restart the application and try again"
+    },
+    "0x4002": {
+        "details": "Could not fetch sign in results",
+        "fix": "Restart the application and try again"
+    },
+    "0x5001": {
+        "details": "Could not finish file transfer",
+        "fix": "Restart the application and try again"
     }
 }
