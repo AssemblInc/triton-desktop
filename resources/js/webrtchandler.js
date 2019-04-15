@@ -19,7 +19,7 @@ var rtcHandler = {
                             ipcRenderer.send('renderer-received-chunk', data.chunk, data.number);
                         }
                         else {
-                            ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(Object.values(data.chunk)), data.number);
+                            ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data.chunk), data.number);
                         }
                         break;
                     }
@@ -147,7 +147,7 @@ var rtcHandler = {
         if (rtcHandler.isOpen) {
             rtcHandler.fileChannel.send(JSON.stringify({
                 type: "chunk",
-                chunk: chunk,
+                chunk: Array.from(chunk),
                 isEncrypted: false,
                 number: number
             }));
