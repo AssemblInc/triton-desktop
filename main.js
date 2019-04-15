@@ -268,7 +268,9 @@ ipcMain.on('progress-update', function(event, active, progress, options) {
     if (active === true) {
         // console.log(progress);
         // console.log(options);
-        mainWindow.setProgressBar(progress, options);
+        if (progress != null) {
+            mainWindow.setProgressBar(progress, options);
+        }
     }
     else {
         mainWindow.setProgressBar(-1);
