@@ -9,7 +9,6 @@ let fileHandler = {
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
 
     getChunkSize: function() {
-        return 800;               // temporary 800 bytes
         if (fileHandler.protocolToUse == "webrtc" || true) {
             return 16384;           // 16KB
         }
@@ -65,14 +64,14 @@ let fileHandler = {
                     break;
             }
             fileHandler.sentChunkAmount += 1;
-            fileHandler.sendChunk(fileHandler.offset);
+            fileHandler.prepareChunk(fileHandler.offset);
         });
 
         ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk, number) {
             switch(fileHandler.protocolToUse) {
                 case "webrtc":
                     // send chunk over webrtc
-                    rtcHandler.send(encryptedChunk, true, true);
+                    rtcHandler.sendChunk(encryptedChunk, true, number);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");
@@ -139,7 +138,7 @@ let fileHandler = {
         }
     },
 
-    sendChunk: function(o) {
+    prepareChunk: function(o) {
         if (fileHandler.offset < fileHandler.file.size) {
             // console.log("Sending chunk starting at", o);
             // create chunk from file
@@ -171,7 +170,7 @@ let fileHandler = {
         screens.loading.setStatus("Transferring file to " + strip(receiverName) + "...");
         screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
         // start sending the first chunk
-        fileHandler.sendChunk(fileHandler.offset);
+        fileHandler.prepareChunk(fileHandler.offset);
     },
 
     useEncryption(useIt) {

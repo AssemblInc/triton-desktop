@@ -61,7 +61,7 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
     switch(fileHandler.protocolToUse) {
         case "webrtc":
             // send chunk over webrtc
-            rtcHandler.send("received", false, false);
+            // rtcHandler.send("received", false, false);
             break;
         default:
             console.warn("No protocol selected. Using websockets");
@@ -212,5 +212,5 @@ ipcRenderer.on('pgp-keys-generation-error', function(event, error) {
 ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
     // only used by websocket
     // webrtc uses its own received event in rtc.js
-    fileHandler.sendChunk(fileHandler.offset);
+    fileHandler.prepareChunk(fileHandler.offset);
 });

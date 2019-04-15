@@ -102,7 +102,7 @@ var wsHandler = {
             console.log("as_event_for_sender " + eventName + ": ", data);
             switch(eventName) {
                 case "chunk_received":
-                    // fileHandler.sendChunk(fileHandler.offset);
+                    // fileHandler.prepareChunk(fileHandler.offset);
                     break;
                 case "file_saved":
                     console.log("File has been saved by the receiver");
