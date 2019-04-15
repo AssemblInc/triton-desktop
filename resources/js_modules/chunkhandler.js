@@ -124,10 +124,10 @@ exports.finish = function(win) {
             else {
                 clearInterval(chunkMergInterval);
                 chunkMergInterval = null;
+                writer.end();
+                resolve();
             }
-        }, 25);
-        writer.end();
-        resolve();
+        }, 20);
     });
 };
 
