@@ -149,9 +149,8 @@ let fileHandler = {
     prepareChunk: function(o) {
         if (o == 0 && fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true) {
             // IN DEVELOPMENT
-            let stream = ss.createStream();
-            ss(wsHandler.socket).emit('as_send_stream', stream);
-            let blobStream = wsHandler.createBlobReadStream(fileHandler.file);
+            let stream = wsHandler.openStream();
+            let blobStream = ss.createBlobReadStream(fileHandler.file);
             blobStream.on('error', function(err) {
                 console.error(err);
             });
