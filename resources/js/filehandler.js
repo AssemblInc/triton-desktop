@@ -156,42 +156,58 @@ let fileHandler = {
             });
             blobStream.on('end', function() {
                 console.log("blobStream ended");
+
+                console.log("Hash is ready:", fileHandler.hash.hex());
+                // hashMemo(null, fileHandler.hash.hex());
+                screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
+                screens.loading.resetProgress();
+                ipcRenderer.send('progress-update', true, 1, {
+                    mode: "indeterminate"
+                });
+                screens.showLoadingScreen(true);
+                // wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
+                // reset the filechooser
+                document.getElementById("fileChooser").value = "";
             });
             blobStream.on('finish', function() {
                 console.log("blobStream finished");
             });
             blobStream.on('data', function(chunk) {
-                console.log(chunk);
+                // update the hash with the current chunk
+                fileHandler.hash.update(chunk);
+
                 fileHandler.offset += chunk.length;
                 screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
             });
             blobStream.pipe(stream);
             console.log(blobStream);
         }
-
-        if (fileHandler.offset < fileHandler.file.size) {
-            // console.log("Sending chunk starting at", o);
-            // create chunk from file
-            fileHandler.chunkAmount += 1;
-            let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.getChunkSize());
-            // turn slice into an arraybuffer
-            fileHandler.reader.readAsArrayBuffer(slice);
-            // the sending part happens in the "onload" event of the FileReader
-        }
         else {
-            // retrieve the final hash
-            console.log("Hash is ready:", fileHandler.hash.hex());
-            // hashMemo(null, fileHandler.hash.hex());
-            screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
-            screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
-            screens.loading.resetProgress();
-            ipcRenderer.send('progress-update', true, 1, {
-                mode: "indeterminate"
-            });
-            screens.showLoadingScreen(true);
-            wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
-            // reset the filechooser
-            document.getElementById("fileChooser").value = "";
+            if (fileHandler.offset < fileHandler.file.size) {
+                // console.log("Sending chunk starting at", o);
+                // create chunk from file
+                fileHandler.chunkAmount += 1;
+                let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.getChunkSize());
+                // turn slice into an arraybuffer
+                fileHandler.reader.readAsArrayBuffer(slice);
+                // the sending part happens in the "onload" event of the FileReader
+            }
+            else {
+                // retrieve the final hash
+                console.log("Hash is ready:", fileHandler.hash.hex());
+                // hashMemo(null, fileHandler.hash.hex());
+                screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
+                screens.loading.resetProgress();
+                ipcRenderer.send('progress-update', true, 1, {
+                    mode: "indeterminate"
+                });
+                screens.showLoadingScreen(true);
+                wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
+                // reset the filechooser
+                document.getElementById("fileChooser").value = "";
+            }
         }
     },
 
