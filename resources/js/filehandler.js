@@ -151,7 +151,7 @@ let fileHandler = {
             // IN DEVELOPMENT
             let stream = ss.createStream();
             ss(wsHandler.socket).emit('as_send_stream', stream);
-            let blobStream = wsHandler.createBlobReadStream(file);
+            let blobStream = wsHandler.createBlobReadStream(fileHandler.file);
             blobStream.on('error', function(err) {
                 console.error(err);
             });
