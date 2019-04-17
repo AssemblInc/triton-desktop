@@ -151,14 +151,23 @@ let fileHandler = {
             // IN DEVELOPMENT
             let stream = ss.createStream();
             ss(wsHandler.socket).emit('as_send_stream', stream);
-            let blobStream = wsHandler.openStream();
-            console.log(blobStream);
+            let blobStream = wsHandler.createBlobReadStream(file);
+            blobStream.on('error', function(err) {
+                console.error(err);
+            });
+            blobStream.on('end', function() {
+                console.log("blobStream ended");
+            });
+            blobStream.on('finish', function() {
+                console.log("blobStream finished");
+            });
             blobStream.on('data', function(chunk) {
                 console.log(chunk);
                 fileHandler.offset += chunk.length;
                 screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
             });
             blobStream.pipe(stream);
+            console.log(blobStream);
         }
 
         if (fileHandler.offset < fileHandler.file.size) {
