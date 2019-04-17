@@ -89,6 +89,13 @@ a:hover, a:focus, a:active {
     transform: scale(1.2);
 }
 
+.assembl-icon {
+    display: block;
+    width: 3.5em;
+    height: 3.5em;
+    margin: 0 auto;
+}
+
 .assembl-logo-icon {
     display: inline-block;
     vertical-align: middle;
@@ -110,6 +117,10 @@ a:hover, a:focus, a:active {
 
 .underthelogo {
     margin-top: 72px;
+}
+
+.undertheicon {
+    margin-top: 32px;
 }
 
 input[type=text], input[type=password] {
