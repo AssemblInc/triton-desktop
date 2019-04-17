@@ -113,7 +113,9 @@ exports.finish = function(win) {
                     let tempChunk = fs.readFileSync(chunkFile);
                     writer.write(tempChunk);
                     mergedChunks += 1;
-                    win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+                    if (mergedChunks % 10 == 0) {
+                        win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
+                    }
                 }
                 else {
                     console.warn("Chunk not found: chunk number" + f);
@@ -122,6 +124,7 @@ exports.finish = function(win) {
                 f++;
             }
             else {
+                win.webContents.send('chunks-merged', finalChunkAmount, finalChunkAmount);
                 clearInterval(chunkMergInterval);
                 chunkMergInterval = null;
                 writer.end();
