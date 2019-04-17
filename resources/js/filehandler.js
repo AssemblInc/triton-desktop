@@ -67,8 +67,11 @@ let fileHandler = {
                 // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
                 fileHandler.sentChunkAmount += 1;
                 setTimeout(function() {
+                    // this function is run with a timeout instead of right away
+                    // otherwise it seems like the server won't be able to process the amount of chunks
+                    // and the receiving end will experience download stutters!
                     fileHandler.prepareChunk(fileHandler.offset);
-                }, 10);
+                }, 64);
             }
             else {
                 console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
