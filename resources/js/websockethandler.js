@@ -1,6 +1,7 @@
 var wsHandler = {
     socket: null,
     isOpen: false,
+    ioStream: null,
 
     init: function() {
         screens.loading.setStatus("Establishing connection...");
@@ -81,6 +82,7 @@ var wsHandler = {
             stream.on('finish', function() {
                 console.log("Stream finished");
             });
+            wsHandler.ioStream = stream;
         });
 
         wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {
