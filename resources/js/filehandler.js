@@ -7,7 +7,7 @@ let fileHandler = {
     offset: null,               // the offset of the current chunk being read
     protocolToUse: null,        // the protocol to use (transfer method)
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
-    useStream: true,            // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
+    useStream: false,           // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
 
     getChunkSize: function() {
         if (fileHandler.protocolToUse == "webrtc" || true) {
@@ -68,7 +68,7 @@ let fileHandler = {
                 fileHandler.sentChunkAmount += 1;
                 setTimeout(function() {
                     fileHandler.prepareChunk(fileHandler.offset);
-                }, 100);
+                }, 10);
             }
             else {
                 console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
