@@ -87,6 +87,7 @@ ipcRenderer.on('received-file', function(event, finalChunkAmount) {
 ipcRenderer.on('chunks-merged', function(event, progress, total) {
     if (progress == total) {
         screens.loading.setStatus("Saving file...");
+        screens.loading.setDetails(strip(fileName));
         screens.loading.resetProgress();
         screens.showLoadingScreen(true);
         ipcRenderer.send('progress-update', true, 0, {
