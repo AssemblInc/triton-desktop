@@ -113,7 +113,7 @@ exports.finish = function(win) {
                     let tempChunk = fs.readFileSync(chunkFile);
                     writer.write(tempChunk);
                     mergedChunks += 1;
-                    if (mergedChunks % 10 == 0) {
+                    if (mergedChunks % 5 == 0) {
                         win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
                     }
                 }
