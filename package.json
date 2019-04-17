@@ -39,6 +39,7 @@
     "prettysize": "^2.0.0",
     "pull-stream": "^3.6.9",
     "socket.io": "^2.2.0",
+    "socket.io-stream": "^0.9.1",
     "stellar-base": "^0.10.0",
     "stellar-sdk": "^0.12.0"
   },

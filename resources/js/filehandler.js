@@ -7,6 +7,7 @@ let fileHandler = {
     offset: null,               // the offset of the current chunk being read
     protocolToUse: null,        // the protocol to use (transfer method)
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
+    useStream: true,            // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
 
     getChunkSize: function() {
         if (fileHandler.protocolToUse == "webrtc" || true) {
@@ -31,42 +32,47 @@ let fileHandler = {
             console.warn("File reading aborted");
         });
         fileHandler.reader.addEventListener("load", function(event) {
-            // update the hash with the current chunk
-            fileHandler.hash.update(event.target.result);
-            // convert the chunk into an Uint8Array (for ipc transport to the main process)
-            let convertedChunk = new Uint8Array(event.target.result);
-            // add current size of the chunk to the offset
-            fileHandler.offset += event.target.result.byteLength;
-            // update loading progress
-            screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
-            // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
-            switch(fileHandler.protocolToUse) {
-                case "webrtc":
-                    // send chunk over webrtc
-                    if (fileHandler.encryptionEnabled) {
-                        rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                    }
-                    else {
-                        rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                    }
-                    break;
-                default:
-                    console.warn("No protocol selected. Using websockets");
-                    fileHandler.protocolToUse = "websocket";
-                case "websocket":
-                    // send chunk over websocket
-                    if (fileHandler.encryptionEnabled) {
-                        wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                    }
-                    else {
-                        wsHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                    }
-                    break;
+            if ((fileHandler.useStream === false && fileHandler.protocolToUse == "websocket") || fileHandler.protocolToUse == "webrtc") {
+                // update the hash with the current chunk
+                fileHandler.hash.update(event.target.result);
+                // add current size of the chunk to the offset
+                fileHandler.offset += event.target.result.byteLength;
+                // convert the chunk into an Uint8Array (for ipc transport to the main process)
+                let convertedChunk = new Uint8Array(event.target.result);
+                switch(fileHandler.protocolToUse) {
+                    case "webrtc":
+                        // send chunk over webrtc
+                        if (fileHandler.encryptionEnabled) {
+                            rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                        }
+                        else {
+                            rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                        }
+                        break;
+                    default:
+                        console.warn("No protocol selected. Using websockets");
+                        fileHandler.protocolToUse = "websocket";
+                    case "websocket":
+                        // send chunk over websocket
+                        if (fileHandler.encryptionEnabled) {
+                            wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                        }
+                        else {
+                            wsHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                        }
+                        break;
+                }
+                // update loading progress
+                screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
+                // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
+                fileHandler.sentChunkAmount += 1;
+                setTimeout(function() {
+                    fileHandler.prepareChunk(fileHandler.offset);
+                }, 100);
             }
-            fileHandler.sentChunkAmount += 1;
-            setTimeout(function() {
-                fileHandler.prepareChunk(fileHandler.offset);
-            }, 100);
+            else {
+                console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
+            }
         });
 
         ipcRenderer.on('pgp-chunk-encrypted', function(event, encryptedChunk, number) {
@@ -141,6 +147,19 @@ let fileHandler = {
     },
 
     prepareChunk: function(o) {
+        if (o == 0 && fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true) {
+            // IN DEVELOPMENT
+            let stream = ss.createStream();
+            ss(wsHandler.socket).emit('as_send_stream', stream);
+            let blobStream = wsHandler.openStream();
+            blobStream.on('data', function(chunk) {
+                console.log(chunk);
+                fileHandler.offset += chunk.length;
+                screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
+            });
+            blobStream.pipe(stream);
+        }
+
         if (fileHandler.offset < fileHandler.file.size) {
             // console.log("Sending chunk starting at", o);
             // create chunk from file
