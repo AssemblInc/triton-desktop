@@ -73,6 +73,9 @@ var wsHandler = {
         ss(wsHandler.socket).on('as_stream_for_receiver', function(stream) {
             console.log("Received stream!");
             console.log(stream);
+            stream.on('data', function(data) {
+                console.log(data);
+            });
             stream.on('error', function(err) {
                 console.error(err);
             });
