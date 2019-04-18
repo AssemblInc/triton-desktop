@@ -1,6 +1,7 @@
 var wsHandler = {
     socket: null,
     isOpen: false,
+    ioStream: null,
 
     init: function() {
         screens.loading.setStatus("Establishing connection...");
@@ -67,6 +68,24 @@ var wsHandler = {
 
         wsHandler.socket.on('as_unencrypted_chunk_for_receiver', function(chunk, number) {
             ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(Object.values(chunk)), number);
+        });
+
+        ss(wsHandler.socket).on('as_stream_for_receiver', function(stream) {
+            console.log("Received stream!");
+            console.log(stream);
+            stream.on('data', function(data) {
+                console.log(data);
+            });
+            stream.on('error', function(err) {
+                console.error(err);
+            });
+            stream.on('end', function() {
+                console.log("Stream ended!");
+            });
+            stream.on('finish', function() {
+                console.log("Stream finished");
+            });
+            wsHandler.ioStream = stream;
         });
 
         wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {
@@ -223,6 +242,17 @@ var wsHandler = {
         }
         else {
             console.warn("Tried sending unencrypted chunk over websocket while the connection has not been established yet.");
+        }
+    },
+
+    openStream: function() {
+        if (wsHandler.isOpen) {
+            let stream = ss.createStream();
+            ss(wsHandler.socket).emit('as_send_stream', stream);
+            return stream;
+        }
+        else {
+            console.warn("Tried opening a stream for websocket while the connection has not been established yet.");
         }
     }
 };
