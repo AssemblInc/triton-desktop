@@ -23,7 +23,7 @@ body {
     padding: 0px;
     background: #193864;
     color: #EDF4F4;
-    font-family: 'Roboto', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 21px;
     caret-color: #EDF4F4;
     cursor: default;
@@ -293,7 +293,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     display: inline-block;
     cursor: pointer;
     background: #183b8c;
-    font-family: 'Didact Gothic', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Didact Gothic', Helvetica, Arial, sans-serif;
     letter-spacing: .2px;
     border: none;
     border-radius: 3px;
