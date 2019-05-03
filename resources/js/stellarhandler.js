@@ -17,15 +17,19 @@ let stellarHandler = {
         }
     },
 
-    commitHash: function(hash) {
+    addHash: function(hash) {
         if (hash == null) {
             console.warn("Hash equals null! Not commiting hash");
-            return;
+            return new Promise(function(resolve, reject) {
+                reject("Hash equals null");
+            });
         }
 
         if (stellarHandler.account == null) {
             console.warn("stellarHandler.account equals null! Not commiting hash");
-            return;
+            return new Promise(function(resolve, reject) {
+                reject("No Stellar account");
+            });
         }
 
         const transaction = new StellarSdk.TransactionBuilder(stellarHandler.account)

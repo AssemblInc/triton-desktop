@@ -39,6 +39,10 @@
         "details": "Could not decrypt chunk",
         "fix": "Restart the application and try again"
     },
+    "0x3003": {
+        "details": "Could not encrypt chunk",
+        "fix": "Restart the application and try again"
+    },
     "0x4001": {
         "details": "Could not handle sign in results",
         "fix": "Restart the application and try again"
@@ -49,6 +53,10 @@
     },
     "0x5001": {
         "details": "Could not finish file transfer",
+        "fix": "Restart the application and try again"
+    },
+    "0x6001": {
+        "details": "Could not add hash to blockchain",
         "fix": "Restart the application and try again"
     }
 }

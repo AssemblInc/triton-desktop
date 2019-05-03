@@ -96,6 +96,7 @@ let fileHandler = {
         
         ipcRenderer.on('pgp-chunk-encryption-error', function(event, err) {
             console.error("An error occured encrypting the chunk", err);
+            screens.showErrorScreen('0x3003');
         });
 
         let bg = document.getElementById("itemdropbox");
@@ -152,6 +153,7 @@ let fileHandler = {
     prepareChunk: function(o) {
         if (o == 0 && fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true) {
             // IN DEVELOPMENT
+            // NO BLOCKCHAIN INTEGRATION. DO NOT USE
             let stream = wsHandler.openStream();
             let blobStream = ss.createBlobReadStream(fileHandler.file);
             blobStream.on('error', function(err) {
@@ -200,16 +202,24 @@ let fileHandler = {
                 // retrieve the final hash
                 console.log("Hash is ready:", fileHandler.hash.hex());
                 // hashMemo(null, fileHandler.hash.hex());
-                screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                screens.loading.setStatus("Adding hash to blockchain...");
                 screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
                 screens.loading.resetProgress();
                 ipcRenderer.send('progress-update', true, 1, {
                     mode: "indeterminate"
                 });
                 screens.showLoadingScreen(true);
-                wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
-                // reset the filechooser
-                document.getElementById("fileChooser").value = "";
+                stellarHandler.addHash(fileHandler.hash.hex()).then(function(results) {
+                    console.log(results);
+                    screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                    wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
+                    // reset the filechooser
+                    document.getElementById("fileChooser").value = "";
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    screens.showErrorScreen('0x6001');
+                });
             }
         }
     },
