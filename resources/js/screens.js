@@ -93,6 +93,8 @@ let screens = {
             // errors is a global variable set in ui.html
             if (errorCode in errors) {
                 screens.hideAll();
+                screens.loading.resetProgress();
+                ipcRenderer.send('progress-update', false);
                 document.getElementById("errorscreen").style.display = "block";
                 let error = errors[errorCode];
                 document.getElementById("error-details").innerHTML = strip(error["details"]);
