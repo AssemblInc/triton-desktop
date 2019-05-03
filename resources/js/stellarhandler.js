@@ -6,7 +6,7 @@ let stellarHandler = {
     keypair: null,
     account: null,
 
-    init: function() {
+    init: async function() {
         if (!stellarHandler.initialized) {
             StellarSdk.Network.usePublicNetwork();
             stellarHandler.keypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC***");
