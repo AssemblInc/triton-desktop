@@ -34,6 +34,9 @@ let stellarHandler = {
 
         const transaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
             .setTimeout(0)
+            .addOperation(StellarSdk.Operation.bumpSequence({
+                bumpTo: parseInt(stellarHandler.account.sequenceNumber()) + 1
+            }))
             .addMemo(new StellarSdk.Memo(StellarSdk.MemoHash, hash))
             .build();
         transaction.sign(stellarHandler.keypair);
