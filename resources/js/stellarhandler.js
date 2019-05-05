@@ -68,9 +68,9 @@ let stellarHandler = {
 
         const transaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
             .setTimeout(0)
-            .addOperation(new StellarSdk.Operation.payment({
+            .addOperation(StellarSdk.Operation.payment({
                 destination: "GDUSGKXUPJFBITKGP3GKNCYM76JWQPOHOTQCPEFQCLECH73TLTZGJ4QF",
-                asset: new StellarSdk.Asset.native(),
+                asset: StellarSdk.Asset.native(),
                 amount: '0.000001'
             }))
             .addMemo(new StellarSdk.Memo(StellarSdk.MemoHash, hash))
