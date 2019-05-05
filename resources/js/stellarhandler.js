@@ -22,20 +22,27 @@ let stellarHandler = {
                 stellarHandler.horizonServer = new StellarSdk.Server('https://horizon.stellar.org');
                 stellarHandler.keypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC***");
                 StellarSdk.Network.usePublicNetwork();
+                stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
             }
             console.log("Public key:", stellarHandler.keypair.publicKey());
             console.log("Secret key:", stellarHandler.keypair.secret());
-            stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
             if (useTestNet) {
-                let accCreateTransaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
+                console.log("Loading source account...");
+                let sourceKeypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC_TESTNET***");
+                let sourceAccount = await stellarHandler.horizonServer.loadAccount(sourceKeypair.publicKey());
+                console.log("Creating new testnet account...");
+                let accCreateTransaction = new StellarSdk.TransactionBuilder(sourceAccount)
+                    .setTimeout(0)
                     .addOperation(StellarSdk.Operation.createAccount({
                         destination: stellarHandler.keypair.publicKey(),
-                        startingBalance: "10"
+                        startingBalance: "25"
                     }))
                     .build();
                 accCreateTransaction.sign(stellarHandler.keypair);
+                console.log("Sending account creation transaction...");
                 let accCreate = await stellarHandler.horizonServer.submitTransaction(accCreateTransaction);
                 console.log(accCreate);
+                console.log("Loading account...");
                 stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
             }
         }
@@ -73,7 +80,7 @@ let stellarHandler = {
     }
 };
 
-stellarHandler.init(true);
+stellarHandler.init(false);
 
 /*
 let horizonServer = new StellarSdk.Server('https://horizon.stellar.org');
