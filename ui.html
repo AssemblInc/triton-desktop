@@ -53,7 +53,7 @@
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
-                            <form id="receiver-input-form" onsubmit="passwordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                            <form id="password-form" onsubmit="passwordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your password:</div>
                                 <input type="password" id="password" placeholder="Enter your password" required minlength="8" maxlength="46" /><br />
                                 <div id="password-error"></div>
@@ -72,7 +72,7 @@
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
-                            <form id="receiver-input-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                            <form id="new-password-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter a new password:</div>
                                 <input type="password" id="freshpassword" placeholder="Enter a new password" required minlength="8" maxlength="46" /><br />
                                 <button type="submit" class="connect-button" id="fresh-btn">start</button>
@@ -88,7 +88,7 @@
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
-                            <form id="receiver-input-form" onsubmit="nameSubmit(event);" autocomplete="off" accept-charset="UTF-8">
+                            <form id="name-form" onsubmit="nameSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your name:</div>
                                 <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" /><br />
                                 <button type="submit" class="connect-button" id="name-set-btn">continue</button>
@@ -105,45 +105,92 @@
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo" id="purpose-selector">
                             <div style="margin-bottom: 12px;">What would you like to do today?</div>
-                            <button class="purpose-button" onclick="screens.startSender();">Send data</button><button class="purpose-button" onclick="screens.startReceiver();">Receive data</button>
+                            <button class="purpose-button" onclick="screens.startOptions();">Send data</button><button class="purpose-button" onclick="screens.startReceiver();">Receive data</button>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
-        <div class="screen" id="sender" style="display: none;">
+        <div class="screen" id="options" style="display: none;">
             <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startPurposeSelector();" onkeydown="screens.startPurposeSelector();" title="Go back" alt="Go back" tabindex="0" />
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
                         <div class="underthelogo">
-                            <div id="protocolselector">
+                            <form id="options-form" onsubmit="optionsSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Select a transfer method:</div>
                                 <select id="protocol" onchange="protocolChange(this.value);">
-                                    <option value="unset" disabled selected>Select a transfer method...</option>
-                                    <option value="websocket">Proxy</option>
+                                    <option value="websocket" selected>Proxy</option>
                                     <option value="webrtc">Direct</option>
                                 </select>
                                 <script>
-                                function protocolChange(prot) {
-                                    if (prot != "unset" && prot != "") {
-                                        fileHandler.protocolToUse = prot;
-                                        document.getElementById("protocolselector").style.display = "none";
-                                        document.getElementById("peeridfinder").style.display = "block";
-                                        document.getElementById("yourpeerid").focus();
+                                function protocolChange(opt) {
+                                    if (opt != "") {
+                                        fileHandler.protocolToUse = opt;
                                     }
                                     else {
-                                        alert("Select a valid protocol.");
+                                        alert("Please select a valid transfer method.");
                                     }
                                 }
-                                // protocolChange(document.getElementById("protocol").value);
+                                fileHandler.protocolToUse = "websocket";
                                 </script>
-                            </div>
-                            <div id="peeridfinder" style="display: none;">
-                                <div>Give the following ID to the receiving party:</div>
-                                <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
-                            </div>
+
+                                <div>Select an encryption option:</div>
+                                <select id="encryption" onchange="encryptionChange(this.value);">
+                                    <option value="none">No encryption (fastest)</option>
+                                    <option value="2kbit" selected>2048-bit encryption (fast)</option>
+                                    <option value="4kbit" disabled>4096-bit encryption (slow)</option>
+                                </select>
+                                <script>
+                                function encryptionChange(opt) {
+                                    switch(opt) {
+                                        case "none":
+                                            fileHandler.useEncryption(false);
+                                            break;
+                                        case "2kbit":
+                                            fileHandler.useEncryption(true);
+                                            break;
+                                        case "4kbit":
+                                            // TODO: implement it
+                                            fileHandler.useEncryption(true);
+                                            break;
+                                        default:
+                                            alert("Please select a valid encryption option.");
+                                            break;
+                                    }
+                                    fileHandler.useEncryption(true);
+                                }
+                                </script>
+
+                                <div>Choose your license:</div>
+                                <select id="license" onchange="licenseChange(this.value);">
+                                    <option value="todo" disabled selected>COMING SOON...</option>
+                                    <option value="really" disabled>Come back later!</option>
+                                </select>
+                                <script>
+                                function licenseChange(opt) {
+                                    alert("Licenses are not implemented yet. Please come back later!");
+                                }
+                                </script>
+
+                                <br />
+                                <button type="submit" class="connect-button" id="options-submit-btn">continue</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="screen" id="peeridshowcase">
+            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startOptions();" onkeydown="screens.startOptions();" title="Go back" alt="Go back" tabindex="0" />
+            <table style="width: 100%; height: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
+                        <div class="underthelogo">
+                            <div>Give the following ID to the receiving party:</div>
+                            <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
                         </div>
                     </td>
                 </tr>

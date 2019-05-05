@@ -135,6 +135,12 @@ function passwordSubmit(event) {
     return false;
 }
 
+function optionsSubmit(event) {
+    event.preventDefault();
+    screens.showPeerIdShowcaser();
+    return false;
+}
+
 ipcRenderer.on('userdata-loaded', function(event) {
     screens.loading.setStatus("Loading...");
     screens.loading.setDetails("Please wait...");

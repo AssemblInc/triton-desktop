@@ -61,15 +61,11 @@ let screens = {
         }
     },
 
-    startSender: function() {
+    startOptions: function() {
         if (!appClosing) {
             screens.hideAll();
-            document.getElementById("sender").style.display = "block";
-            document.getElementById("peeridfinder").style.display = "none";
-            document.getElementById("protocolselector").style.display = "block";
-            document.getElementById("protocol").value = "unset";
+            document.getElementById("options").style.display = "block";
             document.getElementById("protocol").focus();
-            document.getElementById("yourpeerid").value = ipcRenderer.sendSync('assemblid-request');
         }
     },
 
@@ -85,6 +81,15 @@ let screens = {
             screens.hideAll();
             document.getElementById("receiver").style.display = "block";
             document.getElementById("senderpeerid").focus();
+        }
+    },
+
+    showPeerIdShowcaser: function() {
+        if (!appClosing) {
+            screens.hideAll();
+            document.getElementById("yourpeerid").value = ipcRenderer.sendSync('assemblid-request');
+            document.getElementById("peeridshowcase").style.display = "block";
+            document.getElementById("yourpeerid").focus();
         }
     },
 
