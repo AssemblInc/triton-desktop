@@ -1,3 +1,6 @@
+// FOR A NEW ACCOUNT: use following url to get some stellar
+// https://horizon-testnet.stellar.org/friendbot?addr=<PUBLICKEY>
+
 const StellarSdk = require('stellar-sdk');
 
 let stellarHandler = {
