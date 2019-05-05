@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "electron": "^4.0.3",
-    "electron-builder": "^20.39.0"
+    "electron-builder": "^20.40.2"
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
@@ -40,6 +40,7 @@
     "pull-stream": "^3.6.9",
     "socket.io": "^2.2.0",
     "socket.io-stream": "^0.9.1",
+    "ssh2-sftp-client": "^2.5.0",
     "stellar-base": "^0.10.0",
     "stellar-sdk": "^0.12.0"
   },
