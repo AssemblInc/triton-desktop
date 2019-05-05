@@ -125,6 +125,7 @@ let fileHandler = {
 
     readFile: function(f) {
         console.log("File changed!");
+        console.log(f);
         if (f != null && f.size > 0) {
             fileHandler.file = f;
             fileHandler.hash = keccak256.create();
