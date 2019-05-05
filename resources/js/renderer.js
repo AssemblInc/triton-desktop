@@ -194,6 +194,8 @@ function domReady() {
 
     fileHandler.init();
 
+    attachInformationBalloons();
+
     // screens.startPasswordInputter();
     if (ipcRenderer.sendSync('prevsession-exists') === true) {
         screens.startPasswordInputter();
@@ -221,3 +223,14 @@ ipcRenderer.on('next-chunk-ready-to-send', function(event, data) {
     // webrtc uses its own received event in rtc.js
     fileHandler.prepareChunk(fileHandler.offset);
 });
+
+function attachInformationBalloons() {
+    var infoButtons = document.getElementsByClassName("info-btn");
+    console.log(infoButtons);
+    var infoButtonsAmount = infoButtons.length;
+    for (var ib = 0; ib < infoButtonsAmount; ib++) {
+        infoButtons[ib].addEventListener("click", function(event) {
+            alert(event.target.getAttribute("data-info"));
+        });
+    }
+}

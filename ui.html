@@ -55,7 +55,9 @@
                         <div class="underthelogo" id="purpose-selector">
                             <form id="password-form" onsubmit="passwordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your password:</div>
-                                <input type="password" id="password" placeholder="Enter your password" required minlength="8" maxlength="46" /><br />
+                                <input type="password" id="password" placeholder="Enter your password" required minlength="8" maxlength="46" />
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="This password is used by Assembl to safely store your user data on your computer." />
+                                <br />
                                 <div id="password-error"></div>
                                 <button type="submit" class="connect-button" id="password-btn">continue</button>
                             </form>
@@ -74,7 +76,9 @@
                         <div class="underthelogo" id="purpose-selector">
                             <form id="new-password-form" onsubmit="freshPasswordSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter a new password:</div>
-                                <input type="password" id="freshpassword" placeholder="Enter a new password" required minlength="8" maxlength="46" /><br />
+                                <input type="password" id="freshpassword" placeholder="Enter a new password" required minlength="8" maxlength="46" />
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="This password is used by Assembl to safely store your user data on your computer." />
+                                <br />
                                 <button type="submit" class="connect-button" id="fresh-btn">start</button>
                             </form>
                         </div>
@@ -90,7 +94,9 @@
                         <div class="underthelogo" id="purpose-selector">
                             <form id="name-form" onsubmit="nameSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your name:</div>
-                                <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" /><br />
+                                <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" />
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="This name will be visible to the person you will be connecting to." />
+                                <br />
                                 <button type="submit" class="connect-button" id="name-set-btn">continue</button>
                             </form>
                         </div>
@@ -124,6 +130,7 @@
                                     <option value="websocket" selected>Proxy</option>
                                     <option value="webrtc">Direct</option>
                                 </select>
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Proxy uses a websocket connection to transfer your files over the Assembl server. Choose direct for a decentralized transferring method." />
                                 <script>
                                 function protocolChange(opt) {
                                     if (opt != "") {
@@ -142,6 +149,7 @@
                                     <option value="2kbit" selected>2048-bit encryption (fast)</option>
                                     <option value="4kbit" disabled>4096-bit encryption (slow)</option>
                                 </select>
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Any sensitive data should always be sent with encryption enabled to be GDPR-compliant." />
                                 <script>
                                 function encryptionChange(opt) {
                                     switch(opt) {
@@ -168,6 +176,7 @@
                                     <option value="todo" disabled selected>COMING SOON...</option>
                                     <option value="really" disabled>Come back later!</option>
                                 </select>
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="We are currently still developing the licensing functionality of Assembl Desktop! Come back later." />
                                 <script>
                                 function licenseChange(opt) {
                                     alert("Licenses are not implemented yet. Please come back later!");
@@ -191,6 +200,7 @@
                         <div class="underthelogo">
                             <div>Give the following ID to the receiving party:</div>
                             <input type="text" id="yourpeerid" readonly onfocus="this.select();" onmousedown="this.select();" />
+                            <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Give this piece of text over to the person you wish to send files to. You can give it in any way thinkable: e-mail, text, a phone call... The other end must then input this number after selecting to receive files." />
                         </div>
                     </td>
                 </tr>
@@ -231,7 +241,9 @@
                         <div class="underthelogo">
                             <form id="receiver-input-form" onsubmit="formSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter the sender ID:</div>
-                                <input type="text" id="senderpeerid" placeholder="ASXXXXXXXXXX" required pattern="^AS([A-z0-9]{10})$" title="The sender ID (ASXXXXXXXXXX)" maxlength="12" /><br />
+                                <input type="text" id="senderpeerid" placeholder="ASXXXXXXXXXX" required pattern="^AS([A-z0-9]{10})$" title="The sender ID (ASXXXXXXXXXX)" maxlength="12" />
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Enter the sender ID here. The sender ID is a short piece of text of 12 characters which must be given to you by the person who will be sending you any data." />
+                                <br />
                                 <button type="submit" class="connect-button" id="connect-btn">connect</button>
                             </form>
                         </div>
