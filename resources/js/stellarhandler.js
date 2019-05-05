@@ -2,15 +2,39 @@ const StellarSdk = require('stellar-sdk');
 
 let stellarHandler = {
     initialized: false,
-    horizonServer: new StellarSdk.Server('https://horizon.stellar.org'),
+    horizonServer: null,
     keypair: null,
     account: null,
 
-    init: async function() {
+    init: async function(useTestNet) {
         if (!stellarHandler.initialized) {
-            StellarSdk.Network.usePublicNetwork();
-            stellarHandler.keypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC***");
+            if (useTestNet) {
+                console.warn("Using Stellar Horizon TESTNET");
+                stellarHandler.horizonServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+                stellarHandler.keypair = StellarSdk.Keypair.random();
+                StellarSdk.Network.useTestNetwork();
+            }
+            else {
+                console.warn("Using Stellar Horizon PUBLIC");
+                stellarHandler.horizonServer = new StellarSdk.Server('https://horizon.stellar.org');
+                stellarHandler.keypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC***");
+                StellarSdk.Network.usePublicNetwork();
+            }
+            console.log("Public key:", stellarHandler.keypair.publicKey());
+            console.log("Secret key:", stellarHandler.keypair.secret());
             stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
+            if (useTestNet) {
+                let accCreateTransaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
+                    .addOperation(StellarSdk.Operation.createAccount({
+                        destination: stellarHandler.keypair.publicKey(),
+                        startingBalance: "10"
+                    }))
+                    .build();
+                accCreateTransaction.sign(stellarHandler.keypair);
+                let accCreate = await stellarHandler.horizonServer.submitTransaction(accCreateTransaction);
+                console.log(accCreate);
+                stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
+            }
         }
         else {
             console.warn("stellarHandler was already initialized!");
@@ -34,8 +58,10 @@ let stellarHandler = {
 
         const transaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
             .setTimeout(0)
-            .addOperation(StellarSdk.Operation.bumpSequence({
-                bumpTo: parseInt(stellarHandler.account.sequenceNumber()) + 1
+            .addOperation(new StellarSdk.Operation.payment({
+                destination: "GDUSGKXUPJFBITKGP3GKNCYM76JWQPOHOTQCPEFQCLECH73TLTZGJ4QF",
+                asset: new StellarSdk.Asset.native(),
+                amount: '0.000001'
             }))
             .addMemo(new StellarSdk.Memo(StellarSdk.MemoHash, hash))
             .build();
@@ -44,10 +70,10 @@ let stellarHandler = {
     }
 };
 
-stellarHandler.init();
+stellarHandler.init(true);
 
 /*
-let horizonServer = ;
+let horizonServer = new StellarSdk.Server('https://horizon.stellar.org');
 // let keypair = StellarSdk.Keypair.random();
 let keypair = ;
 console.log(keypair);
