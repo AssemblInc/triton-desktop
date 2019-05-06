@@ -33,7 +33,10 @@ let sftpHandler = {
                 ttl: 10
             }, function(err) {
                 if (err) {
+                    // TODO: fix timeout issue!
+                    // Library does not seem to work.
                     console.error(err);
+                    screens.showErrorScreen("0x2007");
                     reject("could_not_map_port");
                 }
                 else {

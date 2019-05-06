@@ -31,6 +31,10 @@
         "details": "WebRTC signaling state does not equal have-local-offer",
         "fix": "Restart the application and try again"
     },
+    "0x2007": {
+        "details": "Could not map port on router through uPnP",
+        "fix": "Contact your network or system administrator and ask if your network supports uPnP, then restart the application and try again"
+    },
     "0x3001": {
         "details": "Could not generate a PGP keypair",
         "fix": "Restart the application and try again"
