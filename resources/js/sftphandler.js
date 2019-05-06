@@ -42,12 +42,21 @@ let sftpHandler = {
         });
     },
 
-    startServer: function(keyPath, allowedUser, allowedPassword) {
+    startServer: function(keyPath, user, password) {
+        if (keyPath == null && user == null && password == null) {
+            return "Initialize first by running sftpHandler.initializeServer()";
+        }
+        keyPath = keyPath.replace("assembl_ssh_priv.key", "id_rsa");
         console.log(keyPath);
+        console.log(user);
+        console.log(password);
         let hostKey = fs.readFileSync(keyPath).toString();
         console.log(hostKey);
-        sftpHandler.allowedUser = Buffer.from(allowedUser);
-        sftpHandler.allowedPassword = Buffer.from(allowedPassword);
+        // hostKey = ***REMOVED_PRIV_KEY_OPENSSH***;
+        console.log(hostKey);
+        // console.log(***REMOVED_PRIV_KEY_OPENSSH***);
+        sftpHandler.allowedUser = Buffer.from(user);
+        sftpHandler.allowedPassword = Buffer.from(password);
         sftpHandler.server = new ssh2.Server({
             hostKeys: [hostKey]
         }, function(client) {
