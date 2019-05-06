@@ -43,12 +43,13 @@ let sftpHandler = {
     },
 
     startServer: function(keyPath, allowedUser, allowedPassword) {
-        keyPath = keyPath.replace("assembl_ssh_priv.key", "id_rsa");
         console.log(keyPath);
+        let hostKey = fs.readFileSync(keyPath).toString();
+        console.log(hostKey);
         sftpHandler.allowedUser = Buffer.from(allowedUser);
         sftpHandler.allowedPassword = Buffer.from(allowedPassword);
         sftpHandler.server = new ssh2.Server({
-            hostKeys: [keyPath]
+            hostKeys: [hostKey]
         }, function(client) {
             console.log("Client connected!");
             console.log(client);

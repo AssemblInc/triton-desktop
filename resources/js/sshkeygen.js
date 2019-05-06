@@ -87,10 +87,10 @@ let sshKeyGen = {
             return result;
         },
         rsaPrivateKey: function(key) {
-            return `-----BEGIN RSA PRIVATE KEY-----\n${key}-----END RSA PRIVATE KEY-----`;
+            return `-----BEGIN RSA PRIVATE KEY-----\n${key}-----END RSA PRIVATE KEY-----\n`;
         },
-        ssh2PrivateKey: function(key) {
-            return `-----BEGIN SSH2 PRIVATE KEY-----\n${key}-----END SSH2 PRIVATE KEY-----`;
+        opensshPrivateKey: function(key) {
+            return `-----BEGIN OPENSSH PRIVATE KEY-----\n${key}-----END OPENSSH PRIVATE KEY-----\n`;
         },
         wrap: function(text, len) {
             const length = len || 72;
@@ -104,6 +104,7 @@ let sshKeyGen = {
     },
 
     encodePrivateKey: function(jwk) {
+        console.log(jwk);
         const order = ["n", "e", "d", "p", "q", "dp", "dq", "qi"];
         const list = order.map(prop => {
             const v = sshKeyGen.helpers.checkHighestBit(sshKeyGen.helpers.stringToArray(sshKeyGen.helpers.base64urlDecode(jwk[prop])));
@@ -142,7 +143,7 @@ let sshKeyGen = {
                     .exportKey("jwk", key.privateKey)
                     .then(sshKeyGen.encodePrivateKey)
                     .then(sshKeyGen.helpers.wrap)
-                    .then(sshKeyGen.helpers.rsaPrivateKey);
+                    .then(sshKeyGen.helpers.opensshPrivateKey);
 
                 const publicKey = window.crypto.subtle.exportKey("jwk", key.publicKey)
                     .then(function(jwk) {
