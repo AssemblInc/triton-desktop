@@ -25,7 +25,7 @@ let stellarHandler = {
                 stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
             }
             console.log("Public key:", stellarHandler.keypair.publicKey());
-            console.log("Secret key:", stellarHandler.keypair.secret());
+            // console.log("Secret key:", stellarHandler.keypair.secret());
             if (useTestNet) {
                 console.log("Loading source account...");
                 let sourceKeypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC_TESTNET***");

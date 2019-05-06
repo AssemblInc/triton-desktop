@@ -1,6 +1,7 @@
 let SFTPClient = require('ssh2-sftp-client');
 let SFTPServer = require('node-sftp-server');
 
+/*
 let sftp = new sftpClient();
 console.log(sftp);
 sftp.connect({
@@ -15,6 +16,7 @@ sftp.connect({
 }).catch(function(err) {
     console.error(err);
 });
+*/
 
 let sftpHandler = {
     client: null,
