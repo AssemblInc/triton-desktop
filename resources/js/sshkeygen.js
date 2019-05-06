@@ -106,7 +106,7 @@ let sshKeyGen = {
     encodePrivateKey: function(jwk) {
         console.log(jwk);
         const order = ["n", "e", "d", "p", "q", "dp", "dq", "qi"];
-        const list = order.map(prop => {
+        const list = order.map(function(prop) {
             const v = sshKeyGen.helpers.checkHighestBit(sshKeyGen.helpers.stringToArray(sshKeyGen.helpers.base64urlDecode(jwk[prop])));
             const len = sshKeyGen.helpers.asnEncodeLen(v.length);
             return [0x02].concat(len, v); // int tag is 0x02
