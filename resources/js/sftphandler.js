@@ -1,5 +1,5 @@
-let SFTPClient = require('ssh2-sftp-client');
-let SFTPServer = require('node-sftp-server');
+let ssh2 = require('ssh2');
+let crypto = require('crypto');
 let natUpnp = require('nat-upnp');
 
 /*
@@ -23,67 +23,111 @@ let sftpHandler = {
     client: null,
     server: null,
     uPnpClient: null,
+    allowedUser: null,
+    allowedPassword: null,
 
-    startServer: function() {
+    initializeServer: function() {
         return new Promise(function(resolve, reject) {
-            sftpHandler.uPnpClient = natUpnp.createClient();
-            sftpHandler.uPnpClient.portMapping({
-                public: 27625,
-                private: 27625,
-                ttl: 10
-            }, function(err) {
-                if (err) {
-                    // TODO: fix timeout issue!
-                    // Library does not seem to work.
-                    console.error(err);
-                    screens.showErrorScreen("0x2007");
-                    reject("could_not_map_port");
-                }
-                else {
-                    sftpHandler.server = new SFTPServer({
-                        privateKeyFile: undefined,
-                        debug: true
-                    }).listen(27625);
-                    sftpHandler.server.on('connect', function(auth, info) {
-                        if (auth.username === "assembl" && auth.password === "testpassword") {
-                            return auth.accept(function(session) {
-                                // TODO: add more session events
-                                // CHECK https://www.npmjs.com/package/node-sftp-server
-                                // AND https://github.com/validityhq/node-sftp-server/blob/master/server_example.js
-                                session.on("realpath", function(path, callback) {
-                                    callback("/");
-                                });
-                                session.on("stat", function(path, statkind, statresponder) {
-            
-                                });
-                                session.on("readdir", function(path, responder) {
-                                    return responder.end();
-                                });
-            
-                            });
-                        }
-                    });
+            sshKeyGen.generateKeyPair()
+                .then(function(keypair) {
+                    console.log(keypair);
+                    ipcRenderer.send("save-ssh-keys", keypair[0], keypair[1]);
                     resolve();
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    screens.showErrorScreen("0x3004");
+                    reject();
+                });
+        });
+    },
+
+    startServer: function(keyPath, allowedUser, allowedPassword) {
+        keyPath = keyPath.replace("assembl_ssh_priv.key", "id_rsa");
+        console.log(keyPath);
+        sftpHandler.allowedUser = Buffer.from(allowedUser);
+        sftpHandler.allowedPassword = Buffer.from(allowedPassword);
+        sftpHandler.server = new ssh2.Server({
+            hostKeys: [keyPath]
+        }, function(client) {
+            console.log("Client connected!");
+            console.log(client);
+
+            client.on('authentication', function(ctx) {
+                let user = Buffer.from(ctx.username);
+                if (user.length != sftpHandler.allowedUser.length || !crypto.timingSafeEqual(user, sftpHandler.allowedUser)) {
+                    return ctx.reject();
                 }
+                switch (ctx.method) {
+                    case 'password': {
+                        let password = Buffer.from(ctx.password);
+                        if(password.length != sftpHandler.allowedPassword.length || !crypto.timingSafeEqual(password, sftpHandler.allowedPassword)) {
+                            return ctx.reject();
+                        }
+                        break;
+                    }
+                    default: {
+                        return ctx.reject();
+                    }
+                }
+
+                ctx.accept();
             });
+            client.on('ready', function() {
+                console.log("Client authenticated!");
+                
+                client.on('session', function(accept, reject) {
+                    let session = accept();
+                    session.on('sftp', function(accept, reject) {
+                        console.log("Client SFTP session");
+                        let openFiles = {};
+                        let handleCount = 0;
+                        // `sftpStream` is an `SFTPStream` instance in server mode
+                        // see: https://github.com/mscdex/ssh2-streams/blob/master/SFTPStream.md
+                        let sftpStream = accept();
+                        sftpStream.on('OPEN', function(reqid, filename, flags, attrs) {
+                            if (filename != path.join(app.getPath("userData"), 'tmp', 'filetransfer-'+Date.now()+'.assembltemp') || !(flags & OPEN_MODE.WRITE)) {
+                                return sftpStream.status(reqid, ssh2.STATUS_CODE.FAILURE);
+                            }
+                            // create a fake handle to return to the client, this could easily
+                            // be a real file descriptor number for example if actually opening
+                            // the file on the disk
+                            var handle = new Buffer(4);
+                            openFiles[handleCount] = true;
+                            handle.writeUInt32BE(handleCount++, 0, true);
+                            sftpStream.handle(reqid, handle);
+                            console.log('Opening file for write');
+                        });
+                        sftpStream.on('WRITE', function(reqid, filename, flags, attrs) {
+                            if (handle.length !== 4 || !openFiles[handle.readUInt32BE(0, true)]) {
+                                return sftpStream.status(reqid, ssh2.STATUS_CODE.FAILURE);
+                            }
+                            // fake ok
+                            sftpStream.status(reqid, ssh2.STATUS_CODE.OK);
+                        });
+                        sftpStream.on('CLOSE', function(reqid, handle) {
+                            let fnum;
+                            if (handle.length !== 4 || !openFiles[(fnum = handle.readUInt32BE(0, true))]) {
+                                return sftpStream.status(reqid, ssh2.STATUS_CODE.FAILURE);
+                            }
+                            delete openFiles[fnum];
+                            sftpStream.status(reqid, ssh2.STATUS_CODE.OK);
+                        });
+                    });
+                });
+            }).on('end', function() {
+                console.log("Client disconnected");
+            });
+        }).listen(0, '127.0.0.1', function() {
+            console.log('Listening on port ' + this.address().port);
         });
     },
 
     connectToServer: function(host, port, username, password) {
-        sftpHandler.client = new SFTPClient();
-        return new Promise(function(resolve, reject) {
-            sftpHandler.client.connect({
-                host: host,
-                port: port,
-                username: username,
-                password: password
-            }).then(function() {
-                console.log("A connection has been made!");
-                resolve();
-            }).catch(function(err) {
-                console.error(err);
-                reject(err);
-            });
-        });
+        
     }
 };
+
+ipcRenderer.on('ssh-keys-saved', function(event, keyPath) {
+    sftpHandler.startServer(keyPath, "assembluser", "assemblpassword");
+});

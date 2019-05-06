@@ -47,6 +47,10 @@
         "details": "Could not encrypt chunk",
         "fix": "Restart the application and try again"
     },
+    "0x3004": {
+        "details": "Could not generate an SSH keypair",
+        "fix": "Restart the application and try again"
+    },
     "0x4001": {
         "details": "Could not handle sign in results",
         "fix": "Restart the application and try again"
