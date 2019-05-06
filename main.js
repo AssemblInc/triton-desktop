@@ -433,4 +433,19 @@ ipcMain.on('pgp-encrypt-chunk', function(event, chunk, number) {
         });
 });
 
+// for sender
+ipcMain.on('save-ssh-keys', function(event, privateKey, publicKey) {
+    userDataHandler.saveData("ssh-publickey", publicKey);
+    userDataHandler.saveData("ssh-privatekey", privateKey);
+    let privPath = path.join(app.getPath('userData'), "assembl_ssh_priv.key");
+    fs.writeFile(privPath, privateKey, function(err) {
+        if (err) {
+            console.error(err);
+        }
+        else {
+            mainWindow.webContents.send('ssh-keys-saved', privPath);
+        }
+    });
+});
+
 app.on('ready', appReady);

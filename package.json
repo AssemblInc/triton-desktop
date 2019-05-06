@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
+    "crypto": "^1.0.1",
     "electron-context-menu": "^0.10.1",
     "js-sha3": "^0.8.0",
     "kbpgp": "^2.0.82",
@@ -35,14 +36,13 @@
     "mv": "^2.1.1",
     "nat-upnp": "^1.1.1",
     "node": "^11.9.0",
-    "node-sftp-server": "^0.3.0",
     "peer-id": "^0.12.2",
     "peer-info": "^0.15.1",
     "prettysize": "^2.0.0",
     "pull-stream": "^3.6.9",
     "socket.io": "^2.2.0",
     "socket.io-stream": "^0.9.1",
-    "ssh2-sftp-client": "^2.5.0",
+    "ssh2": "^0.8.4",
     "stellar-base": "^0.10.0",
     "stellar-sdk": "^0.12.0"
   },

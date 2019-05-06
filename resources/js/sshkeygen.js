@@ -89,6 +89,9 @@ let sshKeyGen = {
         rsaPrivateKey: function(key) {
             return `-----BEGIN RSA PRIVATE KEY-----\n${key}-----END RSA PRIVATE KEY-----`;
         },
+        ssh2PrivateKey: function(key) {
+            return `-----BEGIN SSH2 PRIVATE KEY-----\n${key}-----END SSH2 PRIVATE KEY-----`;
+        },
         wrap: function(text, len) {
             const length = len || 72;
             let result = "";
