@@ -311,7 +311,7 @@ ipcMain.on('publickey-request', function(event) {
 // for both
 ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
     pgpHandler.setOtherKeys(otherPublicKey);
-});7
+});
 
 // for receiver
 ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
