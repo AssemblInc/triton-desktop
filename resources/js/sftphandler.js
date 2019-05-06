@@ -1,5 +1,6 @@
 let SFTPClient = require('ssh2-sftp-client');
 let SFTPServer = require('node-sftp-server');
+let natUpnp = require('nat-upnp');
 
 /*
 let sftp = new sftpClient();
@@ -21,33 +22,47 @@ sftp.connect({
 let sftpHandler = {
     client: null,
     server: null,
+    uPnpClient: null,
 
     startServer: function() {
         return new Promise(function(resolve, reject) {
-            sftpHandler.server = new SFTPServer({
-                privateKeyFile: undefined,
-                debug: true
-            }).listen(2773);
-            sftpHandler.server.on('connect', function(auth, info) {
-                if (auth.username === "assembl" && auth.password === "testpassword") {
-                    return auth.accept(function(session) {
-                        // TODO: add more session events
-                        // CHECK https://www.npmjs.com/package/node-sftp-server
-                        // AND https://github.com/validityhq/node-sftp-server/blob/master/server_example.js
-                        session.on("realpath", function(path, callback) {
-                            callback("/");
-                        });
-                        session.on("stat", function(path, statkind, statresponder) {
-    
-                        });
-                        session.on("readdir", function(path, responder) {
-                            return responder.end();
-                        });
-    
+            sftpHandler.uPnpClient = natUpnp.createClient();
+            sftpHandler.uPnpClient.portMapping({
+                public: 27625,
+                private: 27625,
+                ttl: 10
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    reject("could_not_map_port");
+                }
+                else {
+                    sftpHandler.server = new SFTPServer({
+                        privateKeyFile: undefined,
+                        debug: true
+                    }).listen(27625);
+                    sftpHandler.server.on('connect', function(auth, info) {
+                        if (auth.username === "assembl" && auth.password === "testpassword") {
+                            return auth.accept(function(session) {
+                                // TODO: add more session events
+                                // CHECK https://www.npmjs.com/package/node-sftp-server
+                                // AND https://github.com/validityhq/node-sftp-server/blob/master/server_example.js
+                                session.on("realpath", function(path, callback) {
+                                    callback("/");
+                                });
+                                session.on("stat", function(path, statkind, statresponder) {
+            
+                                });
+                                session.on("readdir", function(path, responder) {
+                                    return responder.end();
+                                });
+            
+                            });
+                        }
                     });
+                    resolve();
                 }
             });
-            resolve();
         });
     },
 
