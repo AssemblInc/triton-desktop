@@ -8,6 +8,7 @@ let fileHandler = {
     protocolToUse: null,        // the protocol to use (transfer method)
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
     useStream: false,           // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
+    license: null,              // license selected for the file to send
 
     getChunkSize: function() {
         if (fileHandler.protocolToUse == "webrtc" || true) {

@@ -142,6 +142,7 @@
                                     }
                                     else {
                                         alert("Please select a valid transfer method.");
+                                        document.getElementById("protocol").value = "websocket";
                                     }
                                 }
                                 fileHandler.protocolToUse = "websocket";
@@ -169,6 +170,7 @@
                                             break;
                                         default:
                                             alert("Please select a valid encryption option.");
+                                            document.getElementById("encryption").value = "2kbit";
                                             break;
                                     }
                                     fileHandler.useEncryption(true);
@@ -177,13 +179,28 @@
 
                                 <div>Choose your license:</div>
                                 <select id="license" onchange="licenseChange(this.value);">
-                                    <option value="todo" disabled selected>COMING SOON...</option>
-                                    <option value="really" disabled>Come back later!</option>
+                                    <option value="none" selected>None</option>
+                                    <option value="cc4">Creative Commons 4 (CC BY 4.0)</option>
+                                    <option value="odbl">Open Database License (ODBL)</option>
                                 </select>
                                 <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="We are currently still developing the licensing functionality of Assembl Desktop! Come back later." />
                                 <script>
                                 function licenseChange(opt) {
-                                    alert("Licenses are not implemented yet. Please come back later!");
+                                    switch (opt) {
+                                        case "none": 
+                                            fileHandler.license = "none";
+                                            break;
+                                        case "cc4":
+                                            fileHandler.license = "cc4";
+                                            break;
+                                        case "odbl":
+                                            fileHandler.license = "odbl";
+                                            break;
+                                        default:
+                                            alert("This license is not supported right now. Please select a different one.");
+                                            document.getElementById("license").value = "none";
+                                            break;
+                                    }
                                 }
                                 </script>
 
