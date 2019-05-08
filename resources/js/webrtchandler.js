@@ -1,5 +1,4 @@
 var rtcHandler = {
-    iceServer: { urls: 'stun:stun.l.google.com:19302' },
     connection: null,
     fileChannel: null,
     isOpen: false,
@@ -47,7 +46,23 @@ var rtcHandler = {
     },
 
     init: function() {
-        rtcHandler.connection = new RTCPeerConnection({ iceServers: [ rtcHandler.iceServer ]});
+        rtcHandler.connection = new RTCPeerConnection({ iceServers: [
+            {
+                urls: 'stun:socket.assembl.science:3478'
+            },
+            {
+                urls: [
+                    'stun:stun.l.google.com:19302',
+                    'stun:stun1.l.google.com:19302',
+                    'stun:stun2.l.google.com:19302',
+                    'stun:stun3.l.google.com:19302',
+                    'stun:stun4.l.google.com:19302',
+                ]
+            },
+            {
+                urls: 'stun:stun.stunprotocol.org:3478'
+            }
+        ]});
         rtcHandler.connection.oniceconnectionstatechange = function(event) {
             console.log("New ICEConnectionState:", rtcHandler.connection.iceConnectionState);
         };
