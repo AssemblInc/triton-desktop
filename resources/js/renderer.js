@@ -34,13 +34,15 @@ let rProgressSize = 0;
 ipcRenderer.on('data-initialized', function(event, data) {
     console.log("Getting ready for file transmission...");
     screens.loading.setStatus("Getting ready for file transmission...");
-    rTotalSize = parseInt(data[0]);
+    let parsedData = JSON.parse(data);
+    console.log(parsedData);
+    rTotalSize = parseInt(parsedData["file"]["size"]);
     rProgressSize = 0;
-    fileName = data[1];
+    fileName = parsedData["file"]["name"];
     screens.loading.setDetails(strip(fileName) + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
     screens.loading.resetProgress();
     screens.showLoadingScreen(false);
-    screens.loading.setProgressWithFileSize(0, parseInt(data[0]));
+    screens.loading.setProgressWithFileSize(0, parseInt(parsedData["file"]["size"]));
     ipcRenderer.send('progress-update', true, 0, {
         mode: "indeterminate"
     });

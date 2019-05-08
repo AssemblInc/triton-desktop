@@ -9,6 +9,7 @@ let fileHandler = {
     encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
     useStream: false,           // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
     license: null,              // license selected for the file to send
+    transferInfo: {},           // transferInfo (JSON attachment for Stellar)
 
     getChunkSize: function() {
         if (fileHandler.protocolToUse == "webrtc" || true) {
@@ -141,11 +142,32 @@ let fileHandler = {
             screens.showLoadingScreen(false);
 
             // send data initialized event to receiver with file details
+            /*
             wsHandler.sendEvent('data_initialized', [
                 fileHandler.file.size.toString(),
                 fileHandler.file.name,
                 fileHandler.file.type
             ]);
+            */
+            fileHandler.transferInfo = {
+                currentTime: Date.now(),
+                file: {
+                    size: fileHandler.file.size,
+                    path: fileHandler.file.path,
+                    name: fileHandler.file.name,
+                    type: fileHandler.file.type,
+                    lastModified: fileHandler.file.lastModified,
+                    license: fileHandler.license,
+                    description: null,
+                    hash: null
+                },
+                transmission: {
+                    encryptionEnabled: fileHandler.encryptionEnabled,
+                    protocol: fileHandler.protocolToUse
+                }
+            };
+            console.log(fileHandler.transferInfo);
+            wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
         }
         else {
             alert("This file is empty and cannot be transferred.");
@@ -202,16 +224,23 @@ let fileHandler = {
             }
             else {
                 // retrieve the final hash
-                console.log("Hash is ready:", fileHandler.hash.hex());
-                // hashMemo(null, fileHandler.hash.hex());
-                screens.loading.setStatus("Adding hash to blockchain...");
+                let finalHash = fileHandler.hash.hex();
+                console.log("Hash is ready:", finalHash);
+                fileHandler.transferInfo.file.hash = finalHash;
+                screens.loading.setStatus("Adding transfer to the blockchain...");
                 screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
                 screens.loading.resetProgress();
                 ipcRenderer.send('progress-update', true, 1, {
                     mode: "indeterminate"
                 });
                 screens.showLoadingScreen(true);
-                stellarHandler.addHash(fileHandler.hash.hex()).then(function(results) {
+                let transferInfoHash = keccak256.create();
+                let transferInfoString = JSON.stringify(fileHandler.transferInfo);
+                ipcRenderer.send('transferinfo-finalized', transferInfoString);
+                wsHandler.sendEvent('transfer_info_complete', transferInfoString);
+                transferInfoHash.update(transferInfoString);
+                let memoHash = transferInfoHash.hex();
+                stellarHandler.addHash(memoHash).then(function(results) {
                     console.log(results);
                     screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
                     wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);

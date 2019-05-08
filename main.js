@@ -350,10 +350,11 @@ ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number)
 });
 
 // for receiver
-ipcMain.on('renderer-fileinfo', function(event, fileInfo) {
-    mainWindow.webContents.send('data-initialized', fileInfo);
+ipcMain.on('renderer-transferinfo', function(event, transferInfo) {
+    mainWindow.webContents.send('data-initialized', transferInfo);
     chunkHandler.initChunks();
-    chunkHandler.setFileName(fileInfo[1]);
+    let parsedInfo = JSON.parse(transferInfo);
+    chunkHandler.setFileName(parsedInfo["file"]["name"]);
 });
 
 // for receiver
@@ -444,6 +445,24 @@ ipcMain.on('save-ssh-keys', function(event, privateKey, publicKey) {
         }
         else {
             mainWindow.webContents.send('ssh-keys-saved', privPath);
+        }
+    });
+});
+
+// for both sender and receiver
+ipcMain.on('transferinfo-finalized', function(event, transferInfoString) {
+    let transfersFolder = path.join(app.getPath('userData'), "transfers");
+    if (!fs.existsSync(transfersFolder)) {
+        fs.mkdirSync(transfersFolder);
+    }
+    let transferInfo = JSON.parse(transferInfoString);
+    let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+new Date(transferInfo.currentTime).toISOString()+".json");
+    fs.writeFile(transferInfoFile, transferInfoString, function(err) {
+        if (err) {
+            console.error(err);
+        }
+        else {
+            console.log("transferinfo written to " + transferInfoFile);
         }
     });
 });

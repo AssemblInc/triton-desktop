@@ -92,11 +92,14 @@ var wsHandler = {
             console.log("as_event_for_receiver " + eventName + ": ", data);
             switch(eventName) {
                 case "data_initialized":
-                    ipcRenderer.send('renderer-fileinfo', data);
-                    wsHandler.sendEventToSender("fileinfo_received", null);
+                    ipcRenderer.send('renderer-transferinfo', data);
+                    wsHandler.sendEventToSender("data_initialized_received", null);
                     break;
                 case "data_transfer_complete":
                     ipcRenderer.send('renderer-filecomplete', data);
+                    break;
+                case "transfer_info_complete":
+                    ipcRenderer.send('transferinfo-finalized', data);
                     break;
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);
@@ -128,7 +131,7 @@ var wsHandler = {
                     screens.loading.resetProgress();
                     screens.startFileDropper();
                     break;
-                case "fileinfo_received":
+                case "data_initialized_received":
                     fileHandler.startTransfer();
                     break;
                 case "public_key":
