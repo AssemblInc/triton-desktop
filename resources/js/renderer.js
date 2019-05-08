@@ -6,6 +6,13 @@ let otherName = "";
 let receiverName = "";
 let fileName = "";
 
+function linkify(text) {
+    var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(urlRegex, function(url) {
+        return '<a target="_blank" href="' + url + '" title="Click to open link in web browser" onclick="event.preventDefault(); shell.openExternal(this.href);">' + url + '</a>';
+    });
+}
+
 function strip(text) {
    var tmp = document.createElement("div");
    tmp.innerHTML = text;
@@ -188,6 +195,8 @@ function nameSubmit(event) {
 
 let loadingTimeout = null;
 function domReady() {
+    checkAndShowAnnouncement();
+
     loadingTimeout = setTimeout(function() {
         var extraLoading = document.getElementById("extra-loading");
         extraLoading.style.height = "150px";
@@ -242,4 +251,45 @@ function tabIndexFix(event, funcToRun) {
         // keycode 13 means ENTER
         funcToRun();
     }
+}
+
+function checkAndShowAnnouncement() {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 2) {      // headers received
+            let contentType = xhr.getResponseHeader("Content-Type");
+            if (contentType != "application/json") {
+                console.warn("Announcement Content-Type was not application/json but " + contentType + "! Aborting...");
+                xhr.abort();
+            }
+        }
+        else if (this.readyState == 4 && this.status == 200) {      // done
+            let announcement = JSON.parse(this.responseText);
+            console.log(announcement);
+            if (announcement.message != null && announcement.message != undefined && announcement.message.length > 0) {
+                let announcementElem = document.createElement("div");
+                switch (announcement.type) {
+                    case "error":
+                        announcementElem.className = "announcement error";
+                        break;
+                    case "warning":
+                        announcementElem.className = "announcement warning";
+                        break;
+                    case "info":
+                    default:
+                        announcementElem.className = "announcement info";
+                        break;
+                }
+                announcementElem.innerHTML = linkify(strip(announcement.message));
+                let announcePlaces = document.getElementsByClassName("announcement-ready");
+                for (let i = 0; i < announcePlaces.length; i++) {
+                    console.log("Added announcement to " + (i+1) + " screens");
+                    announcePlaces[i].insertBefore(announcementElem.cloneNode(true), announcePlaces[i].firstChild);
+                }
+            }
+        }
+    };
+    xhr.open('GET', 'https://assembl.science/api/desktop-announcement.json', true);
+    xhr.setRequestHeader("Accept", "application/json")
+    xhr.send();
 }

@@ -455,6 +455,46 @@ input#fileChooser {
     opacity: 0.8;
 }
 
+/* announcement */
+.announcement {
+    display: inline-block;
+    padding: 16px 32px;
+    margin: -16px auto 48px auto;
+    max-width: 60%;
+    min-width: 32%;
+    text-align: center;
+    font-size: 16px;
+    border-radius: 3px;
+}
+
+.announcement.error {
+    border: solid 2px #AD102F;
+    background: #DC143C;
+    color: #39050F;
+}
+
+.announcement.warning {
+    border: solid 2px #CCA224;
+    background: #FFCB2E;
+    color: #4C3C0D;
+}
+
+.announcement.info {
+    border: solid 2px #5FB4C5;
+    background: #97CED9;
+    color: #255B66;
+}
+
+.announcement a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.announcement a:hover {
+    text-decoration-style: double;
+}
+
 /* copyright statement */
 #copyright {
     display: block;
