@@ -238,6 +238,26 @@
                 </div>
             </div>
         </div>
+        <div class="screen" id="fileconfirm" style="display: none;">
+            <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startOptions();" onkeydown="tabIndexFix(event, screens.startOptions);" title="Go back" alt="Go back" tabindex="0" />
+            <table style="width: 100%; height: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
+                        <div class="underthelogo">
+                            <div>Send this following file?</div>
+                            <small>File name</small>
+                            <div id="fileconfirm-name"></div>
+                            <small>File size</small>
+                            <div id="fileconfirm-size"></div>
+                            <small>Add a short description...</small>
+                            <input type="text" id="fileconfirm-description" placeholder="Not required but helpful" maxlength="256" />
+                            <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="A description of what the file being sent is about. This description will get added to the transfer information for future references." />
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <div class="screen" id="loading" style="display: none;">
             <table style="width: 100%; height: 100%;">
                 <tr>
