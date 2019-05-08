@@ -1,8 +1,8 @@
 {
   "name": "assembl-desktop",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Assembl Desktop allows you to transmit files directly to another person.",
-  "homepage": "https://assembl.science",
+  "homepage": "https://assembl.science/",
   "author": "Assembl Inc.",
   "license": "SEE LICENSE IN LICENSE.MD",
   "main": "main.js",
