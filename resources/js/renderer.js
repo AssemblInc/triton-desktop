@@ -234,3 +234,10 @@ function attachInformationBalloons() {
         });
     }
 }
+
+function tabIndexFix(event, funcToRun) {
+    if (event.which == 13 || event.keyCode == 13) {
+        // keycode 13 means ENTER
+        funcToRun();
+    }
+}
