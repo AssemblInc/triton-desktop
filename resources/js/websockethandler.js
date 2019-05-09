@@ -158,6 +158,7 @@ var wsHandler = {
         wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
             console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
             receiverName = userName;
+            document.getElementById("fileconfirm-recipient").innerHTML = strip(receiverName);
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             switch(fileHandler.protocolToUse) {
                 case "websocket": {

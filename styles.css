@@ -439,6 +439,17 @@ input#fileChooser {
     transition: opacity 250ms;
 }
 
+/* fileconfirm */
+#fileconfirm small {
+    display: block;
+    margin: 16px auto 4px auto;
+    font-size: 15px;
+}
+
+#fileconfirm-description {
+    margin-top: 4px;
+}
+
 /* information balloons */
 .info-btn {
     display: inline-block;

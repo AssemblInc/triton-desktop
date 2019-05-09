@@ -193,6 +193,13 @@ function nameSubmit(event) {
     return false;
 }
 
+function confirmSend(event) {
+    event.preventDefault();
+    fileHandler.transferInfo.file.description = document.getElementById("fileconfirm-description").value;
+    fileHandler.prepareTransfer();
+    return false;
+}
+
 let loadingTimeout = null;
 function domReady() {
     checkAndShowAnnouncement();

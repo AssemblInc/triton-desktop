@@ -125,6 +125,18 @@ let fileHandler = {
         drop.addEventListener("change", change_back, false);
     },
 
+    resetFile: function() {
+        fileHandler.file = null;
+        fileHandler.hash = null;
+        fileHandler.offset = 0;
+        fileHandler.chunkAmount = 0;
+        fileHandler.transferInfo = {};
+        document.getElementById("fileconfirm-name").innerHTML = "";
+        document.getElementById("fileconfirm-size").innerHTML = "";
+        document.getElementById("fileconfirm-description").value = "";
+        document.getElementById("fileChooser").value = "";
+    },
+
     readFile: function(f) {
         console.log("File changed!");
         console.log(f);
@@ -134,12 +146,6 @@ let fileHandler = {
             // fileHandler.hash = crypto.createHash('sha256');
             fileHandler.offset = 0;
             fileHandler.chunkAmount = 0;
-
-            // set loadingscreen
-            screens.loading.setStatus("Preparing file for transfer...");
-            screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
-            screens.loading.resetProgress();
-            screens.showLoadingScreen(false);
 
             // send data initialized event to receiver with file details
             /*
@@ -167,11 +173,23 @@ let fileHandler = {
                 }
             };
             console.log(fileHandler.transferInfo);
-            wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
+            document.getElementById("fileconfirm-name").innerHTML = strip(fileHandler.file.name);
+            document.getElementById("fileconfirm-size").innerHTML = prettySize(fileHandler.file.size);
+            screens.showFileConfirm();
         }
         else {
             alert("This file is empty and cannot be transferred.");
         }
+    },
+
+    prepareTransfer: function() {
+        // set loadingscreen
+        screens.loading.setStatus("Preparing file for transfer...");
+        screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
+        screens.loading.resetProgress();
+        screens.showLoadingScreen(false);
+
+        wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
     },
 
     prepareChunk: function(o) {

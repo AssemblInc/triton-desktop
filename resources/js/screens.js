@@ -76,6 +76,14 @@ let screens = {
         }
     },
 
+    showFileConfirm: function() {
+        if (!appClosing) {
+            screens.hideAll();
+            document.getElementById("fileconfirm").style.display = "block";
+            document.getElementById("fileconfirm-description").focus();
+        }
+    },
+
     startReceiver: function() {
         if (!appClosing) {
             screens.hideAll();
