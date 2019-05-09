@@ -89,6 +89,7 @@ function appReady() {
 }
 
 function signIn() {
+    let signedIn = false;
     console.log("Creating sign in window...");
     let signInWindow = new BrowserWindow({
         width: 500,
@@ -119,6 +120,9 @@ function signIn() {
     signInWindow.on('closed', function() {
         console.log("Closed signIn window, so showing mainWindow.");
         mainWindow.show();
+        if (!signedIn) {
+            mainWindow.webContents.send('error-occurred', '0x4003');
+        }
     });
 
     signInWindow.webContents.on('dom-ready', function(event) {
@@ -146,6 +150,7 @@ function signIn() {
                             userDataHandler.saveData("username", "");
                         }
                         console.log("Closing sign in window...");
+                        signedIn = true;
                         signInWindow.close();
                         mainWindow.webContents.send('signed-in');
                     }

@@ -59,6 +59,10 @@
         "details": "Could not fetch sign in results",
         "fix": "Restart the application and try again"
     },
+    "0x4003": {
+        "details": "Sign in cancelled",
+        "fix": "Restart the application and click on 'Start fresh' to sign in again"
+    },
     "0x5001": {
         "details": "Could not finish file transfer",
         "fix": "Restart the application and try again"
