@@ -2,9 +2,7 @@ const { app } = require('electron');
 const path = require('path');
 const kbpgp = require('kbpgp');
 const PGP = kbpgp["const"].openpgp;
-const fs = require('fs');
 
-let keyFile = path.join(app.getPath('userData'), 'keys.assemblkey');
 let userDataHandler = null;
 let opts;
 let keyManagers = {
@@ -174,51 +172,6 @@ exports.createKeys = function(displayName, userId) {
 exports.importOldKeys = function(displayName, userId) {
     return new Promise(
         function(resolve, reject) {
-            /*
-            console.log("Importing old keys... Reading file...");
-            fs.readFile(keyFile, { encoding: 'utf8' }, function(err, data) {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    console.log("Splitting keys...");
-                    let tempKeys = data.split("~~~");
-                    if (tempKeys.length == 2) {
-                        console.log("Importing old keys into kbpgp...");
-                        kbpgp.KeyManager.import_from_armored_pgp({
-                            armored: tempKeys[0]
-                        }, function(err, keyManager) {
-                            if (err) {
-                                console.error(err);
-                                reject(err);
-                            }
-                            else {
-                                keyManager.merge_pgp_private({
-                                    armored: tempKeys[1]
-                                }, function(err) {
-                                    if (err) {
-                                        console.error(err);
-                                        reject(err);
-                                    }
-                                    else {
-                                        loadKeys(keyManager, false)
-                                            .then(function(publicKey) {
-                                                resolve(publicKey);
-                                            })
-                                            .catch(function(err) {
-                                                reject(err);
-                                            });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    else {
-                        reject("key file is corrupt");
-                    }
-                }
-            });
-            */
             console.log("Importing old keys...");
             kbpgp.KeyManager.import_from_armored_pgp({
                 armored: userDataHandler.loadData("public_key")
@@ -254,19 +207,6 @@ exports.importOldKeys = function(displayName, userId) {
 function saveKeys() {
     return new Promise(
         function(resolve, reject) {
-            /*
-            console.log("Writing keys to appdata (" + keyFile + ')...');
-            fs.writeFile(keyFile, keys.public + "~~~" + keys.private, function(err) {
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                }
-                else {
-                    console.log("Keys written to appdata");
-                    resolve();
-                }
-            });
-            */
             userDataHandler.saveData("public_key", keys.public);
             userDataHandler.saveData("private_key", keys.private);
             userDataHandler.saveData("keys_valid_until", validUntil);
@@ -278,41 +218,6 @@ function saveKeys() {
 exports.hasOldValidKeys = function() {
     return new Promise(
         function(resolve, reject) {
-            /*
-            fs.exists(keyFile, function(exists) {
-                if (exists) {
-                    fs.stat(keyFile, function(err, stats) {
-                        if (err) {
-                            console.error(err);
-                            reject(err);
-                        }
-                        else {
-                            if (stats.mtimeMs < Date.now() - 1814400000) {
-                                console.log("Old keys are older than 21 days and should no longer be valid. Deleting them...");
-                                fs.unlink(keyFile, function(err) {
-                                    if (err) {
-                                        console.error(err);
-                                        reject(err);
-                                    }
-                                    else {
-                                        console.log("Old invalid keys deleted.");
-                                        resolve(false);
-                                    }
-                                });
-                            }
-                            else {
-                                console.log("Old keys are still valid.");
-                                resolve(true);
-                            }
-                        }
-                    });
-                }
-                else {
-                    console.log("No old valid keys found.");
-                    resolve(false);
-                }
-            });
-            */
             resolve(userDataHandler.hasData("public_key") && userDataHandler.hasData("private_key") && userDataHandler.hasData("keys_valid_until") && userDataHandler.loadData("keys_valid_until") > Date.now());
         }
     );
