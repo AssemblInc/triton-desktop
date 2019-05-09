@@ -14,14 +14,17 @@ let stellarHandler = {
             if (useTestNet) {
                 console.warn("Using Stellar Horizon TESTNET");
                 stellarHandler.horizonServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+                // generate a random keypair for new account on stellar testnet
                 stellarHandler.keypair = StellarSdk.Keypair.random();
                 StellarSdk.Network.useTestNetwork();
             }
             else {
                 console.warn("Using Stellar Horizon PUBLIC");
                 stellarHandler.horizonServer = new StellarSdk.Server('https://horizon.stellar.org');
+                // retrieve public key from assembl stellar account based on private key
                 stellarHandler.keypair = StellarSdk.Keypair.fromSecret("***REMOVED_PRIV_KEY_STELLAR_HORIZON_SOURCE_ACC***");
                 StellarSdk.Network.usePublicNetwork();
+                // load assembl stellar account
                 stellarHandler.account = await stellarHandler.horizonServer.loadAccount(stellarHandler.keypair.publicKey());
             }
             console.log("Public key:", stellarHandler.keypair.publicKey());
@@ -66,6 +69,8 @@ let stellarHandler = {
             });
         }
 
+        // add hash to stellar blockchain as a hashmemo
+        // on a transaction of a few XLM to (currently) Sebastian Mellen
         const transaction = new StellarSdk.TransactionBuilder(stellarHandler.account)
             .setTimeout(0)
             .addOperation(StellarSdk.Operation.payment({

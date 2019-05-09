@@ -19,6 +19,7 @@ let savedData = null;
 let pw = null;
 
 function getCipherKey(password) {
+    // retrieve a cipher key from password
     return crypto.createHash('sha256').update(password).digest();
 }
 
@@ -34,6 +35,7 @@ exports.init = function(password, reset) {
     return new Promise(function(resolve, reject) {
         const hashedPassword = keccak256(password);
         if (initialized !== true) {
+            // if no fresh start and a userdata file exists, try to open that file
             if (fs.existsSync(file) && reset !== true) {
                 console.log("Loading UserData...");
                 const readInitVect = fs.createReadStream(file, { end: 15 });
@@ -80,6 +82,7 @@ exports.init = function(password, reset) {
                 });
             }
             else {
+                // otherwise create new userdata
                 console.log("UserData created");
                 savedData = {};
                 pw = hashedPassword;

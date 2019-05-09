@@ -71,6 +71,7 @@ exports.handleChunk = function(chunk, isUint8Array, number) {
     }
     */
     
+    // write chunk data to a temporary chunk file using a writestream
     let tempChunkFile = path.join(chunkPath, 'filetransfer-'+startTimestamp+'-'+number+'.assemblchunk');
     chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
     chunkWriter.on('error', function(err) {
@@ -79,6 +80,7 @@ exports.handleChunk = function(chunk, isUint8Array, number) {
         chunkWriter.end();
     });
     if (!isUint8Array) {
+        // if the chunk is not in Uint8Array format, produce an Uint8Array out of the chunk, then write it to the chunk file
         let tempChunk = new Uint8Array(chunk);
         receivedByteAmount += tempChunk.byteLength;
         chunkWriter.write(tempChunk);
@@ -106,14 +108,18 @@ exports.finish = function(win) {
         let mergedChunks = 0;
         let f = 0;
         chunkMergInterval = setInterval(function() {
+            // if not all chunks are finalized (added to final file) run this code
             if (f < finalChunkAmount) {
+                // locate the required chunk file
                 chunkFile = path.join(chunkPath, "filetransfer-"+startTimestamp+"-"+f+".assemblchunk");
                 if (fs.existsSync(chunkFile)) {
                     console.log("Appending chunk " + f + "...");
                     let tempChunk = fs.readFileSync(chunkFile);
+                    // write chunk to temporary final file
                     writer.write(tempChunk);
                     mergedChunks += 1;
                     if (mergedChunks % 5 == 0) {
+                        // every 5 merged chunks send the progress of merging to the user interface
                         win.webContents.send('chunks-merged', mergedChunks, finalChunkAmount);
                     }
                 }
@@ -124,6 +130,7 @@ exports.finish = function(win) {
                 f++;
             }
             else {
+                // otherwise the final file is done and can be moved (saved)!
                 win.webContents.send('chunks-merged', finalChunkAmount, finalChunkAmount);
                 clearInterval(chunkMergInterval);
                 chunkMergInterval = null;
@@ -147,6 +154,7 @@ exports.deleteTempFiles = function() {
             writer.end();
         }
         if (fs.existsSync(tempFile)) {
+            // remove temporary transfer file
             fs.unlinkSync(tempFile);
         }
         if (fs.existsSync(chunkPath)) {

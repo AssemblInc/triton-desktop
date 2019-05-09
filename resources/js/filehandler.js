@@ -173,6 +173,7 @@ let fileHandler = {
                 }
             };
             console.log(fileHandler.transferInfo);
+            // fill in file confirmation forms
             document.getElementById("fileconfirm-name").innerHTML = strip(fileHandler.file.name);
             document.getElementById("fileconfirm-size").innerHTML = prettySize(fileHandler.file.size);
             screens.showFileConfirm();
@@ -188,7 +189,8 @@ let fileHandler = {
         screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
         screens.loading.resetProgress();
         screens.showLoadingScreen(false);
-
+        
+        // send transfer info to recipient
         wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
     },
 
@@ -245,6 +247,7 @@ let fileHandler = {
                 let finalHash = fileHandler.hash.hex();
                 console.log("Hash is ready:", finalHash);
                 fileHandler.transferInfo.file.hash = finalHash;
+                // set loading screen
                 screens.loading.setStatus("Adding transfer to the blockchain...");
                 screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
                 screens.loading.resetProgress();
@@ -252,12 +255,15 @@ let fileHandler = {
                     mode: "indeterminate"
                 });
                 screens.showLoadingScreen(true);
+                // process final transferinfo
                 let transferInfoHash = keccak256.create();
                 let transferInfoString = JSON.stringify(fileHandler.transferInfo);
                 ipcRenderer.send('transferinfo-finalized', transferInfoString);
                 wsHandler.sendEvent('transfer_info_complete', transferInfoString);
+                // generate hash of fileinfo for blockchain
                 transferInfoHash.update(transferInfoString);
                 let memoHash = transferInfoHash.hex();
+                // add hash to stellar blockchain
                 stellarHandler.addHash(memoHash).then(function(results) {
                     console.log(results);
                     screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
