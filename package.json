@@ -29,6 +29,7 @@
     "crypto": "^1.0.1",
     "electron-context-menu": "^0.10.1",
     "js-sha3": "^0.8.0",
+    "kafkajs": "^1.8.0",
     "kbpgp": "^2.0.82",
     "libp2p": "^0.24.4",
     "libp2p-websocket-star": "^0.10.2",
