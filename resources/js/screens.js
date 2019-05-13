@@ -49,8 +49,11 @@ let screens = {
             var curUserName = ipcRenderer.sendSync('username-request');
             if (curUserName != null && curUserName.length > 0) {
                 document.getElementById("yourname").value = curUserName;
+                nameSubmit();
             }
-            document.getElementById("yourname").focus();
+            else {
+                document.getElementById("yourname").focus();
+            }
         }
     },
 

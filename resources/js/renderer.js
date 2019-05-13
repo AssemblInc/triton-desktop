@@ -183,7 +183,9 @@ ipcRenderer.on('signed-in', function(event) {
 });
 
 function nameSubmit(event) {
-    event.preventDefault();
+    if (event != null) {
+        event.preventDefault();
+    }
     // start generating a pgp keypair with the name
     screens.loading.setStatus("Generating a PGP keypair...");
     screens.loading.setDetails("This might take a while. Please wait...");
