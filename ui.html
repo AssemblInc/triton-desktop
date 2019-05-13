@@ -100,7 +100,7 @@
                             <form id="name-form" onsubmit="nameSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Enter your name:</div>
                                 <input type="text" id="yourname" placeholder="John Smith" required maxlength="46" />
-                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="This name will be visible to the person you will be connecting to." />
+                                <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Your name on ORCID is missing or not public. You need to enter your name manually. This only has to be done once. This name will be visible to the person you will be connecting to. It will also be used in the generated proof of any file transfers done over Assembl using this computer, unless you start fresh again." />
                                 <br />
                                 <button type="submit" class="connect-button" id="name-set-btn">continue</button>
                             </form>
@@ -299,6 +299,10 @@
             </table>
         </div>
         <div id="copyright">Assembl Desktop v<span id="app-version"></span> &copy; Assembl Inc. 2019</div>
+        <div id="verif" style="display: none;">
+            <div id="verif-conn">Connected with</div>
+            <div id="verif-name-holder"><span id="verif-name">Freek Bes</span><a id="verif-orcid" href="https://orcid.org/0000-0003-0980-7540" target="_blank" onclick="event.preventDefault(); shell.openExternal(this.href);" title="View ORCID iD profile"><img alt="ORCID" src="https://orcid.org/sites/default/files/images/orcid_32x32.png" /></a></div>
+        </div>
         <script> document.getElementById("app-version").innerHTML = ipcRenderer.sendSync('appversion-request'); </script>
     </body>
 </html>

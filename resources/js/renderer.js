@@ -2,8 +2,8 @@
 let appClosing = false;
 let protocolToUse = null;
 let publicKey = null;
-let otherName = "";
-let receiverName = "";
+let sender = {};
+let receiver = {};
 let fileName = "";
 
 function linkify(text) {
@@ -58,7 +58,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
 // for receiver
 ipcRenderer.on('receiving-chunk', function(event, data) {
     // console.log("Receiving a chunk...");
-    screens.loading.setStatus("Receiving file from " + strip(otherName) + "...");
+    screens.loading.setStatus("Receiving file from " + strip(sender.name) + "...");
 });
 
 // for receiver
@@ -112,7 +112,7 @@ ipcRenderer.on('chunks-merged', function(event, progress, total) {
 ipcRenderer.on('saved-file', function(event, data) {
     console.log("File has been saved");
     wsHandler.sendEventToSender('file_saved', null);
-    screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
+    screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
     screens.loading.setDetails("");
     screens.loading.resetProgress();
     screens.showLoadingScreen(true);
@@ -181,6 +181,18 @@ ipcRenderer.on('userdata-created', function(event) {
 ipcRenderer.on('signed-in', function(event) {
     wsHandler.init();
 });
+
+function showVerification(displayName, orcidId) {
+    document.getElementById("verif").style.display = "block";
+    document.getElementById("verif-name").innerHTML = strip(displayName);
+    if (orcidId != null) {
+        document.getElementById("verif-orcid").setAttribute("href", "https://orcid.org/"+orcidId);
+    }
+    else {
+        document.getElementById("verif-orcid").style.display = "none";
+    }
+    alert("A connection with " + displayName + " has been established.");
+}
 
 function nameSubmit(event) {
     if (event != null) {

@@ -140,7 +140,7 @@ var wsHandler = {
                 case "webrtc_answer_ready":
                     rtcHandler.connectAnswer(data)
                         .then(function() {
-                            alert("A connection with " + receiverName + " has been established.");
+                            showVerification(receiver.name, receiver.orcidId);
                             screens.startFileDropper();
                         })
                         .catch(function(err) {
@@ -157,17 +157,19 @@ var wsHandler = {
         // for sender
         wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
             console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
-            receiverName = userName;
-            document.getElementById("fileconfirm-recipient").innerHTML = strip(receiverName);
+            receiver.name = userName;
+            receiver.assemblId = assemblID;
+            receiver.orcidId = orcidID;
+            document.getElementById("fileconfirm-recipient").innerHTML = strip(receiver.name);
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             switch(fileHandler.protocolToUse) {
                 case "websocket": {
-                    alert("A connection with " + receiverName + " has been established.");
+                    showVerification(receiver.name, receiver.orcidId);
                     screens.startFileDropper();
                     break;
                 }
                 case "webrtc": {
-                    screens.loading.setStatus("Establishing connection with " + strip(receiverName) + "...");
+                    screens.loading.setStatus("Establishing connection with " + strip(receiver.name) + "...");
                     screens.loading.setDetails("Sending WebRTC offer...");
                     screens.showLoadingScreen(true);
                     rtcHandler.createOffer()
@@ -191,9 +193,11 @@ var wsHandler = {
         wsHandler.socket.on('as_connected_to', function(assemblID, userName, orcidID) {
             console.log("Outgoing connection: " + assemblID + " " + userName + "("+orcidID+")");
             wsHandler.sendEventToSender("public_key", ipcRenderer.sendSync('publickey-request'));
-            alert("A connection with " + userName + " has been established.");
-            otherName = userName;      // otherName is set in renderer.js
-            screens.loading.setStatus("Waiting for " + strip(otherName) + "...");
+            sender.name = userName;
+            sender.assemblId = assemblID;
+            sender.orcidId = orcidID;
+            showVerification(sender.name, sender.orcidId);
+            screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
             screens.loading.setDetails("");
             screens.showLoadingScreen(true);
         });

@@ -506,6 +506,46 @@ input#fileChooser {
     text-decoration-style: double;
 }
 
+/* verification elements */
+#verif {
+    display: block;
+    position: fixed;
+    right: 8px;
+    top: 8px;
+    font-size: 13px;
+    color: #5A769E;
+    z-index: 9999;
+    user-select: none;
+    text-align: right;
+}
+
+#verif-conn {
+    display: block;
+    color: #5A769E;
+    font-size: 11px;
+}
+
+#verif-name-holder {
+    display: block;
+    color: #EDEDED;
+}
+
+#verif-name {
+    text-align: middle;
+}
+
+#verif-orcid {
+    cursor: pointer;
+}
+
+#verif-orcid img {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-left: 4px;
+    vertical-align: text-bottom;
+}
+
 /* copyright statement */
 #copyright {
     display: block;
@@ -513,7 +553,7 @@ input#fileChooser {
     bottom: 4px;
     right: 8px;
     font-size: 13px;
-    color: rgba(255,255,255,0.5);
+    color: #5A769E;
     user-select: none;
     pointer-events: none;
     z-index: 9999;

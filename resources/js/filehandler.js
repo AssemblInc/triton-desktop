@@ -208,7 +208,7 @@ let fileHandler = {
 
                 console.log("Hash is ready:", fileHandler.hash.hex());
                 // hashMemo(null, fileHandler.hash.hex());
-                screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
                 screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2));
                 screens.loading.resetProgress();
                 ipcRenderer.send('progress-update', true, 1, {
@@ -266,7 +266,7 @@ let fileHandler = {
                 // add hash to stellar blockchain
                 stellarHandler.addHash(memoHash).then(function(results) {
                     console.log(results);
-                    screens.loading.setStatus("Waiting for " + strip(receiverName) + " to save the file...");
+                    screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
                     wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
                     // reset the filechooser
                     document.getElementById("fileChooser").value = "";
@@ -281,7 +281,7 @@ let fileHandler = {
 
     startTransfer: function() {
         fileHandler.sentChunkAmount = 0;
-        screens.loading.setStatus("Transferring file to " + strip(receiverName) + "...");
+        screens.loading.setStatus("Transferring file to " + strip(receiver.name) + "...");
         screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
         // start sending the first chunk
         fileHandler.prepareChunk(fileHandler.offset);
