@@ -144,9 +144,11 @@ function signIn() {
                         userDataHandler.saveData("orcid_scope", orcidData["scope"]);
                         console.log("Checking if username is there...");
                         if (orcidData["name"] != null && orcidData["name"].length > 0) {
+                            userDataHandler.saveData("orcid_name", orcidData["name"]);
                             userDataHandler.saveData("username", orcidData["name"]);
                         }
                         else {
+                            userDataHandler.saveData("orcid_name", "");
                             userDataHandler.saveData("username", "");
                         }
                         console.log("Closing sign in window...");
@@ -399,7 +401,7 @@ function loadPGP() {
     pgpHandler.hasOldValidKeys()
         .then(function(hasOldValidKeys) {
             if (hasOldValidKeys) {
-                pgpHandler.importOldKeys(userDataHandler.loadData("username"), null)
+                pgpHandler.importOldKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
@@ -408,7 +410,7 @@ function loadPGP() {
                     });
             }
             else {
-                pgpHandler.createKeys(userDataHandler.loadData("username"), null)
+                pgpHandler.createKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
                     .then(function(pubKey) {
                         mainWindow.webContents.send('pgp-keys-generated', pubKey);
                     })
