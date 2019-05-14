@@ -4,3 +4,4 @@ resources/.DS_Store
 dist/win-unpacked/*
 dist/*.exe
 dist/*.blockmap
+dist/builder-effective-config.yaml
