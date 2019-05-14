@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Assembl Transfer Validation File Reader</title>
+        <link rel="stylesheet" href="rstyles.css" />
+        <script>
+        const { ipcRenderer } = require('electron');
+        const prettySize = require('prettysize');
+        const readerHelp = require('./resources/json/readerhelp.json');
+        </script>
+        <script src="resources/js/validationreader.js"></script>
+    </head>
+    <body onload="domReady();">
+        <header>
+            <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div><div class="assembl-logo-subtext">Transfer Validation File Reader</div>
+        </header>
+        <nav>
+            <button title="Print document" onclick="window.print();">&#x2399;</button>
+        </nav>
+        <main id="main" style="display: none;">
+            <details open>
+                <summary>General</summary>
+                <table>
+                    <tr>
+                        <th>Version</th>
+                        <td id="general-version"></td>
+                        <td class="help"><button data-for="general-version" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Issued on</th>
+                        <td id="general-currenttime"></td>
+                        <td class="help"><button data-for="general-currenttime" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                </table>
+            </details>
+            <details open>
+                <summary>File</summary>
+                <table>
+                    <tr>
+                        <th>Size</th>
+                        <td id="file-size"></td>
+                        <td class="help"><button data-for="file-size" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Path</th>
+                        <td id="file-path"></td>
+                        <td class="help"><button data-for="file-path" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td id="file-name"></td>
+                        <td class="help"><button data-for="file-name" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Last modified</th>
+                        <td id="file-lastmodified"></td>
+                        <td class="help"><button data-for="file-lastmodified" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>License</th>
+                        <td id="file-license"></td>
+                        <td class="help"><button data-for="file-license" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td id="file-description"></td>
+                        <td class="help"><button data-for="file-description" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Hash</th>
+                        <td id="file-hash" class="code"></td>
+                        <td class="help"><button data-for="file-hash" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                </table>
+            </details>
+            <details open>
+                <summary>Sender</summary>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <td id="sender-name"></td>
+                        <td class="help"><button data-for="sender-name" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Assembl ID</th>
+                        <td id="sender-assemblid" class="code"></td>
+                        <td class="help"><button data-for="sender-assemblid" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>ORCID iD</th>
+                        <td id="sender-orcidid" class="code"></td>
+                        <td class="help"><button data-for="sender-orcidid" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                </table>
+            </details>
+            <details open>
+                <summary>Receiver</summary>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <td id="receiver-name"></td>
+                        <td class="help"><button data-for="receiver-name" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>Assembl ID</th>
+                        <td id="receiver-assemblid" class="code"></td>
+                        <td class="help"><button data-for="receiver-assemblid" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                    <tr>
+                        <th>ORCID iD</th>
+                        <td id="receiver-orcidid" class="code"></td>
+                        <td class="help"><button data-for="receiver-orcidid" class="help-btn" onclick="showHelp(this.getAttribute('data-for'));">?</button></td>
+                    </tr>
+                </table>
+            </details>
+            <details open>
+                <summary>Source</summary>
+                <code id="json"></code>
+            </details>
+        </main>
+        <div id="not-main">Loading...</div>
+    </body>
+</html>

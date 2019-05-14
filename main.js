@@ -1,3 +1,4 @@
+const process = require('process');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -85,7 +86,21 @@ function appReady() {
         // window.setMenu(null);
     });
 
-    startApplication();
+    let validationReader = false;
+    let validationFile = "";
+    process.argv.forEach((val, index) => {
+        if (val.indexOf(".astfv") > -1) {
+            validationReader = true;
+            validationFile = val;
+        }
+    });
+
+    if (!validationReader) {
+        startApplication();
+    }
+    else {
+        startValidationReader(validationFile);
+    }
 }
 
 function signIn() {
@@ -234,245 +249,297 @@ function startApplication() {
 
     // load the user interface
     mainWindow.loadFile('ui.html');
-}
 
-// for both
-ipcMain.on('password-set', function(event, password) {
-    userDataHandler.init(password, false)
-        .then(function() {
-            console.log("Userdata loaded");
-            mainWindow.webContents.send('userdata-loaded');
-            if (userDataHandler.hasData("orcid_access_token")) {
-                mainWindow.webContents.send('signed-in');
-            }
-            else {
-                signIn();
-            }
-        })
-        .catch(function(err) {
-            console.log("Could not load UserData");
-            console.log(err);
-            mainWindow.webContents.send('userdata-loading-error', err);
-        });
-});
+    // setup eventhandlers
 
-// for both
-ipcMain.on('password-set-fresh', function(event, password) {
-    userDataHandler.init(password, true)
-        .then(function() {
-            console.log("Userdata created");
-            mainWindow.webContents.send('userdata-created');
-            signIn();
-        })
-        .catch(function(err) {
-            console.log("Could not create UserData");
-            console.log(err);
-        });
-});
-
-// for both
-ipcMain.on('progress-update', function(event, active, progress, options) {
-    if (active === true) {
-        // console.log(progress);
-        // console.log(options);
-        if (progress != null) {
-            mainWindow.setProgressBar(progress, options);
-        }
-    }
-    else {
-        mainWindow.setProgressBar(-1);
-    }
-});
-
-// for both
-ipcMain.on('appversion-request', function(event) {
-    event.returnValue = app.getVersion();
-});
-
-// for both
-ipcMain.on('prevsession-exists', function(event) {
-    event.returnValue = userDataHandler.previousSessionExists();
-});
-
-// for both
-ipcMain.on('username-request', function(event) {
-    event.returnValue = userDataHandler.loadData("username");
-});
-
-// for both
-ipcMain.on('assemblid-request', function(event) {
-    event.returnValue = userDataHandler.loadData("assembl_id");
-});
-
-// for both
-ipcMain.on('orcid-request', function(event) {
-    event.returnValue = userDataHandler.loadData("orcid_id");
-});
-
-// for both
-ipcMain.on('publickey-request', function(event) {
-    console.log(pgpHandler.getPublicKey());
-    event.returnValue = pgpHandler.getPublicKey();
-});
-
-// for both
-ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
-    pgpHandler.setOtherKeys(otherPublicKey);
-});
-
-// for receiver
-ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
-    // CAUTION: encryptedChunk is a string here because of encryption
-    if (encryptedChunk != undefined && encryptedChunk != null) {
-        mainWindow.webContents.send('receiving-chunk', null);
-        chunkHandler.increaseChunkAmount();
-        // receivedChunks.push(chunk);
-        pgpHandler.decryptChunk(encryptedChunk, number)
-            .then(function(chunk) {
-                chunkHandler.handleChunk(chunk, false, number);
-                mainWindow.webContents.send('received-chunk', chunk.byteLength);
+    // for both
+    ipcMain.on('password-set', function(event, password) {
+        userDataHandler.init(password, false)
+            .then(function() {
+                console.log("Userdata loaded");
+                mainWindow.webContents.send('userdata-loaded');
+                if (userDataHandler.hasData("orcid_access_token")) {
+                    mainWindow.webContents.send('signed-in');
+                }
+                else {
+                    signIn();
+                }
             })
             .catch(function(err) {
+                console.log("Could not load UserData");
                 console.log(err);
-                mainWindow.webContents.send('error-occurred', '0x3002');
+                mainWindow.webContents.send('userdata-loading-error', err);
             });
-    }
-    else {
-        console.warn("Chunk is undefined or null!");
-    }
-});
+    });
 
-// for receiver
-ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number) {
-    if (chunk != undefined && chunk != null) {
-        mainWindow.webContents.send('receiving-chunk', null);
-        chunkHandler.increaseChunkAmount();
-        // receivedChunks.push(chunk);
-        chunkHandler.handleChunk(chunk, true, number);
-        mainWindow.webContents.send('received-chunk', chunk.byteLength);
-    }
-    else {
-        console.warn("Chunk is undefined or null!");
-    }
-});
+    // for both
+    ipcMain.on('password-set-fresh', function(event, password) {
+        userDataHandler.init(password, true)
+            .then(function() {
+                console.log("Userdata created");
+                mainWindow.webContents.send('userdata-created');
+                signIn();
+            })
+            .catch(function(err) {
+                console.log("Could not create UserData");
+                console.log(err);
+            });
+    });
 
-// for receiver
-ipcMain.on('renderer-transferinfo', function(event, transferInfo) {
-    mainWindow.webContents.send('data-initialized', transferInfo);
-    chunkHandler.initChunks();
-    let parsedInfo = JSON.parse(transferInfo);
-    chunkHandler.setFileName(parsedInfo["file"]["name"]);
-});
+    // for both
+    ipcMain.on('progress-update', function(event, active, progress, options) {
+        if (active === true) {
+            // console.log(progress);
+            // console.log(options);
+            if (progress != null) {
+                mainWindow.setProgressBar(progress, options);
+            }
+        }
+        else {
+            mainWindow.setProgressBar(-1);
+        }
+    });
 
-// for receiver
-ipcMain.on('renderer-filecomplete', function(event, finalChunkAmount) {
-    chunkHandler.setFinalChunkAmount(parseInt(finalChunkAmount));
-    mainWindow.webContents.send('received-file', null);
-    waitForCompletion = setInterval(function() {
-        if (chunkHandler.fileReady()) {
-            clearInterval(waitForCompletion);
-            chunkHandler.finish(mainWindow)
-                .then(function() {
-                    chunkHandler.saveFile()
-                        .then(function() {
-                            console.log("Save succesful");
-                        })
-                        .catch(function(err) {
-                            console.error(err);
-                        })
-                        .finally(function() {
-                            mainWindow.webContents.send('saved-file', null);
-                        });
+    // for both
+    ipcMain.on('appversion-request', function(event) {
+        event.returnValue = app.getVersion();
+    });
+
+    // for both
+    ipcMain.on('prevsession-exists', function(event) {
+        event.returnValue = userDataHandler.previousSessionExists();
+    });
+
+    // for both
+    ipcMain.on('username-request', function(event) {
+        event.returnValue = userDataHandler.loadData("username");
+    });
+
+    // for both
+    ipcMain.on('assemblid-request', function(event) {
+        event.returnValue = userDataHandler.loadData("assembl_id");
+    });
+
+    // for both
+    ipcMain.on('orcid-request', function(event) {
+        event.returnValue = userDataHandler.loadData("orcid_id");
+    });
+
+    // for both
+    ipcMain.on('publickey-request', function(event) {
+        console.log(pgpHandler.getPublicKey());
+        event.returnValue = pgpHandler.getPublicKey();
+    });
+
+    // for both
+    ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
+        pgpHandler.setOtherKeys(otherPublicKey);
+    });
+
+    // for receiver
+    ipcMain.on('renderer-received-chunk', function(event, encryptedChunk, number) {
+        // CAUTION: encryptedChunk is a string here because of encryption
+        if (encryptedChunk != undefined && encryptedChunk != null) {
+            mainWindow.webContents.send('receiving-chunk', null);
+            chunkHandler.increaseChunkAmount();
+            // receivedChunks.push(chunk);
+            pgpHandler.decryptChunk(encryptedChunk, number)
+                .then(function(chunk) {
+                    chunkHandler.handleChunk(chunk, false, number);
+                    mainWindow.webContents.send('received-chunk', chunk.byteLength);
                 })
                 .catch(function(err) {
                     console.log(err);
-                    mainWindow.webContents.send('error-occurred', '0x5001');
+                    mainWindow.webContents.send('error-occurred', '0x3002');
                 });
         }
-    }, 1000);
-});
+        else {
+            console.warn("Chunk is undefined or null!");
+        }
+    });
+
+    // for receiver
+    ipcMain.on('renderer-received-unencrypted-chunk', function(event, chunk, number) {
+        if (chunk != undefined && chunk != null) {
+            mainWindow.webContents.send('receiving-chunk', null);
+            chunkHandler.increaseChunkAmount();
+            // receivedChunks.push(chunk);
+            chunkHandler.handleChunk(chunk, true, number);
+            mainWindow.webContents.send('received-chunk', chunk.byteLength);
+        }
+        else {
+            console.warn("Chunk is undefined or null!");
+        }
+    });
+
+    // for receiver
+    ipcMain.on('renderer-transferinfo', function(event, transferInfo) {
+        mainWindow.webContents.send('data-initialized', transferInfo);
+        chunkHandler.initChunks();
+        let parsedInfo = JSON.parse(transferInfo);
+        chunkHandler.setFileName(parsedInfo["file"]["name"]);
+    });
+
+    // for receiver
+    ipcMain.on('renderer-filecomplete', function(event, finalChunkAmount) {
+        chunkHandler.setFinalChunkAmount(parseInt(finalChunkAmount));
+        mainWindow.webContents.send('received-file', null);
+        waitForCompletion = setInterval(function() {
+            if (chunkHandler.fileReady()) {
+                clearInterval(waitForCompletion);
+                chunkHandler.finish(mainWindow)
+                    .then(function() {
+                        chunkHandler.saveFile()
+                            .then(function() {
+                                console.log("Save succesful");
+                            })
+                            .catch(function(err) {
+                                console.error(err);
+                            })
+                            .finally(function() {
+                                mainWindow.webContents.send('saved-file', null);
+                            });
+                    })
+                    .catch(function(err) {
+                        console.log(err);
+                        mainWindow.webContents.send('error-occurred', '0x5001');
+                    });
+            }
+        }, 1000);
+    });
+
+    function loadPGP() {
+        pgpHandler.hasOldValidKeys()
+            .then(function(hasOldValidKeys) {
+                if (hasOldValidKeys) {
+                    pgpHandler.importOldKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
+                        .then(function(pubKey) {
+                            mainWindow.webContents.send('pgp-keys-generated', pubKey);
+                        })
+                        .catch(function(reason) {
+                            mainWindow.webContents.send('pgp-keys-generation-error', reason);
+                        });
+                }
+                else {
+                    pgpHandler.createKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
+                        .then(function(pubKey) {
+                            mainWindow.webContents.send('pgp-keys-generated', pubKey);
+                        })
+                        .catch(function(reason) {
+                            mainWindow.webContents.send('pgp-keys-generation-error', reason);
+                        });
+                }
+            })
+            .catch(function(reason) {
+                mainWindow.webContents.send('pgp-keys-generation-error', reason);
+            });
+    }
+    
+    // for both ends
+    ipcMain.on('user-name-changed', function(event, newName) {
+        userDataHandler.saveData("username", newName);
+        loadPGP();
+    });
+    
+    // for sender
+    ipcMain.on('pgp-encrypt-chunk', function(event, chunk, number) {
+        pgpHandler.encryptChunk(chunk, number)
+            .then(function(encryptedMsg) {
+                mainWindow.webContents.send('pgp-chunk-encrypted', encryptedMsg, number);
+            })
+            .catch(function(err) {
+                mainWindow.webContents.send('pgp-chunk-encryption-error', err);
+            });
+    });
+    
+    // for sender
+    ipcMain.on('save-ssh-keys', function(event, privateKey, publicKey) {
+        userDataHandler.saveData("ssh-publickey", publicKey);
+        userDataHandler.saveData("ssh-privatekey", privateKey);
+        let privPath = path.join(app.getPath('userData'), "assembl_ssh_priv.key");
+        fs.writeFile(privPath, privateKey, function(err) {
+            if (err) {
+                console.error(err);
+            }
+            else {
+                mainWindow.webContents.send('ssh-keys-saved', privPath);
+            }
+        });
+    });
+    
+    // for both sender and receiver
+    ipcMain.on('transferinfo-finalized', function(event, transferInfoString) {
+        let transfersFolder = path.join(app.getPath('userData'), "transfers");
+        if (!fs.existsSync(transfersFolder)) {
+            fs.mkdirSync(transfersFolder);
+        }
+        let transferInfo = JSON.parse(transferInfoString);
+        let dateObj = new Date(transferInfo.currentTime);
+        let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astfv");
+        fs.writeFile(transferInfoFile, transferInfoString, function(err) {
+            if (err) {
+                console.error(err);
+            }
+            else {
+                console.log("transferinfo written to " + transferInfoFile);
+            }
+        });
+    });
+}
+
+function startValidationReader(validationFile) {
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        backgroundColor: '#193864',
+        show: false,
+        center: true,
+        fullscreenable: false,
+        title: "Assembl Transfer Validation File Reader",
+        webPreferences: {
+            nodeIntegration: true,
+            devTools: true,
+            defaultFontFamily: 'sansSerif',
+            defaultFontSize: 17,
+            nativeWindowOpen: false,            // do not support native window.open JS function
+            experimentalFeatures: true          // use experimental chromium features
+        },
+        icon: __dirname + "/build/icon.ico"
+    });
+
+    // add event listeners
+    mainWindow.on('page-title-updated', function(event, title) {
+        // window title is always equal to page title unless event.preventDefault() is called here
+    });
+    mainWindow.on('close', function(event) {
+        console.log("mainWindow close event");
+        if (!mainWindowMayClose) {
+            event.preventDefault();
+            event.returnValue = false;
+            fullyCloseApp();
+            return false;
+        }
+    });
+    mainWindow.once('ready-to-show', function() {
+        mainWindow.show();
+        mainWindow.maximize();
+        // mainWindow.webContents.openDevTools();
+    });
+
+    ipcMain.on('reader-ready', function(event) {
+        if (validationFile != null && validationFile.length > 0) {
+            mainWindow.webContents.send('validation-file-path', validationFile);
+        }
+    });
+
+    // load the user interface
+    mainWindow.loadFile('reader.html');
+}
+
 
 // for both ends
 ipcMain.on('app-should-close', function(event) {
     fullyCloseApp();
-});
-
-function loadPGP() {
-    pgpHandler.hasOldValidKeys()
-        .then(function(hasOldValidKeys) {
-            if (hasOldValidKeys) {
-                pgpHandler.importOldKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
-                    .then(function(pubKey) {
-                        mainWindow.webContents.send('pgp-keys-generated', pubKey);
-                    })
-                    .catch(function(reason) {
-                        mainWindow.webContents.send('pgp-keys-generation-error', reason);
-                    });
-            }
-            else {
-                pgpHandler.createKeys(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"))
-                    .then(function(pubKey) {
-                        mainWindow.webContents.send('pgp-keys-generated', pubKey);
-                    })
-                    .catch(function(reason) {
-                        mainWindow.webContents.send('pgp-keys-generation-error', reason);
-                    });
-            }
-        })
-        .catch(function(reason) {
-            mainWindow.webContents.send('pgp-keys-generation-error', reason);
-        });
-}
-
-// for both ends
-ipcMain.on('user-name-changed', function(event, newName) {
-    userDataHandler.saveData("username", newName);
-    loadPGP();
-});
-
-// for sender
-ipcMain.on('pgp-encrypt-chunk', function(event, chunk, number) {
-    pgpHandler.encryptChunk(chunk, number)
-        .then(function(encryptedMsg) {
-            mainWindow.webContents.send('pgp-chunk-encrypted', encryptedMsg, number);
-        })
-        .catch(function(err) {
-            mainWindow.webContents.send('pgp-chunk-encryption-error', err);
-        });
-});
-
-// for sender
-ipcMain.on('save-ssh-keys', function(event, privateKey, publicKey) {
-    userDataHandler.saveData("ssh-publickey", publicKey);
-    userDataHandler.saveData("ssh-privatekey", privateKey);
-    let privPath = path.join(app.getPath('userData'), "assembl_ssh_priv.key");
-    fs.writeFile(privPath, privateKey, function(err) {
-        if (err) {
-            console.error(err);
-        }
-        else {
-            mainWindow.webContents.send('ssh-keys-saved', privPath);
-        }
-    });
-});
-
-// for both sender and receiver
-ipcMain.on('transferinfo-finalized', function(event, transferInfoString) {
-    let transfersFolder = path.join(app.getPath('userData'), "transfers");
-    if (!fs.existsSync(transfersFolder)) {
-        fs.mkdirSync(transfersFolder);
-    }
-    let transferInfo = JSON.parse(transferInfoString);
-    let dateObj = new Date(transferInfo.currentTime);
-    let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astfv");
-    fs.writeFile(transferInfoFile, transferInfoString, function(err) {
-        if (err) {
-            console.error(err);
-        }
-        else {
-            console.log("transferinfo written to " + transferInfoFile);
-        }
-    });
 });
 
 app.on('ready', appReady);

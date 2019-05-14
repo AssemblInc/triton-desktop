@@ -1,0 +1,272 @@
+@font-face {
+    font-family: 'Didact Gothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('resources/fonts/DidactGothic-Regular.ttf');
+}
+
+html {
+    height: 100%;
+}
+
+html, body {
+    display: block;
+    width: 100%;
+    height: 100%;
+	margin: 0px;
+    padding: 0px;
+    min-width: 705px;
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+    background: #193864;
+    color: #EDF4F4;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    caret-color: #EDF4F4;
+    cursor: default;
+    user-select: none;
+    position: relative;
+}
+
+img {
+    pointer-events: none;
+}
+
+*:focus {
+	outline: 0;
+}
+
+b, th {
+	font-weight: 500;
+}
+
+a, a:visited {
+	color: #97CED9;
+	text-decoration: underline;
+	cursor: pointer;
+	transition: color 0.25s;
+}
+
+a:hover, a:focus, a:active {
+	color: #ABE2ED;
+	transition: color 0.05s;
+	outline: 0;
+}
+
+nav {
+    display: block;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+button {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+    color: #EDEDED;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+button:hover, button:active, button:focus {
+    background: rgba(255,255,255,0.5);
+}
+
+header {
+    display: block;
+    padding: 32px;
+    padding-bottom: 16px;
+}
+
+.assembl-icon {
+    display: block;
+    width: 3.5em;
+    height: 3.5em;
+    margin: 0 auto;
+}
+
+.assembl-logo-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 2em;
+    height: 2em;
+    margin-right: 0.6em;
+}
+
+.assembl-logo-text {
+    display: inline-block;
+    vertical-align: middle;
+    font-family: 'Didact Gothic';
+    font-weight: 600;
+    font-size: 1.4em;
+    margin-bottom: 0.1em;
+    color: #EDF4F4;
+    letter-spacing: 0.03em;
+}
+
+.assembl-logo-subtext {
+    display: inline-block;
+    vertical-align: middle;
+    font-family: 'Didact Gothic';
+    font-weight: 600;
+    font-size: 1.4em;
+    margin-bottom: 0.1em;
+    margin-left: 0.5em;
+    color: #CCC6C6;
+    letter-spacing: 0.03em;
+}
+
+#not-main {
+    display: block;
+    text-align: center;
+    font-size: 1.2em;
+    position: relative;
+    top: 36%;
+}
+
+details {
+    display: block;
+    padding: 0px;
+    margin: 16px 0px;
+}
+
+details summary {
+    font-weight: bold;
+    font-size: 21px;
+    background: rgba(255,255,255,0.25);
+    padding: 8px 16px;
+}
+
+details summary {
+    cursor: zoom-in;
+}
+
+details[open] summary {
+    cursor: zoom-out;
+}
+
+details table {
+    width: 100%;
+    text-align: left;
+    padding: 16px;
+    background: rgba(255,255,255,0.1);
+    table-layout: fixed;
+}
+
+details table th {
+    width: 20%;
+    font-weight: bold;
+}
+
+details table th, details table td {
+    background: rgba(255,255,255,0.1);
+    padding: 0px 8px;
+    vertical-align: middle;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+details table td.help {
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    padding: 0px;
+}
+
+details table td.code {
+    font-family: 'Consolas', 'Courier New', Courier, monospace, Serif;
+}
+
+details table td.help button {
+    cursor: help;
+}
+
+.missing {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #DC143C;
+}
+
+code {
+    display: block;
+    padding: 16px;
+    font-family: 'Consolas', 'Courier New', Courier, monospace, Serif;
+    background: rgba(255,255,255,0.1);
+}
+
+@media print {
+    html, body {
+        background: white !important;
+        color: black !important;
+        font-size: 15px !important;
+    }
+
+    header {
+        padding: 16px;
+    }
+
+    .assembl-logo-text {
+        color: black !important;
+    }
+
+    .assembl-logo-subtext {
+        color: darkslategrey !important;
+    }
+    
+    b, th {
+        font-weight: bold !important;
+    }
+
+    a, a:visited {
+        color: blue !important;
+        text-decoration: underline !important;
+    }
+
+    #not-main small {
+        color: darkslategrey !important;
+    }
+
+    nav {
+        display: none;
+    }
+
+    details {
+        padding: 0px;
+        margin: 12px 0px;
+        border: solid 1px black;
+    }
+
+    details summary {
+        padding: 0px 4px;
+        background: initial;
+    }
+
+    details summary::-webkit-details-marker {
+        display:none;
+    }
+
+    details table {
+        background: initial;
+        padding: 1px;
+    }
+
+    details table th, details table td {
+        background: initial;
+        padding: 1px;
+        border: solid 1px black;
+    }
+
+    details table td.help {
+        display: none;
+    }
+
+    code,  {
+        background: initial;
+    }
+}

@@ -156,6 +156,7 @@ let fileHandler = {
             ]);
             */
             fileHandler.transferInfo = {
+                version: 1,
                 currentTime: Date.now(),
                 file: {
                     size: fileHandler.file.size,
@@ -169,7 +170,18 @@ let fileHandler = {
                 },
                 transmission: {
                     encryptionEnabled: fileHandler.encryptionEnabled,
+                    encryptionLevel: 2048,
                     protocol: fileHandler.protocolToUse
+                },
+                sender: {
+                    name: ipcRenderer.sendSync('username-request'),
+                    assemblId: ipcRenderer.sendSync('assemblid-request'),
+                    orcidId: ipcRenderer.sendSync('orcid-request')
+                },
+                receiver: {
+                    name: receiver.name,
+                    assemblId: receiver.assemblId,
+                    orcidId: receiver.orcidId
                 }
             };
             console.log(fileHandler.transferInfo);

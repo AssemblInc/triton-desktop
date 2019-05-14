@@ -17,8 +17,8 @@
     "fileAssociations": [
       {
         "ext": "astfv",
-        "name": "Assembl Transfer Validation",
-        "description": "The validation file for a file transfer done via Assembl",
+        "name": "ASTFV",
+        "description": "Assembl Transfer Validation File",
         "mimeType": "application/assembl-transfer-validation",
         "role": "Viewer",
         "isPackage": false
