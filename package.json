@@ -21,8 +21,7 @@
         "description": "The validation file for a file transfer done via Assembl",
         "mimeType": "application/assembl-transfer-validation",
         "role": "Viewer",
-        "isPackage": false,
-        "perMachine": true
+        "isPackage": false
       }
     ]
   },
