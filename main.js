@@ -464,7 +464,7 @@ ipcMain.on('transferinfo-finalized', function(event, transferInfoString) {
     }
     let transferInfo = JSON.parse(transferInfoString);
     let dateObj = new Date(transferInfo.currentTime);
-    let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".json");
+    let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astfv");
     fs.writeFile(transferInfoFile, transferInfoString, function(err) {
         if (err) {
             console.error(err);
