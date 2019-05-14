@@ -198,6 +198,7 @@ code {
     padding: 16px;
     font-family: 'Consolas', 'Courier New', Courier, monospace, Serif;
     background: rgba(255,255,255,0.1);
+    font-size: small;
 }
 
 @media print {
@@ -266,7 +267,12 @@ code {
         display: none;
     }
 
-    code,  {
+    code {
         background: initial;
+        font-size: 13px;
+    }
+
+    #reader {
+        display: none;
     }
 }
