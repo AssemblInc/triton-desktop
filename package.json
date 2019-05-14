@@ -27,7 +27,7 @@
   },
   "scripts": {
     "start": "electron .",
-    "build-win": "build --win",
+    "build-win": "rm -rf dist && build --win",
     "pack": "electron-builder"
   },
   "devDependencies": {

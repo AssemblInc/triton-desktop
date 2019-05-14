@@ -1,5 +1,0 @@
-WARNING!
-
-Do not commit builds (installers and such), as these files can easily reach over 100MB in size, which means we will no longer be able to push to the repository.
-
-Instead, if you want to use an installer, build it on your own system using the command "npm run-script build-win" in the main folder of the rep. You'll be able to find the installer here afterwards. Move the installer to a safe location and make sure not to push it!
