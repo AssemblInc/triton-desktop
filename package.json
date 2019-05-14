@@ -14,7 +14,7 @@
       "resources/*",
       "LICENSE.MD"
     ],
-    "fileAssocations": [
+    "fileAssociations": [
       {
         "ext": "astfv",
         "name": "Assembl Transfer Validation",
