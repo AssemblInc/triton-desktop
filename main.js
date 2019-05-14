@@ -89,7 +89,7 @@ function appReady() {
     let validationReader = false;
     let validationFile = "";
     process.argv.forEach((val, index) => {
-        if (val.indexOf(".astfv") > -1) {
+        if (val.indexOf(".astv") > -1) {
             validationReader = true;
             validationFile = val;
         }
@@ -475,7 +475,7 @@ function startApplication() {
         }
         let transferInfo = JSON.parse(transferInfoString);
         let dateObj = new Date(transferInfo.currentTime);
-        let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astfv");
+        let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astv");
         fs.writeFile(transferInfoFile, transferInfoString, function(err) {
             if (err) {
                 console.error(err);

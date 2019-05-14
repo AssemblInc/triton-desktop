@@ -15,7 +15,7 @@ function strip(text) {
 }
 
 function setUnloaded() {
-    document.getElementById("not-main").innerHTML = "Drag and drop a validation file here<br/><small style='color: #CCC6C6;'>validation files should always have the extension <i>astfv</i></small>";
+    document.getElementById("not-main").innerHTML = "Drag and drop a validation file here<br/><small style='color: #CCC6C6;'>validation files should always have the extension <i>astv</i></small>";
     document.getElementById("main").style.display = "none";
     document.getElementById("not-main").style.display = "block";
 }
@@ -39,9 +39,9 @@ function domReady() {
 function openValidationFile(validationFile) {
     document.getElementById("not-main").innerHTML = "Loading...";
     let extension = validationFile.split(".").pop();
-    if (extension == undefined || extension == null || extension != "astfv") {
+    if (extension == undefined || extension == null || extension != "astv") {
         console.warn("Invalid extension " + extension);
-        alert("Invalid file type. The Assembl Transfer Validation File Reader can only open astfv files.");
+        alert("Invalid file type. The Assembl Transfer Validation File Reader can only open astv files.");
         setUnloaded();
     }
     else {
