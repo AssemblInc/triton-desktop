@@ -41,8 +41,6 @@
     "js-sha3": "^0.8.0",
     "kafkajs": "^1.8.0",
     "kbpgp": "^2.0.82",
-    "libp2p": "^0.24.4",
-    "libp2p-websocket-star": "^0.10.2",
     "multiaddr": "^6.0.4",
     "mv": "^2.1.1",
     "nat-upnp": "^1.1.1",
