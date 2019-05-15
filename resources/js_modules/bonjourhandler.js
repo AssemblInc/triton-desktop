@@ -19,9 +19,8 @@ exports.init = function(webContents, displayName, assemblId, orcidId) {
             hostname: os.hostname()
         }
     });
-    browser = bonjour.find({
-        type: 'assembl'
-    }, function(service) {
+    browser = bonjour.find({ type: 'assembl' });
+    browser.on('up', function(service) {
         console.log("Found an Assembl Desktop instance: " + service.name + JSON.stringify(service.txt));
         webWindow.send('bonjour-assembl-instance-up', JSON.stringify(service.txt));
     });
@@ -50,10 +49,16 @@ exports.stop = function(callback) {
             browser.stop();
         }
         if (typeof callback == "function") {
-            service.stop(callback);
+            bonjour.unpublishAll(function() {
+                bonjour.destroy();
+                callback();
+            });
         }
         else {
-            service.stop();
+            service.stop(function() {
+                bonjour.destroy();
+                callback();
+            });
         }
     }
     else if (typeof callback == "function") {

@@ -42,30 +42,31 @@ let waitForCompletion = null;
 
 function reallyClosingNow() {
     console.log("Stopping bonjour if running...");
-    bonjourHandler.stop();
-    console.log("Deleting temporary files...");
-    chunkHandler.deleteTempFiles()
-        .then(function() {
-            console.log("Temporary files deleted");
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
-        .finally(function() {
-            if (userDataHandler.isInitialized()) {
-                console.log("Saving user data...");
-                try {
-                    userDataHandler.finalize();
+    bonjourHandler.stop(function() {
+        console.log("Deleting temporary files...");
+        chunkHandler.deleteTempFiles()
+            .then(function() {
+                console.log("Temporary files deleted");
+            })
+            .catch(function(err) {
+                console.log(err);
+            })
+            .finally(function() {
+                if (userDataHandler.isInitialized()) {
+                    console.log("Saving user data...");
+                    try {
+                        userDataHandler.finalize();
+                    }
+                    catch(err) {
+                        console.log("Could not save user data");
+                        console.log(err);
+                    }
                 }
-                catch(err) {
-                    console.log("Could not save user data");
-                    console.log(err);
-                }
-            }
-            console.log("Quitting application...");
-            mainWindowMayClose = true;
-            app.quit();
-        });
+                console.log("Quitting application...");
+                mainWindowMayClose = true;
+                app.quit();
+            });
+    });
 }
 
 function fullyCloseApp() {
