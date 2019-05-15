@@ -199,6 +199,8 @@ code {
     font-family: 'Consolas', 'Courier New', Courier, monospace, Serif;
     background: rgba(255,255,255,0.1);
     font-size: small;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 @media print {
