@@ -19,6 +19,19 @@ function strip(text) {
    return tmp.textContent || tmp.innerText || "";
 }
 
+/* from https://stackoverflow.com/questions/3387427/remove-element-by-id */
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+}
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+}
+/* end from */
+
 // for both
 ipcRenderer.on('error-occurred', function(event, errorCode) {
     console.warn("An error occurred in the main process!");
@@ -314,3 +327,34 @@ function checkAndShowAnnouncement() {
     xhr.setRequestHeader("Accept", "application/json")
     xhr.send();
 }
+
+let bonjourInstances = {};
+
+ipcRenderer.on('bonjour-assembl-instance-up', function(event, instanceDetails) {
+    instanceDetails = JSON.parse(instanceDetails);
+    if (instanceDetails['assemblid'] != ipcRenderer.sendSync('assemblid-request')) {
+        bonjourInstances[instanceDetails['assemblid']] = instanceDetails;
+        let bonjourOption = document.createElement("option");
+        bonjourOption.setAttribute("value", instanceDetails['assemblid']);
+        bonjourOption.innerHTML = strip(instanceDetails['displayname'] + "(on " + instanceDetails['hostname'] + ")");
+        document.getElementById("bonjour-finder-selector").appendChild(bonjourOption);
+        let instanceAmount = Object.keys(bonjourInstances).length;
+        if (instanceAmount > 0) {
+            document.getElementById("bonjour-finder-preset").innerHTML = "Found "+instanceAmount+" connections on LAN";
+            document.getElementById("bonjour-finder").style.display = "block";
+        }
+    }
+});
+
+ipcRenderer.on('bonjour-assembl-instance-down', function(event, instanceDetails) {
+    instanceDetails = JSON.parse(instanceDetails);
+    if (instanceDetails['assemblid'] != ipcRenderer.sendSync('assemblid-request')) {
+        delete bonjourInstances[instanceDetails['assemblid']];
+        document.querySelectorAll('option[value="'+instanceDetails['assemblid']+'"]')[0].remove();
+        let instanceAmount = Object.keys(bonjourInstances).length;
+        if (instanceAmount <= 0) {
+            document.getElementById("bonjour-finder-preset").innerHTML = "Found "+instanceAmount+" connections on LAN";
+            document.getElementById("bonjour-finder").style.display = "none";
+        }
+    }
+});

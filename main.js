@@ -442,7 +442,7 @@ function startApplication() {
     // for both ends
     ipcMain.on('user-name-changed', function(event, newName) {
         userDataHandler.saveData("username", newName);
-        bonjourHandler.init(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
+        bonjourHandler.init(mainWindow.webContents, userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
         loadPGP();
     });
     

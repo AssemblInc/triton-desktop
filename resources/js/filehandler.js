@@ -297,7 +297,7 @@ let fileHandler = {
                     let stellarInfoString = JSON.stringify(stellarInfo);
                     ipcRenderer.send('blockchaininfo-finalized', stellarInfoString);
                     wsHandler.sendEvent('blockchain_info_complete', stellarInfoString);
-                    
+
                     screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
                     wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
                     // reset the filechooser

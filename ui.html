@@ -291,6 +291,18 @@
                                 <input type="text" id="senderpeerid" placeholder="ASXXXXXXXXXX" required pattern="^AS([A-z0-9]{10})$" title="The sender ID (ASXXXXXXXXXX)" maxlength="12" />
                                 <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Enter the sender ID here. The sender ID is a short piece of text of 12 characters which must be given to you by the person who will be sending you any data." />
                                 <br />
+                                <div id="bonjour-finder" style="display: none;">
+                                    <div>Or select someone from your local network:</div>
+                                    <select id="bonjour-finder-selector" onchange="bonjourSelectorChange(this.value);">
+                                        <option id="bonjour-finder-preset" value="preset" selected disabled>Found 0 connections on LAN</option>
+                                    </select>
+                                    <script>
+                                    function bonjourSelectorChange(val) {
+                                        document.getElementById("senderpeerid").value = val;
+                                        document.getElementById("bonjour-finder-selector").value = "preset";
+                                    }
+                                    </script>
+                                </div>
                                 <button type="submit" class="connect-button" id="connect-btn">connect</button>
                             </form>
                         </div>
