@@ -308,11 +308,16 @@ let fileHandler = {
                     console.error(err);
                     if (err.message.indexOf("status code ") > -1) {
                         let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ")));
-                        if (statusCode == 504) {
-                            screens.showErrorScreen('0x6001');
-                        }
-                        else {
-                            screens.showErrorScreen('0x6001');
+                        switch (statusCode) {
+                            case 400:
+                                screens.showErrorScreen('0x6003');
+                                break;
+                            case 504:
+                                screens.showErrorScreen('0x6002');
+                                break;
+                            default:
+                                screens.showErrorScreen('0x6001');
+                                break;
                         }
                     }
                     else {

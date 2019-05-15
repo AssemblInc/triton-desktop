@@ -74,5 +74,9 @@
     "0x6002": {
         "details": "Could not add hash to blockchain due to no ledger being available at the moment",
         "fix": "Restart the application and try again"
+    },
+    "0x6003": {
+        "details": "Could not add hash to blockchain due to a bad request",
+        "fix": "Restart the application and try again"
     }
 }
