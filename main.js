@@ -41,7 +41,8 @@ let mainWindowMayClose = false;
 let waitForCompletion = null;
 
 function reallyClosingNow() {
-    console.log("Stopping bonjour...");
+    console.log("Stopping bonjour if running...");
+    bonjourHandler.stop();
     console.log("Deleting temporary files...");
     chunkHandler.deleteTempFiles()
         .then(function() {
