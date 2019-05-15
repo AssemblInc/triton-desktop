@@ -44,6 +44,15 @@
   "scripts": {
     "start": "electron .",
     "build-win": "rm -rf dist && build --win",
+    "build-win-32": "rm -rf dist && build --win --ia32",
+    "build-win-64": "rm -rf dist && build --win --x64",
+    "build-lin": "rm -rf dist && build --linux",
+    "build-lin-32": "rm -rf dist && build --linux --ia32",
+    "build-lin-64": "rm -rf dist && build --linux --x64",
+    "build-mac": "rm -rf dist && build --mac",
+    "build-mac-32": "rm -rf dist && build --mac --ia32",
+    "build-mac-64": "rm -rf dist && build --mac --x64",
+    "build-all": "rm -rf dist && build --mwl",
     "pack": "electron-builder"
   },
   "devDependencies": {
