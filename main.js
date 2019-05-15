@@ -485,6 +485,25 @@ function startApplication() {
             }
         });
     });
+
+    // for both sender and receiver
+    ipcMain.on('blockchaininfo-finalized', function(event, blockchainInfoString) {
+        let transfersFolder = path.join(app.getPath('userData'), "transfers");
+        if (!fs.existsSync(transfersFolder)) {
+            fs.mkdirSync(transfersFolder);
+        }
+        let blockchainInfo = JSON.parse(blockchainInfoString);
+        let dateObj = new Date(blockchainInfo.currentTime);
+        let blockchainInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".asvv");
+        fs.writeFile(blockchainInfoFile, blockchainInfoString, function(err) {
+            if (err) {
+                console.error(err);
+            }
+            else {
+                console.log("blockchaininfo written to " + blockchainInfoFile);
+            }
+        });
+    });
 }
 
 function startValidationReader(validationFile) {
