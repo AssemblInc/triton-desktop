@@ -27,6 +27,6 @@
     "ver-validation-hash": "The keccak256 hash of the full validation file in question (when the hash was added to the blockchain).",
 
     "ver-stellar-transactionid": "The transaction ID of the transaction on the Stellar blockchain. Visit the Stellar Explorer at https://steexp.org/ to view the transaction details belonging to this ID.",
-    "ver-stellar-time": "The time of when the Stellar transaction was completed (according to Stellar).",
+    "ver-stellar-time": "The time of when the Stellar transaction was completed.",
     "ver-stellar-ledger": "The ID of the ledger that performed the transaction (according to Stellar)."
 }

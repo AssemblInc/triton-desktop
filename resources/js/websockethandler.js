@@ -98,6 +98,9 @@ var wsHandler = {
                 case "data_transfer_complete":
                     ipcRenderer.send('renderer-filecomplete', data);
                     break;
+                case "blockchain_info_complete":
+                    ipcRenderer.send('blockchaininfo-finalized', data);
+                    break;
                 case "transfer_info_complete":
                     ipcRenderer.send('transferinfo-finalized', data);
                     break;

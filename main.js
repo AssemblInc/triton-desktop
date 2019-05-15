@@ -35,34 +35,38 @@ require('electron-context-menu')({
         return params.isEditable || params.editFlags.canCopy;
     }
 });
+let bonjourHandler = require('./resources/js_modules/bonjourhandler.js');
 let mainWindow = null;
 let mainWindowMayClose = false;
 let waitForCompletion = null;
 
 function reallyClosingNow() {
-    console.log("Deleting temporary files...");
-    chunkHandler.deleteTempFiles()
-        .then(function() {
-            console.log("Temporary files deleted");
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
-        .finally(function() {
-            if (userDataHandler.isInitialized()) {
-                console.log("Saving user data...");
-                try {
-                    userDataHandler.finalize();
+    console.log("Stopping bonjour...");
+    bonjourHandler.stop(function() {
+        console.log("Deleting temporary files...");
+        chunkHandler.deleteTempFiles()
+            .then(function() {
+                console.log("Temporary files deleted");
+            })
+            .catch(function(err) {
+                console.log(err);
+            })
+            .finally(function() {
+                if (userDataHandler.isInitialized()) {
+                    console.log("Saving user data...");
+                    try {
+                        userDataHandler.finalize();
+                    }
+                    catch(err) {
+                        console.log("Could not save user data");
+                        console.log(err);
+                    }
                 }
-                catch(err) {
-                    console.log("Could not save user data");
-                    console.log(err);
-                }
-            }
-            console.log("Quitting application...");
-            mainWindowMayClose = true;
-            app.quit();
-        });
+                console.log("Quitting application...");
+                mainWindowMayClose = true;
+                app.quit();
+            });
+    });
 }
 
 function fullyCloseApp() {
@@ -438,6 +442,7 @@ function startApplication() {
     // for both ends
     ipcMain.on('user-name-changed', function(event, newName) {
         userDataHandler.saveData("username", newName);
+        bonjourHandler.init(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
         loadPGP();
     });
     
@@ -466,16 +471,34 @@ function startApplication() {
             }
         });
     });
+
+    function getTransferFolder() {
+        return path.join(app.getPath('userData'), "transfers");
+    }
+
+    function createTransferFileName(dateObj, extension) {
+        return "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+"."+extension;
+    }
+
+    // for both sender and receiver
+    ipcMain.on('transferinfo-namerequest', function(event, dateObj) {
+        event.returnValue = createTransferFileName(dateObj, "astv");
+    });
+
+    // for both sender and receiver
+    ipcMain.on('transferinfo-folderrequest', function(event, dateObj) {
+        event.returnValue = getTransferFolder();
+    });
     
     // for both sender and receiver
     ipcMain.on('transferinfo-finalized', function(event, transferInfoString) {
-        let transfersFolder = path.join(app.getPath('userData'), "transfers");
+        let transfersFolder = getTransferFolder();
         if (!fs.existsSync(transfersFolder)) {
             fs.mkdirSync(transfersFolder);
         }
         let transferInfo = JSON.parse(transferInfoString);
         let dateObj = new Date(transferInfo.currentTime);
-        let transferInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".astv");
+        let transferInfoFile = path.join(transfersFolder, createTransferFileName(dateObj, "astv"));
         fs.writeFile(transferInfoFile, transferInfoString, function(err) {
             if (err) {
                 console.error(err);
@@ -488,13 +511,13 @@ function startApplication() {
 
     // for both sender and receiver
     ipcMain.on('blockchaininfo-finalized', function(event, blockchainInfoString) {
-        let transfersFolder = path.join(app.getPath('userData'), "transfers");
+        let transfersFolder = getTransferFolder();
         if (!fs.existsSync(transfersFolder)) {
             fs.mkdirSync(transfersFolder);
         }
         let blockchainInfo = JSON.parse(blockchainInfoString);
         let dateObj = new Date(blockchainInfo.currentTime);
-        let blockchainInfoFile = path.join(transfersFolder, "assembl_transfer_"+dateObj.getUTCFullYear()+dateObj.getUTCMonth()+dateObj.getUTCDay()+dateObj.getUTCHours()+dateObj.getUTCMinutes()+dateObj.getUTCSeconds()+".asvv");
+        let blockchainInfoFile = path.join(transfersFolder, createTransferFileName(dateObj, "asvv"));
         fs.writeFile(blockchainInfoFile, blockchainInfoString, function(err) {
             if (err) {
                 console.error(err);

@@ -276,8 +276,28 @@ let fileHandler = {
                 transferInfoHash.update(transferInfoString);
                 let memoHash = transferInfoHash.hex();
                 // add hash to stellar blockchain
-                stellarHandler.addHash(memoHash).then(function(results) {
-                    console.log(results);
+                stellarHandler.addHash(memoHash).then(function(stellarResults) {
+                    console.log(stellarResults);
+                    let transferInfoFolder = ipcRenderer.sendSync("transferinfo-folderrequest");
+                    let transferInfoFileName = ipcRenderer.sendSync("transferinfo-namerequest", new Date(fileHandler.transferInfo.currentTime));
+                    let stellarInfo = {
+                        version: 1,
+                        currentTime: Date.now(),
+                        validation: {
+                            path: path.join(transferInfoFolder, transferInfoFileName),
+                            name: transferInfoFileName,
+                            hash: transferInfoHash
+                        },
+                        stellar: {
+                            transactionId: stellarResults.hash,
+                            time: Date.now(),
+                            ledger: stellarResults.ledger
+                        }
+                    };
+                    let stellarInfoString = JSON.stringify(stellarInfo);
+                    ipcRenderer.send('blockchaininfo-finalized', stellarInfoString);
+                    wsHandler.sendEvent('blockchain_info_complete', stellarInfoString);
+                    
                     screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
                     wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
                     // reset the filechooser

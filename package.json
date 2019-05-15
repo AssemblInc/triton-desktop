@@ -14,6 +14,14 @@
       "resources/*",
       "LICENSE.MD"
     ],
+    "protocols": [
+      {
+        "name": "Assembl Protocol",
+        "schemes": [
+          "assembl"
+        ]
+      }
+    ],
     "fileAssociations": [
       {
         "ext": "astv",
@@ -44,6 +52,7 @@
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
+    "bonjour": "^3.5.0",
     "crypto": "^1.0.1",
     "electron-context-menu": "^0.10.1",
     "js-sha3": "^0.8.0",
