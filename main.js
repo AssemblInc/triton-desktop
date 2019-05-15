@@ -42,31 +42,29 @@ let waitForCompletion = null;
 
 function reallyClosingNow() {
     console.log("Stopping bonjour...");
-    bonjourHandler.stop(function() {
-        console.log("Deleting temporary files...");
-        chunkHandler.deleteTempFiles()
-            .then(function() {
-                console.log("Temporary files deleted");
-            })
-            .catch(function(err) {
-                console.log(err);
-            })
-            .finally(function() {
-                if (userDataHandler.isInitialized()) {
-                    console.log("Saving user data...");
-                    try {
-                        userDataHandler.finalize();
-                    }
-                    catch(err) {
-                        console.log("Could not save user data");
-                        console.log(err);
-                    }
+    console.log("Deleting temporary files...");
+    chunkHandler.deleteTempFiles()
+        .then(function() {
+            console.log("Temporary files deleted");
+        })
+        .catch(function(err) {
+            console.log(err);
+        })
+        .finally(function() {
+            if (userDataHandler.isInitialized()) {
+                console.log("Saving user data...");
+                try {
+                    userDataHandler.finalize();
                 }
-                console.log("Quitting application...");
-                mainWindowMayClose = true;
-                app.quit();
-            });
-    });
+                catch(err) {
+                    console.log("Could not save user data");
+                    console.log(err);
+                }
+            }
+            console.log("Quitting application...");
+            mainWindowMayClose = true;
+            app.quit();
+        });
 }
 
 function fullyCloseApp() {
@@ -338,6 +336,11 @@ function startApplication() {
     // for both
     ipcMain.on('other-public-key-received', function(event, otherPublicKey) {
         pgpHandler.setOtherKeys(otherPublicKey);
+    });
+
+    // for both
+    ipcMain.on('connection-p2p-established', function(event) {
+        bonjourHandler.stop();
     });
 
     // for receiver

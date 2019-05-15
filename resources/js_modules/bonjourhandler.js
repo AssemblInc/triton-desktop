@@ -3,6 +3,7 @@ let bonjour = null;
 let service = null;
 let browser = null;
 let webWindow = null;
+let browserRefresher = null;
 
 exports.init = function(webContents, displayName, assemblId, orcidId) {
     webWindow = webContents;
@@ -29,6 +30,9 @@ exports.init = function(webContents, displayName, assemblId, orcidId) {
         webWindow.send('bonjour-assembl-instance-down', JSON.stringify(service.txt));
     });
     browser.start();
+    browserRefresher = setInterval(function() {
+        browser.update();
+    }, 1000);
 };
 
 exports.isRunning = function() {
@@ -41,6 +45,8 @@ exports.isRunning = function() {
 exports.stop = function(callback) {
     if (module.exports.isRunning()) {
         if (browser != null) {
+            clearInterval(browserRefresher);
+            browserRefresher = null;
             browser.stop();
         }
         if (typeof callback == "function") {

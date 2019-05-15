@@ -204,6 +204,7 @@ function showVerification(displayName, orcidId) {
     else {
         document.getElementById("verif-orcid").style.display = "none";
     }
+    ipcRenderer.send('connection-p2p-established');
     alert("A connection with " + displayName + " has been established.");
 }
 
