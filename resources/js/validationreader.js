@@ -15,8 +15,9 @@ function strip(text) {
 }
 
 function setUnloaded() {
-    document.getElementById("not-main").innerHTML = "Drag and drop a validation file here<br/><small style='color: #CCC6C6;'>validation files should always have the extension <i>astv</i></small>";
-    document.getElementById("main").style.display = "none";
+    document.getElementById("not-main").innerHTML = "Drag and drop a validation file here<br/><small style='color: #CCC6C6;'>validation files should always have the extension <i>astv</i> or <i>asvv</i></small>";
+    document.getElementById("validation-reader").style.display = "none";
+    document.getElementById("verification-reader").style.display = "none";
     document.getElementById("not-main").style.display = "block";
 }
 
@@ -39,12 +40,16 @@ function domReady() {
 function openValidationFile(validationFile) {
     document.getElementById("not-main").innerHTML = "Loading...";
     let extension = validationFile.split(".").pop();
-    if (extension == undefined || extension == null || extension != "astv") {
+    if (extension == undefined || extension == null || (extension != "astv" && extension != "asvv")) {
         console.warn("Invalid extension " + extension);
-        alert("Invalid file type. The Assembl Transfer Validation File Reader can only open astv files.");
+        alert("Invalid file type. The Assembl Transfer Validation File Reader can only open astv and asvv files.");
         setUnloaded();
     }
     else {
+        let fileType = "validation";
+        if (extension == "asvv") {
+            fileType = "verification";
+        }
         fs.readFile(validationFile, function(err, data) {
             if (err) {
                 console.error(err);
@@ -54,13 +59,19 @@ function openValidationFile(validationFile) {
             else {
                 let fileContents = data.toString();
                 try {
-                    let validation = JSON.parse(fileContents);
+                    let jsonContents = JSON.parse(fileContents);
                     try {
-                        console.log(validation);
-                        if (validation.version > readerVersion) {
-                            alert("This validation file was saved in a newer version than this version of Assembl Desktop can manage. Please download & install the latest update to be able to view the full validation file.");
+                        console.log(jsonContents);
+                        if (jsonContents.version > readerVersion) {
+                            alert("This "+fileType+" file was saved in a newer version than this version of Assembl Desktop can manage. Please download & install the latest update to be able to view the full validation file.");
                         }
-                        renderFullValidationFile(validation, fileContents);
+
+                        if (extension == "asvv") {
+                            renderFullVerificationFile(jsonContents, fileContents);
+                        }
+                        else {
+                            renderFullValidationFile(jsonContents, fileContents);
+                        }
                     }
                     catch(err) {
                         console.error(err);
@@ -70,7 +81,7 @@ function openValidationFile(validationFile) {
                 }
                 catch(err) {
                     console.error(err);
-                    alert("The validation file appears to be damaged and cannot be read.");
+                    alert("The "+fileType+" file appears to be damaged and cannot be read.");
                     setUnloaded();
                 }
             }
@@ -85,6 +96,7 @@ function renderValue(value, inField, validationVersion, startVersion, valueType)
     }
     else {
         if (valueType == null) {
+            console.log(inField);
             document.getElementById(inField).innerHTML = strip(value);
         }
         else {
@@ -118,29 +130,49 @@ function renderMissingValue(validationVersion, inField, startVersion) {
 }
 
 function renderFullValidationFile(validation, fileContents) {
-    renderValue(validation.version, "general-version", validation.version, 1);
-    renderValue(validation.currentTime, "general-currenttime", validation.version, 1, "timestamp");
+    renderValue(validation.version, "val-general-version", validation.version, 1);
+    renderValue(validation.currentTime, "val-general-currenttime", validation.version, 1, "timestamp");
 
-    renderValue(validation.file.size, "file-size", validation.version, 1, "filesize");
-    renderValue(validation.file.path, "file-path", validation.version, 1);
-    renderValue(validation.file.name, "file-name", validation.version, 1);
-    renderValue(validation.file.lastModified, "file-lastmodified", validation.version, 1, "timestamp");
-    renderValue(validation.file.license, "file-license", validation.version, 1, "license");
-    renderValue(validation.file.description, "file-description", validation.version, 1);
-    renderValue(validation.file.hash, "file-hash", validation.version, 1);
+    renderValue(validation.file.size, "val-file-size", validation.version, 1, "filesize");
+    renderValue(validation.file.path, "val-file-path", validation.version, 1);
+    renderValue(validation.file.name, "val-file-name", validation.version, 1);
+    renderValue(validation.file.lastModified, "val-file-lastmodified", validation.version, 1, "timestamp");
+    renderValue(validation.file.license, "val-file-license", validation.version, 1, "license");
+    renderValue(validation.file.description, "val-file-description", validation.version, 1);
+    renderValue(validation.file.hash, "val-file-hash", validation.version, 1);
 
-    renderValue(validation.sender.name, "sender-name", validation.version, 1);
-    renderValue(validation.sender.assemblId, "sender-assemblid", validation.version, 1);
-    renderValue(validation.sender.orcidId, "sender-orcidid", validation.version, 1);
+    renderValue(validation.sender.name, "val-sender-name", validation.version, 1);
+    renderValue(validation.sender.assemblId, "val-sender-assemblid", validation.version, 1);
+    renderValue(validation.sender.orcidId, "val-sender-orcidid", validation.version, 1);
 
-    renderValue(validation.receiver.name, "receiver-name", validation.version, 1);
-    renderValue(validation.receiver.assemblId, "receiver-assemblid", validation.version, 1);
-    renderValue(validation.receiver.orcidId, "receiver-orcidid", validation.version, 1);
+    renderValue(validation.receiver.name, "val-receiver-name", validation.version, 1);
+    renderValue(validation.receiver.assemblId, "val-receiver-assemblid", validation.version, 1);
+    renderValue(validation.receiver.orcidId, "val-receiver-orcidid", validation.version, 1);
     
-    document.getElementById("json").innerHTML = strip(fileContents);
+    document.getElementById("val-json").innerHTML = strip(fileContents);
 
     document.getElementById("not-main").style.display = "none";
-    document.getElementById("main").style.display = "block";
+    document.getElementById("verification-reader").style.display = "none";
+    document.getElementById("validation-reader").style.display = "block";
+}
+
+function renderFullVerificationFile(verification, fileContents) {
+    renderValue(verification.version, "ver-general-version", verification.version, 1);
+    renderValue(verification.currentTime, "ver-general-currenttime", verification.version, 1);
+
+    renderValue(verification.validation.path, "ver-validation-path", verification.version, 1);
+    renderValue(verification.validation.name, "ver-validation-name", verification.version, 1);
+    renderValue(verification.validation.hash, "ver-validation-hash", verification.version, 1);
+
+    renderValue(verification.stellar.transactionId, "ver-stellar-transactionid", verification.version, 1);
+    renderValue(verification.stellar.time, "ver-stellar-time", verification.version, 1);
+    renderValue(verification.stellar.ledger, "ver-stellar-ledger", verification.version, 1);
+
+    document.getElementById("ver-json").innerHTML = strip(fileContents);
+
+    document.getElementById("not-main").style.display = "none";
+    document.getElementById("validation-reader").style.display = "none";
+    document.getElementById("verification-reader").style.display = "block";
 }
 
 function showHelp(forWhat) {

@@ -89,7 +89,7 @@ function appReady() {
     let validationReader = false;
     let validationFile = "";
     process.argv.forEach((val, index) => {
-        if (val.indexOf(".astv") > -1) {
+        if (val.indexOf(".astv") > -1 || val.indexOf(".asvv") > -1) {
             validationReader = true;
             validationFile = val;
         }

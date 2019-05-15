@@ -17,9 +17,17 @@
     "fileAssociations": [
       {
         "ext": "astv",
-        "name": "astv",
+        "name": "ASTV",
         "description": "Assembl Transfer Validation File",
         "mimeType": "application/assembl-transfer-validation",
+        "role": "Viewer",
+        "isPackage": false
+      },
+      {
+        "ext": "asvv",
+        "name": "ASVV",
+        "description": "Assembl Validation Verification File",
+        "mimeType": "application/assembl-validation-verification",
         "role": "Viewer",
         "isPackage": false
       }
