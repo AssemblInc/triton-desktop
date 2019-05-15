@@ -51,13 +51,17 @@ exports.stop = function(callback) {
         if (typeof callback == "function") {
             bonjour.unpublishAll(function() {
                 bonjour.destroy();
-                callback();
+                if (typeof callback == "function") {
+                    callback();
+                }
             });
         }
         else {
             service.stop(function() {
                 bonjour.destroy();
-                callback();
+                if (typeof callback == "function") {
+                    callback();
+                }
             });
         }
     }

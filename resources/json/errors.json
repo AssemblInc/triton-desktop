@@ -68,7 +68,11 @@
         "fix": "Restart the application and try again"
     },
     "0x6001": {
-        "details": "Could not add hash to blockchain",
+        "details": "Could not add hash to blockchain due to an unknown error",
+        "fix": "Restart the application and try again"
+    },
+    "0x6002": {
+        "details": "Could not add hash to blockchain due to no ledger being available at the moment",
         "fix": "Restart the application and try again"
     }
 }

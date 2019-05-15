@@ -306,7 +306,18 @@ let fileHandler = {
                 })
                 .catch(function(err) {
                     console.error(err);
-                    screens.showErrorScreen('0x6001');
+                    if (err.message.indexOf("status code ") > -1) {
+                        let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ")));
+                        if (statusCode == 504) {
+                            screens.showErrorScreen('0x6001');
+                        }
+                        else {
+                            screens.showErrorScreen('0x6001');
+                        }
+                    }
+                    else {
+                        screens.showErrorScreen('0x6001');
+                    }
                 });
             }
         }
