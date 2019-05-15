@@ -336,11 +336,11 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     transition: 0.15s;
 }
 
-.connect-button#error-btn {
+.connect-button.error-btn {
     background: #9B0120;
 }
 
-.connect-button#error-btn:hover, .connect-button#error-btn:focus, .connect-button#error-btn:active {
+.connect-button.error-btn:hover, .connect-button.error-btn:focus, .connect-button.error-btn:active {
     background: #BA0025;
 }
 

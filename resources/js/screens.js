@@ -116,6 +116,16 @@ let screens = {
                 document.getElementById("error-details").innerHTML = strip(error["details"]);
                 document.getElementById("error-code").innerHTML = strip(errorCode);
                 document.getElementById("error-fix").innerHTML = strip(error["fix"]);
+                if (error["retry_cmd"] != undefined) {
+                    console.log("Command for retrying available: " + error["retry_cmd"]);
+                    document.getElementById("error-try-again-btn").setAttribute("onclick", error["retry_cmd"]);
+                    document.getElementById("error-try-again-btn").style.display = "inline-block";
+                }
+                else {
+                    console.log("No command for retrying available.");
+                    document.getElementById("error-try-again-btn").setAttribute("onclick", "alert('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');");
+                    document.getElementById("error-try-again-btn").style.display = "none";
+                }
             }
             else {
                 screens.showErrorScreen('0x0000');

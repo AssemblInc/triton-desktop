@@ -307,7 +307,8 @@ let fileHandler = {
                 .catch(function(err) {
                     console.error(err);
                     if (err.message.indexOf("status code ") > -1) {
-                        let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ")));
+                        let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ") + 12));
+                        console.log(statusCode);
                         switch (statusCode) {
                             case 400:
                                 screens.showErrorScreen('0x6003');
