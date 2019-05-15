@@ -481,12 +481,12 @@ function startApplication() {
     }
 
     // for both sender and receiver
-    ipcMain.on('transferinfo-namerequest', function(event, dateObj) {
-        event.returnValue = createTransferFileName(dateObj, "astv");
+    ipcMain.on('transferinfo-namerequest', function(event, timestamp) {
+        event.returnValue = createTransferFileName(new Date(timestamp), "astv");
     });
 
     // for both sender and receiver
-    ipcMain.on('transferinfo-folderrequest', function(event, dateObj) {
+    ipcMain.on('transferinfo-folderrequest', function(event) {
         event.returnValue = getTransferFolder();
     });
     

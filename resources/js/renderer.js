@@ -336,7 +336,7 @@ ipcRenderer.on('bonjour-assembl-instance-up', function(event, instanceDetails) {
         bonjourInstances[instanceDetails['assemblid']] = instanceDetails;
         let bonjourOption = document.createElement("option");
         bonjourOption.setAttribute("value", instanceDetails['assemblid']);
-        bonjourOption.innerHTML = strip(instanceDetails['displayname'] + "(on " + instanceDetails['hostname'] + ")");
+        bonjourOption.innerHTML = strip(instanceDetails['displayname'] + " (on " + instanceDetails['hostname'] + ")");
         document.getElementById("bonjour-finder-selector").appendChild(bonjourOption);
         let instanceAmount = Object.keys(bonjourInstances).length;
         if (instanceAmount > 0) {

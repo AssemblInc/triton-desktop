@@ -279,10 +279,10 @@ let fileHandler = {
                 stellarHandler.addHash(memoHash).then(function(stellarResults) {
                     console.log(stellarResults);
                     let transferInfoFolder = ipcRenderer.sendSync("transferinfo-folderrequest");
-                    let transferInfoFileName = ipcRenderer.sendSync("transferinfo-namerequest", new Date(fileHandler.transferInfo.currentTime));
+                    let transferInfoFileName = ipcRenderer.sendSync("transferinfo-namerequest", fileHandler.transferInfo.currentTime);
                     let stellarInfo = {
                         version: 1,
-                        currentTime: Date.now(),
+                        currentTime: fileHandler.transferInfo.currentTime,
                         validation: {
                             path: path.join(transferInfoFolder, transferInfoFileName),
                             name: transferInfoFileName,
@@ -294,6 +294,7 @@ let fileHandler = {
                             ledger: stellarResults.ledger
                         }
                     };
+                    console.log(stellarInfo);
                     let stellarInfoString = JSON.stringify(stellarInfo);
                     ipcRenderer.send('blockchaininfo-finalized', stellarInfoString);
                     wsHandler.sendEvent('blockchain_info_complete', stellarInfoString);

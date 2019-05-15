@@ -20,7 +20,7 @@
 
 
     "ver-general-version": "This number is used for internal processing of a verification file. It does NOT specify whether this is a modified copy of the original verification file.",
-    "ver-general-currenttime": "The date and time of when the file hash of the validation file was added to the blockchain.",
+    "ver-general-currenttime": "The date and time of the starting of the transfer described in this validation file.",
     
     "ver-validation-path": "The location of the validation file in question (when the hash was added to the blockchain).",
     "ver-validation-name": "The name of the validation file in question (when the hash was added to the blockchain).",
