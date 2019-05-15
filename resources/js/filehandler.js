@@ -286,7 +286,7 @@ let fileHandler = {
                         validation: {
                             path: path.join(transferInfoFolder, transferInfoFileName),
                             name: transferInfoFileName,
-                            hash: transferInfoHash
+                            hash: memoHash
                         },
                         stellar: {
                             transactionId: stellarResults.hash,
