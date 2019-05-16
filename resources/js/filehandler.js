@@ -74,8 +74,9 @@ let fileHandler = {
                 fileHandler.sentChunkAmount += 1;
                 setTimeout(function() {
                     // this function is run with a timeout instead of right away
-                    // otherwise it seems like the server won't be able to process the amount of chunks
+                    // otherwise it seems like the connection won't be able to process the amount of chunks
                     // and the receiving end will experience download stutters!
+                    // both on webrtc AND websockets.
                     fileHandler.prepareChunk(fileHandler.offset);
                 }, 64);
             }
