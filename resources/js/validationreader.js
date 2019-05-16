@@ -166,14 +166,14 @@ function renderFullValidationFile(validation, fileContents) {
 
 function renderFullVerificationFile(verification, fileContents) {
     renderValue(verification.version, "ver-general-version", verification.version, 1);
-    renderValue(verification.currentTime, "ver-general-currenttime", verification.version, 1);
+    renderValue(verification.currentTime, "ver-general-currenttime", verification.version, 1, "timestamp");
 
     renderValue(verification.validation.path, "ver-validation-path", verification.version, 1);
     renderValue(verification.validation.name, "ver-validation-name", verification.version, 1);
     renderValue(verification.validation.hash, "ver-validation-hash", verification.version, 1);
 
     renderValue(verification.stellar.transactionId, "ver-stellar-transactionid", verification.version, 1);
-    renderValue(verification.stellar.time, "ver-stellar-time", verification.version, 1);
+    renderValue(verification.stellar.time, "ver-stellar-time", verification.version, 1, "timestamp");
     renderValue(verification.stellar.ledger, "ver-stellar-ledger", verification.version, 1);
 
     document.getElementById("ver-json").innerHTML = strip(fileContents);
