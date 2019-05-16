@@ -32,3 +32,7 @@ let httpHandler = {
         server.close();
     }
 };
+
+// should the server be on the receiving side or on the sending side...?
+// receiving would cause the sender to send the chunks like normal
+// sending would cause the receiver to request each chunk seperately...
