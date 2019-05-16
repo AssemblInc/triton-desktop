@@ -208,6 +208,37 @@ function signIn() {
 }
 
 function startApplication() {
+    console.log("Showing splash screen...");
+    let splash = new BrowserWindow({
+        width: 420,
+        height: 160,
+        transparent: true,
+        titleBarStyle: "hidden",
+        frame: false,
+        thickFrame: false,
+        center: true,
+        resizable: false,
+        movable: false,
+        minimizable: false,
+        maximizable: false,
+        closable: false,
+        skipTaskbar: true,
+        show: true,
+        fullscreenable: false,
+        title: "Starting Assembl Desktop...",
+        webPreferences: {
+            nodeIntegration: false,
+            devTools: false,
+            defaultFontFamily: 'sansSerif',
+            defaultFontSize: 17,
+            nativeWindowOpen: false,
+            experimentalFeatures: false,
+            javascript: false
+        },
+        icon: __dirname + "/build/icon.ico"
+    });
+    splash.loadFile("splash.html");
+
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
         width: 800,
@@ -242,8 +273,11 @@ function startApplication() {
         }
     });
     mainWindow.once('ready-to-show', function() {
+        console.log("Showing main window...");
         mainWindow.show();
         mainWindow.maximize();
+        splash.setClosable(true);
+        splash.close();
         // mainWindow.webContents.openDevTools();
         let tempPath = path.join(app.getPath('userData'), 'temp');
         if (!fs.existsSync(tempPath)) {
