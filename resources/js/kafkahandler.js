@@ -1,3 +1,5 @@
+// UNFINISHED
+
 const { Kafka } = require('kafkajs');
 
 let kafkaHandler = {

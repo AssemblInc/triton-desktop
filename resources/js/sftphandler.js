@@ -1,3 +1,5 @@
+// UNFINISHED
+
 let ssh2 = require('ssh2');
 let crypto = require('crypto');
 let natUpnp = require('nat-upnp');
