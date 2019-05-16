@@ -164,11 +164,11 @@
                                             fileHandler.useEncryption(false);
                                             break;
                                         case "2kbit":
-                                            fileHandler.useEncryption(true);
+                                            fileHandler.useEncryption(true, "pgp", 2048);
                                             break;
                                         case "4kbit":
                                             // TODO: implement it
-                                            fileHandler.useEncryption(true);
+                                            fileHandler.useEncryption(true, "pgp", 4096);
                                             break;
                                         default:
                                             alert("Please select a valid encryption option.");

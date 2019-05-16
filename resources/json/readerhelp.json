@@ -10,6 +10,11 @@
     "val-file-description": "A description of the contents of the file that has been transferred, inputted by the sending party at the time of sending",
     "val-file-hash": "The keccak256 hash of the full file that has been transferred (at the time of sending)",
 
+    "val-transmission-encryption-enabled": "Whether or not encryption was enabled for this file transmission",
+    "val-transmission-encryption-method": "The method used for encryption (if enabled).",
+    "val-transmission-encryption-level": "The level of encryption used (if enabled).",
+    "val-transmission-protocol": "Which type of connection (protocol) was used for the file transfer.",
+
     "val-sender-name": "The name of the person who sent the file",
     "val-sender-assemblid": "The Assembl ID of the sender",
     "val-sender-orcidid": "The ORCID iD of the sender",

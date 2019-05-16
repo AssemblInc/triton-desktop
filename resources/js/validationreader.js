@@ -107,6 +107,9 @@ function renderValue(value, inField, validationVersion, startVersion, valueType)
                 case "filesize":
                     document.getElementById(inField).innerHTML = strip(prettySize(parseInt(value)) + " ("+parseInt(value)+" bytes)");
                     break;
+                case "boolean":
+                    document.getElementById(inField).innerHTML = strip(value.toString());
+                    break;
                 default:
                     document.getElementById(inField).innerHTML = strip(value);
                     break;
@@ -140,6 +143,11 @@ function renderFullValidationFile(validation, fileContents) {
     renderValue(validation.file.license, "val-file-license", validation.version, 1, "license");
     renderValue(validation.file.description, "val-file-description", validation.version, 1);
     renderValue(validation.file.hash, "val-file-hash", validation.version, 1);
+
+    renderValue(validation.transmission.encryptionEnabled, "val-transmission-encryption-enabled", validation.version, 1, "boolean");
+    renderValue(validation.transmission.encryptionMethod, "val-transmission-encryption-method", validation.version, 1);
+    renderValue(validation.transmission.encryptionLevel, "val-transmission-encryption-level", validation.version, 1);
+    renderValue(validation.transmission.protocol, "val-transmission-protocol", validation.version, 1);
 
     renderValue(validation.sender.name, "val-sender-name", validation.version, 1);
     renderValue(validation.sender.assemblId, "val-sender-assemblid", validation.version, 1);

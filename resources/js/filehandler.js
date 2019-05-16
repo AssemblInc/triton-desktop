@@ -6,7 +6,11 @@ let fileHandler = {
     sentChunkAmount: null,      // amount of chunks that have been sent through so far
     offset: null,               // the offset of the current chunk being read
     protocolToUse: null,        // the protocol to use (transfer method)
-    encryptionEnabled: false,   // whether or not encryption is enabled for the chunks that are transferred
+    encryption: {
+        enabled: true,          // whether or not encryption is enabled for the chunks that are transferred
+        method: "pgp",          // which encryption method to use if enabled
+        level: 2048,            // the amount of bits for encryption to use
+    },
     useStream: false,           // IN DEVELOPMENT: use streams instead of chunks. Only for websocket protocol
     license: null,              // license selected for the file to send
     transferInfo: {},           // transferInfo (JSON attachment for Stellar)
@@ -16,7 +20,7 @@ let fileHandler = {
             return 16384;           // 16KB
         }
         else {
-            if (fileHandler.encryptionEnabled || true) {
+            if (fileHandler.encryption.enabled || true) {
                 return 1048576;     // 1MB
             }
             else {
@@ -44,7 +48,7 @@ let fileHandler = {
                 switch(fileHandler.protocolToUse) {
                     case "webrtc":
                         // send chunk over webrtc
-                        if (fileHandler.encryptionEnabled) {
+                        if (fileHandler.encryption.enabled) {
                             rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
                         }
                         else {
@@ -56,7 +60,7 @@ let fileHandler = {
                         fileHandler.protocolToUse = "websocket";
                     case "websocket":
                         // send chunk over websocket
-                        if (fileHandler.encryptionEnabled) {
+                        if (fileHandler.encryption.enabled) {
                             wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
                         }
                         else {
@@ -169,8 +173,9 @@ let fileHandler = {
                     hash: null
                 },
                 transmission: {
-                    encryptionEnabled: fileHandler.encryptionEnabled,
-                    encryptionLevel: 2048,
+                    encryptionEnabled: fileHandler.encryption.enabled,
+                    encryptionLevel: fileHandler.encryption.level,
+                    encryptionMethod: fileHandler.encryption.method,
                     protocol: fileHandler.protocolToUse
                 },
                 sender: {
@@ -337,7 +342,15 @@ let fileHandler = {
         fileHandler.prepareChunk(fileHandler.offset);
     },
 
-    useEncryption(useIt) {
-        fileHandler.encryptionEnabled = useIt;
+    useEncryption(useIt, method, level) {
+        fileHandler.encryption.enabled = useIt;
+        if (useIt) {
+            fileHandler.encryption.method = method;
+            fileHandler.encryption.level = level;
+        }
+        else {
+            fileHandler.encryption.method = "none";
+            fileHandler.encryption.level = 0;
+        }
     }
 };
