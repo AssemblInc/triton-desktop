@@ -207,7 +207,7 @@ function signIn() {
     signInWindow.loadURL(signInUrl);
 }
 
-function startApplication() {
+function showSplashScreen() {
     console.log("Showing splash screen...");
     let splash = new BrowserWindow({
         width: 420,
@@ -238,6 +238,11 @@ function startApplication() {
         icon: __dirname + "/build/icon.ico"
     });
     splash.loadFile("splash.html");
+    return splash;
+}
+
+function startApplication() {
+    let splash = showSplashScreen();
 
     console.log("Creating main window...");
     mainWindow = new BrowserWindow({
@@ -569,6 +574,8 @@ function startApplication() {
 }
 
 function startValidationReader(validationFile) {
+    let splash = showSplashScreen();
+
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
@@ -602,8 +609,11 @@ function startValidationReader(validationFile) {
         }
     });
     mainWindow.once('ready-to-show', function() {
+        console.log("Showing reader window...");
         mainWindow.show();
         mainWindow.maximize();
+        splash.setClosable(true);
+        splash.close();
         // mainWindow.webContents.openDevTools();
     });
 
