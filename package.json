@@ -49,10 +49,11 @@
     "build-lin": "rm -rf dist && build --linux",
     "build-lin-32": "rm -rf dist && build --linux --ia32",
     "build-lin-64": "rm -rf dist && build --linux --x64",
+    "build-lin-arm64": "rm -rf dist && build --linux --arm64",
+    "build-lin-armv7l": "rm -rf dist && build --linux --armv7l",
     "build-mac": "rm -rf dist && build --mac",
     "build-mac-32": "rm -rf dist && build --mac --ia32",
-    "build-mac-64": "rm -rf dist && build --mac --x64",
-    "build-all": "rm -rf dist && build --mwl",
+    "build-mac-64": "rm -rf dist && build --mac --arm64",
     "pack": "electron-builder"
   },
   "devDependencies": {
