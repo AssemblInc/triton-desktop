@@ -111,9 +111,6 @@ function loadKeys(keyManager, newKeys) {
 }
 
 exports.createKeys = function(displayName, userId) {
-    if (userId == null) {
-        userId = Math.random().toString(36).substring(11);
-    }
     opts = {
         userid: displayName + " <" + userId + "@users.assembl.science>",
         primary: {
