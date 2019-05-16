@@ -7,17 +7,18 @@ let httpHandler = {
     startServer: function() {
         server = http.createServer(function(req, res) {
             if (req.method == 'POST') {
-                let body = '';
-                req.on('data', function(data) {
-                    body += data;
-                    if (body.length > 1e6) {
-                        // too much post data, kill connection
-                        response.writeHead(413, {'Content-Type': 'text/plain'}).end();
-                        req.connection.destroy();
-                    }
+                let chunks = [];
+                req.on('data', function(chunk) {
+                    chunks.push(chunk);
+                    // dont forget to implement stream-meter instead to fix memory attacks
+                    /*
+                    limitedStream = request.pipe(meter(1e7));
+                    limitedStream.on('data', ...);
+                    limitedStream.on('end', ...);
+                    */
                 });
                 req.on('end', function() {
-                    let post = qs.parse(body);
+                    let data = Buffer.concat(chunks);
                 });
             }
             else {
