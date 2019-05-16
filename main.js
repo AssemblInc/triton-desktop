@@ -212,7 +212,7 @@ function startApplication() {
     let splash = new BrowserWindow({
         width: 420,
         height: 160,
-        transparent: true,
+        backgroundColor: '#193864',
         titleBarStyle: "hidden",
         frame: false,
         thickFrame: false,
