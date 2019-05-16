@@ -1,8 +1,8 @@
 @font-face {
-    font-family: 'Didact Gothic';
+    font-family: 'Renner';
     font-style: normal;
     font-weight: 400;
-    src: url('resources/fonts/DidactGothic-Regular.ttf');
+    src: url('resources/fonts/Renner_400_Book.otf');
 }
 
 html {
@@ -103,24 +103,24 @@ header {
 .assembl-logo-text {
     display: inline-block;
     vertical-align: middle;
-    font-family: 'Didact Gothic';
-    font-weight: 600;
+    font-family: 'Renner';
+    font-weight: 400;
     font-size: 1.4em;
-    margin-bottom: 0.1em;
+    margin-bottom: -0.16em;
     color: #EDF4F4;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.01em;
 }
 
 .assembl-logo-subtext {
     display: inline-block;
     vertical-align: middle;
-    font-family: 'Didact Gothic';
-    font-weight: 600;
+    font-family: 'Renner';
+    font-weight: 400;
     font-size: 1.4em;
-    margin-bottom: 0.1em;
+    margin-bottom: -0.16em;
     margin-left: 0.5em;
     color: #CCC6C6;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.01em;
 }
 
 #not-main {

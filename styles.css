@@ -1,8 +1,15 @@
 @font-face {
-    font-family: 'Didact Gothic';
+    font-family: 'Renner';
     font-style: normal;
     font-weight: 400;
-    src: url('resources/fonts/DidactGothic-Regular.ttf');
+    src: url('resources/fonts/Renner_400_Book.otf');
+}
+
+@font-face {
+    font-family: 'Renner';
+    font-style: normal;
+    font-weight: 300;
+    src: url('resources/fonts/Renner_300_Light.otf');
 }
 
 html {
@@ -107,12 +114,12 @@ a:hover, a:focus, a:active {
 .assembl-logo-text {
     display: inline-block;
     vertical-align: middle;
-    font-family: 'Didact Gothic';
-    font-weight: 600;
+    font-family: 'Renner';
+    font-weight: 400;
     font-size: 2.5em;
-    margin-bottom: 0.1em;
+    margin-bottom: -0.16em;
     color: #EDF4F4;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.01em;
 }
 
 .underthelogo {
@@ -222,7 +229,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
 
 #startup .assembl-logo-text {
     font-size: 4.5em;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.01em;
     margin-bottom: 0.11em;
 }
 
@@ -293,7 +300,8 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     display: inline-block;
     cursor: pointer;
     background: #183b8c;
-    font-family: 'Didact Gothic', Helvetica, Arial, sans-serif;
+    font-family: 'Renner', Helvetica, Arial, sans-serif;
+    font-weight: 300;
     letter-spacing: .2px;
     border: none;
     border-radius: 3px;
@@ -318,7 +326,8 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
 .connect-button {
     display: inline-block;
     cursor: pointer;
-    font-family: 'Didact Gothic', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Renner', Helvetica, Arial, sans-serif;
+    font-weight: 300;
     letter-spacing: .2px;
     background: #183b8c;
     border: none;
