@@ -46,8 +46,8 @@
                             <div style="margin-bottom: 12px;">An error occured</div>
                             <div style="font-size: 0.8em;"><span id="error-details" style="margin-bottom: 4px;">The error failed to load</span>. Error code <span id="error-code">0x0000</span></div>
                             <div id="error-fix" style="margin-bottom: 12px; font-size: 0.8em;">This should never happen. If it does, restart the application.</div>
-                            <button type="button" class="connect-button" class="error-btn" onclick="ipcRenderer.send('app-should-close');">Quit Assembl Desktop</button>
-                            <button type="button" class="connect-button" class="error-btn" id="error-try-again-btn" style="display: none;" onclick="alert('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');">Try Again</button>
+                            <button type="button" class="connect-button error-btn" onclick="ipcRenderer.send('app-should-close');">Quit Assembl Desktop</button>
+                            <button type="button" class="connect-button error-btn" id="error-try-again-btn" style="display: none;" onclick="alert('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');">Try Again</button>
                         </div>
                     </td>
                 </tr>
