@@ -302,6 +302,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     background: #183b8c;
     font-family: 'Renner', Helvetica, Arial, sans-serif;
     font-weight: 300;
+    text-transform: lowercase;
     letter-spacing: .2px;
     border: none;
     border-radius: 3px;
@@ -328,6 +329,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     cursor: pointer;
     font-family: 'Renner', Helvetica, Arial, sans-serif;
     font-weight: 300;
+    text-transform: lowercase;
     letter-spacing: .2px;
     background: #183b8c;
     border: none;
