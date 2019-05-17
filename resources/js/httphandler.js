@@ -34,18 +34,51 @@ let httpHandler = {
                                 });
                                 req.on('end', function() {
                                     let data = Buffer.concat(chunks);
-                                    res.writeHead(200, {'Content-Type':'application/json'});
-                                    res.end(JSON.stringify({
-                                        'chunkNumber': 0,
-                                        'received': true
-                                    }));
-                                    let post = parseQuery(data.toString());
-                                    console.log("Received data over HTTP: ", post);
-                                    if (parseInt(post['encrypted']) > 0) {
-                                        ipcRenderer.send('renderer-received-chunk', post.chunk, post.number);
+                                    if (req.headers['content-type'] === 'application/assembl-chunk') {
+                                        if (!('assembl-chunk-encrypted' in req.headers) || !('assembl-chunk-number' in req.headers)) {
+                                            // information on chunk is missing in headers
+                                            res.writeHead(400, {'Content-Type':'application/json'});
+                                            res.end(JSON.stringify({
+                                                'error': 'bad_request',
+                                                'error_code': 400,
+                                                'error_msg': 'missing header assembl-chunk-encrypted or assembl-chunk-number'
+                                            }));
+                                            console.warn("Someone tried to connect over HTTP not using POST method!");
+                                        }
+                                        else {
+                                            console.log("Received data over HTTP: ", data);
+                                            if (parseInt(req.headers['assembl-chunk-encrypted']) > 0) {
+                                                ipcRenderer.send('renderer-received-chunk', data.toString(), parseInt(req.headers['assembl-chunk-number']));
+                                            }
+                                            else {
+                                                ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data), parseInt(req.headers['assembl-chunk-number']));
+                                            }
+                                        }
+                                    }
+                                    else if (req.headers['content-type'] == 'application/x-www-form-urlencoded') {
+                                        res.writeHead(200, {'Content-Type':'application/json'});
+                                        res.end(JSON.stringify({
+                                            'chunkNumber': 0,
+                                            'received': true
+                                        }));
+                                        let post = parseQuery(data.toString());
+                                        console.log("Received data over HTTP: ", post);
+                                        if (parseInt(post['encrypted']) > 0) {
+                                            ipcRenderer.send('renderer-received-chunk', post.chunk, parseInt(post.number));
+                                        }
+                                        else {
+                                            ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk.split(",")), parseInt(post.number));
+                                        }
                                     }
                                     else {
-                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk.split(",")), post.number);
+                                        // content-type is not supported
+                                        res.writeHead(415, {'Content-Type':'application/json'});
+                                        res.end(JSON.stringify({
+                                            'error': 'unsupported_media_type',
+                                            'error_code': 415,
+                                            'error_msg': 'use content-type application/x-www-form-urlencoded or application/assembl-chunk to send data'
+                                        }));
+                                        console.warn("Someone tried to send data using an unsupported content-type!");
                                     }
                                 });
                             }
@@ -54,6 +87,7 @@ let httpHandler = {
                                 res.writeHead(405, {'Content-Type':'application/json'});
                                 res.end(JSON.stringify({
                                     'error': 'method_not_allowed',
+                                    'error_code': 405,
                                     'error_msg': 'only POST is supported by this server'
                                 }));
                                 console.warn("Someone tried to connect over HTTP not using POST method!");
@@ -64,6 +98,7 @@ let httpHandler = {
                             res.writeHead(401, {'Content-Type':'application/json'});
                             res.end(JSON.stringify({
                                 'error': 'unauthorized',
+                                'error_code': 401,
                                 'error_msg': 'wrong or no authorization credentials provided'
                             }));
                             console.warn("Someone tried to connect over HTTP with the wrong or no credentials!");
@@ -120,12 +155,14 @@ let httpHandler = {
                     console.log("HTTP response: ", response);
                 }
             };
-            let params = 'encrypted=0&number='+parseInt(number)+'&chunk='+encodeURIComponent(Array.from(chunk).join(","));
+            // let params = 'encrypted=0&number='+parseInt(number)+'&chunk='+encodeURIComponent(Array.from(chunk).join(","));
             xhr.open('POST', httpHandler.sendTo.url, true);
-            xhr.setRequestHeader("Authorization", "Basic "+btoa(httpHandler.sendTo.auth));
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader("Accept", "application/json")
-            xhr.send(params);
+            xhr.setRequestHeader("assembl-chunk-number", number.toString());
+            xhr.setRequestHeader("assembl-chunk-encrypted", 0);
+            xhr.setRequestHeader("authorization", "Basic "+btoa(httpHandler.sendTo.auth));
+            xhr.setRequestHeader("content-type", "application/assembl-chunk");
+            xhr.setRequestHeader("accept", "application/json");
+            xhr.send(new Blob(chunk));
         }
         else {
             console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");
