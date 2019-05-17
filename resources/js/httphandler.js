@@ -30,7 +30,6 @@ let httpHandler = {
                             if (req.method == 'POST') {
                                 let chunks = [];
                                 req.on('data', function(chunk) {
-                                    console.log(chunk);
                                     chunks.push(chunk);
                                 });
                                 req.on('end', function() {
@@ -54,6 +53,11 @@ let httpHandler = {
                                             else {
                                                 ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data), parseInt(req.headers['assembl-chunk-number']));
                                             }
+                                            res.writeHead(200, {'Content-Type':'application/json'});
+                                            res.end(JSON.stringify({
+                                                'chunkNumber': parseInt(req.headers['assembl-chunk-number']),
+                                                'received': true
+                                            }));
                                         }
                                     }
                                     else if (req.headers['content-type'] == 'multipart/form-data') {
@@ -66,7 +70,7 @@ let httpHandler = {
                                     else if (req.headers['content-type'] == 'application/x-www-form-urlencoded') {
                                         res.writeHead(200, {'Content-Type':'application/json'});
                                         res.end(JSON.stringify({
-                                            'chunkNumber': 0,
+                                            'chunkNumber': parseInt(post.number),
                                             'received': true
                                         }));
                                         let post = parseQuery(data.toString());
@@ -189,23 +193,25 @@ let httpHandler = {
                 }
             };
             xhr.open('POST', httpHandler.sendTo.url, true);
-            xhr.upload.on('loadstart', function(event) {
+            xhr.upload.addEventListener('loadstart', function(event) {
                 // upload started
             });
-            xhr.upload.on('progress', function(event) {
+            xhr.upload.addEventListener('progress', function(event) {
                 // upload in progress
-                console.log(event);
+                if (event.lengthComputable) {
+                    screens.loading.setProgressWithFileSize(event.loaded, fileHandler.file.size);
+                }
             });
-            xhr.upload.on('abort', function(event) {
+            xhr.upload.addEventListener('abort', function(event) {
                 // upload aborted
             });
-            xhr.upload.on('error', function(event) {
+            xhr.upload.addEventListener('error', function(event) {
                 // upload error
             });
-            xhr.upload.on('timeout', function(event) {
+            xhr.upload.addEventListener('timeout', function(event) {
                 // upload timed out
             });
-            xhr.upload.on('load', function(event) {
+            xhr.upload.addEventListener('load', function(event) {
                 // upload complete
             });
             xhr.setRequestHeader("authorization", "Basic "+btoa(httpHandler.sendTo.auth));
