@@ -108,10 +108,11 @@ var wsHandler = {
                     ipcRenderer.send('other-public-key-received', data);
                     break;
                 case "http_server_data_request":
-                    let ip = httpHandler.startServer();
-                    wsHandler.sendEventToSender("http_server_data_ready", {
-                        url: 'http://'+ip+'/',
-                        auth: httpHandler.auth
+                    httpHandler.startServer().then(function() {
+                        wsHandler.sendEventToSender("http_server_data_ready", {
+                            url: 'http://'+httpHandler.ip+'/',
+                            auth: httpHandler.auth
+                        });
                     });
                     break;
                 case "webrtc_offer_ready":
