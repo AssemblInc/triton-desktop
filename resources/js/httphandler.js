@@ -162,7 +162,7 @@ let httpHandler = {
             xhr.setRequestHeader("authorization", "Basic "+btoa(httpHandler.sendTo.auth));
             xhr.setRequestHeader("content-type", "application/assembl-chunk");
             xhr.setRequestHeader("accept", "application/json");
-            xhr.send(new Blob(chunk));
+            xhr.send(new Blob([chunk]));
         }
         else {
             console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");

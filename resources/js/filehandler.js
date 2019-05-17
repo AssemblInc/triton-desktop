@@ -24,7 +24,7 @@ let fileHandler = {
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
                 }
-                return 5242880;         // 5MB
+                return 1048576;         // 1MB
             case "websocket":
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
