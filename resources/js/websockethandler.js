@@ -109,10 +109,10 @@ var wsHandler = {
                     break;
                 case "http_server_data_request":
                     httpHandler.startServer().then(function() {
-                        wsHandler.sendEventToSender("http_server_data_ready", {
+                        wsHandler.sendEventToSender("http_server_data_ready", JSON.stringify({
                             url: 'http://'+httpHandler.ip+'/',
                             auth: httpHandler.auth
-                        });
+                        }));
                     });
                     break;
                 case "webrtc_offer_ready":
@@ -149,6 +149,7 @@ var wsHandler = {
                     ipcRenderer.send('other-public-key-received', data);
                     break;
                 case "http_server_data_ready":
+                    data = JSON.parse(data);
                     httpHandler.initSender(data.url, data.auth);
                     showVerification(receiver.name, receiver.orcidId);
                     screens.startFileDropper();
