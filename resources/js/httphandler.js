@@ -30,6 +30,7 @@ let httpHandler = {
                             if (req.method == 'POST') {
                                 let chunks = [];
                                 req.on('data', function(chunk) {
+                                    console.log(chunk);
                                     chunks.push(chunk);
                                 });
                                 req.on('end', function() {
@@ -54,6 +55,13 @@ let httpHandler = {
                                                 ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data), parseInt(req.headers['assembl-chunk-number']));
                                             }
                                         }
+                                    }
+                                    else if (req.headers['content-type'] == 'multipart/form-data') {
+                                        res.writeHead(200, {'Content-Type':'application/json'});
+                                        res.end(JSON.stringify({
+                                            'received': true
+                                        }));
+                                        console.log(data);
                                     }
                                     else if (req.headers['content-type'] == 'application/x-www-form-urlencoded') {
                                         res.writeHead(200, {'Content-Type':'application/json'});
@@ -163,6 +171,47 @@ let httpHandler = {
             xhr.setRequestHeader("content-type", "application/assembl-chunk");
             xhr.setRequestHeader("accept", "application/json");
             xhr.send(new Blob([chunk]));
+        }
+        else {
+            console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");
+        }
+    },
+
+    sendUnencryptedFile: function(file) {
+        if (httpHandler.sendTo.initialized) {
+            let formData = new FormData();
+            formData.append("file", file);
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    let response = JSON.parse(this.responseText);
+                    console.log("HTTP response: ", response);
+                }
+            };
+            xhr.open('POST', httpHandler.sendTo.url, true);
+            xhr.upload.on('loadstart', function(event) {
+                // upload started
+            });
+            xhr.upload.on('progress', function(event) {
+                // upload in progress
+                console.log(event);
+            });
+            xhr.upload.on('abort', function(event) {
+                // upload aborted
+            });
+            xhr.upload.on('error', function(event) {
+                // upload error
+            });
+            xhr.upload.on('timeout', function(event) {
+                // upload timed out
+            });
+            xhr.upload.on('load', function(event) {
+                // upload complete
+            });
+            xhr.setRequestHeader("authorization", "Basic "+btoa(httpHandler.sendTo.auth));
+            xhr.setRequestHeader("content-type", "multipart/form-data");
+            xhr.setRequestHeader("accept", "application/json");
+            xhr.send(formData);
         }
         else {
             console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");
