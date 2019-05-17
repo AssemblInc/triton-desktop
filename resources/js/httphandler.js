@@ -5,6 +5,7 @@ let qs = require('querystring');
 
 let httpHandler = {
     server: null,
+    ip: null,
     requiredAuth: Math.random().toString(24).substring(2)+":"+Math.random().toString(36).substring(2),
     sendTo: {
         initialized: false,
@@ -12,7 +13,8 @@ let httpHandler = {
         auth: null
     },
 
-    startServer: function() {
+    startServer: async function() {
+        httpHandler.ip = await publicIp.v4();
         server = http.createServer(function(req, res) {
             let header = req.headers['authorization'] || '';
             let token = header.split(/\s+/).pop() || '';
@@ -54,6 +56,7 @@ let httpHandler = {
                 console.warn("Someone tried to connect over HTTP with the wrong or no credentials!");
             }
         }).listen(27626);
+        return httpHandler.ip;
     },
 
     stopServer: function() {

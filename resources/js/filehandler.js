@@ -38,7 +38,7 @@ let fileHandler = {
             console.warn("File reading aborted");
         });
         fileHandler.reader.addEventListener("load", function(event) {
-            if ((fileHandler.useStream === false && fileHandler.protocolToUse == "websocket") || fileHandler.protocolToUse == "webrtc") {
+            if (!(fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true)) {
                 // update the hash with the current chunk
                 fileHandler.hash.update(event.target.result);
                 // add current size of the chunk to the offset
@@ -53,6 +53,14 @@ let fileHandler = {
                         }
                         else {
                             rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                        }
+                        break;
+                    case "http":
+                        if (fileHandler.encryption.enabled) {
+                            httpHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                        }
+                        else {
+                            httpHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
                         }
                         break;
                     default:
@@ -90,6 +98,10 @@ let fileHandler = {
                 case "webrtc":
                     // send chunk over webrtc
                     rtcHandler.sendChunk(encryptedChunk, true, number);
+                    break;
+                case "http":
+                    // send chunk over http
+                    httpHandler.sendChunk(encryptedChunk, true, number);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");

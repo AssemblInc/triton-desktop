@@ -9,6 +9,7 @@
         const keccak256 = require('js-sha3').keccak256;
         const path = require('path');
         const fs = require('fs');
+        const publicIp = require('public-ip');
         const errors = require('./resources/json/errors.json');
         </script>
         <script src="resources/js/socket.io.js"></script>
@@ -134,8 +135,9 @@
                             <form id="options-form" onsubmit="optionsSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Select a transfer method:</div>
                                 <select id="protocol" onchange="protocolChange(this.value);">
-                                    <option value="websocket" selected>Proxy</option>
-                                    <option value="webrtc">Direct</option>
+                                    <option value="websocket" selected>Websocket (proxy)</option>
+                                    <option value="webrtc">WebRTC (direct)</option>
+                                    <option value="http">HTTP (direct)</option>
                                 </select>
                                 <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Proxy uses a websocket connection to transfer your files over the Assembl server. Choose direct for a decentralized transferring method." />
                                 <script>

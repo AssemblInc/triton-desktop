@@ -107,6 +107,13 @@ var wsHandler = {
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);
                     break;
+                case "http_server_data_request":
+                    let ip = httpHandler.startServer();
+                    wsHandler.sendEventToSender("http_server_data_ready", {
+                        url: 'http://'+ip+'/',
+                        auth: httpHandler.auth
+                    });
+                    break;
                 case "webrtc_offer_ready":
                     rtcHandler.createAnswer(data)
                         .then(function(answer) {
@@ -140,6 +147,11 @@ var wsHandler = {
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);
                     break;
+                case "http_server_data_ready":
+                    httpHandler.initSender(data.url, data.auth);
+                    showVerification(receiver.name, receiver.orcidId);
+                    screens.startFileDropper();
+                    break;
                 case "webrtc_answer_ready":
                     rtcHandler.connectAnswer(data)
                         .then(function() {
@@ -169,6 +181,13 @@ var wsHandler = {
                 case "websocket": {
                     showVerification(receiver.name, receiver.orcidId);
                     screens.startFileDropper();
+                    break;
+                }
+                case "http": {
+                    screens.loading.setStatus("Establishing connection with " + strip(receiver.name) + "...");
+                    screens.loading.setDetails("Requesting HTTP details...");
+                    screens.showLoadingScreen(true);
+                    wsHandler.sendEvent("http_server_data_request");
                     break;
                 }
                 case "webrtc": {

@@ -1,6 +1,5 @@
 
 let appClosing = false;
-let protocolToUse = null;
 let publicKey = null;
 let sender = {};
 let receiver = {};
