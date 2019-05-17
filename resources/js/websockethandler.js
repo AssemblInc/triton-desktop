@@ -111,9 +111,9 @@ var wsHandler = {
                     httpHandler.startServer().then(function() {
                         wsHandler.sendEventToSender("http_server_data_ready", JSON.stringify({
                             ip: httpHandler.publicIp,
-                            localIp: httpHandler.internalIp,
+                            localIp: httpHandler.localIp,
                             url: 'http://'+httpHandler.publicIp+':'+httpHandler.port+'/',
-                            localUrl: 'http://'+httpHandler.internalIp+':'+httpHandler.port+'/',
+                            localUrl: 'http://'+httpHandler.localIp+':'+httpHandler.port+'/',
                             auth: httpHandler.auth
                         }));
                     });
