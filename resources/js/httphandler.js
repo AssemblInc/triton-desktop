@@ -45,7 +45,7 @@ let httpHandler = {
                                         ipcRenderer.send('renderer-received-chunk', post.chunk, post.number);
                                     }
                                     else {
-                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk), post.number);
+                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(JSON.parse(post.chunk)), post.number);
                                     }
                                 });
                             }
@@ -105,6 +105,27 @@ let httpHandler = {
             else {
                 ipcRenderer.send('pgp-encrypt-chunk', chunk, number);
             }
+        }
+        else {
+            console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");
+        }
+    },
+
+    sendUnencryptedChunk: function(chunk, number) {
+        if (httpHandler.sendTo.initialized) {
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    let response = JSON.parse(this.responseText);
+                    console.log("HTTP response: ", response);
+                }
+            };
+            let params = 'encrypted=0&number='+parseInt(number)+'&chunk='+encodeURIComponent(JSON.stringify(Array.from(chunk)));
+            xhr.open('POST', httpHandler.sendTo.url, true);
+            xhr.setRequestHeader("Authorization", "Basic "+btoa(httpHandler.sendTo.auth));
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("Accept", "application/json")
+            xhr.send(params);
         }
         else {
             console.warn("Tried sending data over HTTP while the connection details were not initialized yet.");
