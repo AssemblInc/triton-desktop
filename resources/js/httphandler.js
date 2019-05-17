@@ -39,13 +39,13 @@ let httpHandler = {
                                         'chunkNumber': 0,
                                         'received': true
                                     }));
-                                    let data = parseQuery(data.toString());
-                                    console.log("Received data over HTTP: ", data);
-                                    if (parseInt(data['encrypted']) > 0) {
-                                        ipcRenderer.send('renderer-received-chunk', data.chunk, data.number);
+                                    let post = parseQuery(data.toString());
+                                    console.log("Received data over HTTP: ", post);
+                                    if (parseInt(post['encrypted']) > 0) {
+                                        ipcRenderer.send('renderer-received-chunk', post.chunk, post.number);
                                     }
                                     else {
-                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data.chunk), data.number);
+                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk), post.number);
                                     }
                                 });
                             }
