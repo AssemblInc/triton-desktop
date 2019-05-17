@@ -5,15 +5,17 @@ let netHandler = {
     client: null,
     publicIp: null,
     internalIp: null,
-    port: 27626,
+    port: 27627,
 
     startServer: function() {
         netHandler.server = net.createServer(function(socket) {
+            console.log("Socket connected!");
             socket.write("Henlo");
             socket.on('data', function(data) {
                 console.log("Received data from socket: ", data);
             });
-        }).listen(netHandler.port, '127.0.0.1');
+        });
+        netHandler.server.listen(netHandler.port, '127.0.0.1');
     },
 
     startClient: function(port, ip) {
