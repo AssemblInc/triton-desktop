@@ -22,11 +22,15 @@ let fileHandler = {
                 return 16384;           // 16KB
             case "http":
                 if (fileHandler.useEncryption) {
-                    return 1048576;     // 1MB
+                    return 16384;       // 16KB
                 }
                 return 16777216;        // 16MB
             case "websocket":
-                return 16384;           // 16KB (could also be 1048576 for encrypted or 5242880 for without encryption but that's for later)
+                if (fileHandler.useEncryption) {
+                    return 16384;       // 16KB
+                }
+                return 5242880;         // 5MB
+                return 16384;           // 16KB
 
         }
     },
