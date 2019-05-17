@@ -114,7 +114,7 @@ var wsHandler = {
                             localIp: httpHandler.localIp,
                             url: 'http://'+httpHandler.publicIp+':'+httpHandler.port+'/',
                             localUrl: 'http://'+httpHandler.localIp+':'+httpHandler.port+'/',
-                            auth: httpHandler.auth
+                            auth: httpHandler.requiredAuth
                         }));
                     });
                     break;
