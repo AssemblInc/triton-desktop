@@ -93,7 +93,7 @@ exports.handleChunk = function(chunk, isUint8Array, number) {
 
     processedChunkAmount += 1;
 
-    console.log("Chunk progress: "+processedChunkAmount+" progressed, "+finalChunkAmount+" total (according to sender)");
+    console.log("Chunk progress: "+number+" progressed, "+processedChunkAmount+" total progressed, "+finalChunkAmount+" total sent (according to sender)");
 };
 
 // check if file can be saved yet
