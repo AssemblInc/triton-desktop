@@ -110,7 +110,10 @@ var wsHandler = {
                 case "http_server_data_request":
                     httpHandler.startServer().then(function() {
                         wsHandler.sendEventToSender("http_server_data_ready", JSON.stringify({
-                            url: 'http://'+httpHandler.ip+'/',
+                            ip: httpHandler.publicIp,
+                            localIp: httpHandler.internalIp,
+                            url: 'http://'+httpHandler.publicIp+':'+httpHandler.port+'/',
+                            localUrl: 'http://'+httpHandler.internalIp+':'+httpHandler.port+'/',
                             auth: httpHandler.auth
                         }));
                     });
@@ -150,9 +153,21 @@ var wsHandler = {
                     break;
                 case "http_server_data_ready":
                     data = JSON.parse(data);
-                    httpHandler.initSender(data.url, data.auth);
-                    showVerification(receiver.name, receiver.orcidId);
-                    screens.startFileDropper();
+                    screens.loading.setDetails("Setting up connection...");
+                    externalIp.v4().then(function(publicIp) {
+                        if (publicIp == data.ip) {
+                            // receiver is on the same network!
+                            // use local IP instead of public IP for faster speeds.
+                            httpHandler.initSender(data.localUrl, data.auth);
+                        }
+                        else {
+                            // receiver is not on the same network.
+                            // use public IP for connection.
+                            httpHandler.initSender(data.url, data.auth);
+                        }
+                        showVerification(receiver.name, receiver.orcidId);
+                        screens.startFileDropper();
+                    });
                     break;
                 case "webrtc_answer_ready":
                     rtcHandler.connectAnswer(data)
