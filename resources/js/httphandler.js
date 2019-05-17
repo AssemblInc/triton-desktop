@@ -39,7 +39,14 @@ let httpHandler = {
                                         'chunkNumber': 0,
                                         'received': true
                                     }));
+                                    let data = parseQuery(data.toString());
                                     console.log("Received data over HTTP: ", data);
+                                    if (parseInt(data['encrypted']) > 0) {
+                                        ipcRenderer.send('renderer-received-chunk', data.chunk, data.number);
+                                    }
+                                    else {
+                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data.chunk), data.number);
+                                    }
                                 });
                             }
                             else {
@@ -88,7 +95,7 @@ let httpHandler = {
                         console.log("HTTP response: ", response);
                     }
                 };
-                let params = 'encrypted=1&number='+parseInt(number)+'&chunk='+chunk;
+                let params = 'encrypted=1&number='+parseInt(number)+'&chunk='+encodeURIComponent(chunk);
                 xhr.open('POST', httpHandler.sendTo.url, true);
                 xhr.setRequestHeader("Authorization", "Basic "+btoa(httpHandler.sendTo.auth));
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

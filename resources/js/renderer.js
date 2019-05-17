@@ -18,6 +18,18 @@ function strip(text) {
    return tmp.textContent || tmp.innerText || "";
 }
 
+/* from https://stackoverflow.com/questions/2090551/parse-query-string-in-javascript */
+function parseQuery(queryString) {
+    var query = {};
+    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+}
+/* end from */
+
 /* from https://stackoverflow.com/questions/3387427/remove-element-by-id */
 Element.prototype.remove = function() {
     this.parentElement.removeChild(this);
