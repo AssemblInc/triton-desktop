@@ -45,7 +45,7 @@ let httpHandler = {
                                         ipcRenderer.send('renderer-received-chunk', post.chunk, post.number);
                                     }
                                     else {
-                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(JSON.parse(post.chunk)), post.number);
+                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk.split(",")), post.number);
                                     }
                                 });
                             }
@@ -120,7 +120,7 @@ let httpHandler = {
                     console.log("HTTP response: ", response);
                 }
             };
-            let params = 'encrypted=0&number='+parseInt(number)+'&chunk='+encodeURIComponent(JSON.stringify(Array.from(chunk)));
+            let params = 'encrypted=0&number='+parseInt(number)+'&chunk='+encodeURIComponent(Array.from(chunk).join(","));
             xhr.open('POST', httpHandler.sendTo.url, true);
             xhr.setRequestHeader("Authorization", "Basic "+btoa(httpHandler.sendTo.auth));
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
