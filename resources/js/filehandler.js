@@ -21,6 +21,7 @@ let fileHandler = {
             case "webrtc":
                 return 16384;           // 16KB
             case "http":
+            case "net":
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
                 }
@@ -69,6 +70,14 @@ let fileHandler = {
                             httpHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
                         }
                         break;
+                    case "net":
+                        if (fileHandler.encryption.enabled) {
+                            netHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                        }
+                        else {
+                            netHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                        }
+                        break;
                     default:
                         console.warn("No protocol selected. Using websockets");
                         fileHandler.protocolToUse = "websocket";
@@ -108,6 +117,10 @@ let fileHandler = {
                 case "http":
                     // send chunk over http
                     httpHandler.sendChunk(encryptedChunk, true, number);
+                    break;
+                case "net":
+                    // send chunk over net
+                    netHandler.sendChunk(encryptedChunk, true, number);
                     break;
                 default:
                     console.warn("No protocol selected. Using websockets");

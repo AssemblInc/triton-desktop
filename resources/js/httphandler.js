@@ -6,7 +6,7 @@ let qs = require('querystring');
 let httpHandler = {
     server: null,
     publicIp: null,
-    internalIp: null,
+    localIp: null,
     port: 27626,
     requiredAuth: Math.random().toString(24).substring(2)+":"+Math.random().toString(36).substring(2),
     sendTo: {

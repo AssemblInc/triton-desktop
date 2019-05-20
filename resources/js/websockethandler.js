@@ -126,6 +126,17 @@ var wsHandler = {
                         }));
                     });
                     break;
+                case "net_server_data_request":
+                    screens.loading.setDetails("Sending NET details...");
+                    netHandler.startServer().then(function() {
+                        wsHandler.sendEventToSender("net_server_data_ready", JSON.stringify({
+                            ip: netHandler.publicIp,
+                            localIp: netHandler.localIp,
+                            port: netHandler.port,
+                            auth: netHandler.requiredAuth
+                        }));
+                    });
+                    break;
                 case "webrtc_offer_ready":
                     screens.loading.setDetails("Sending WebRTC answer...");
                     rtcHandler.createAnswer(data)
@@ -173,6 +184,24 @@ var wsHandler = {
                             // receiver is not on the same network.
                             // use public IP for connection.
                             httpHandler.initSender(data.url, data.auth);
+                        }
+                        showVerification(receiver.name, receiver.orcidId, true);
+                        screens.startFileDropper();
+                    });
+                    break;
+                case "net_server_data_ready":
+                    data = JSON.parse(data);
+                    screens.loading.setDetails("Setting up the connection...");
+                    externalIp.v4().then(function(publicIp) {
+                        if (publicIp == data.ip) {
+                            // receiver is on the same network!
+                            // use local IP instead of public IP for faster speeds.
+                            netHandler.startClient(data.localIp, data.port, data.auth);
+                        }
+                        else {
+                            // receiver is not on the same network.
+                            // use public IP for connection.
+                            httpHandler.startClient(data.publicIp, data.port, data.auth);
                         }
                         showVerification(receiver.name, receiver.orcidId, true);
                         screens.startFileDropper();
@@ -226,6 +255,13 @@ var wsHandler = {
                     screens.loading.setDetails("Requesting HTTP details...");
                     screens.showLoadingScreen(true);
                     wsHandler.sendEvent("http_server_data_request");
+                    break;
+                }
+                case "net": {
+                    screens.loading.setStatus("Establishing connection with " + strip(receiver.name) + "...");
+                    screens.loading.setDetails("Requesting NET details...");
+                    screens.showLoadingScreen(true);
+                    wsHandler.sendEvent("net_server_data_request");
                     break;
                 }
                 case "webrtc": {
