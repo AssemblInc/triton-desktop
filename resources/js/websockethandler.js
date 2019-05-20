@@ -2,6 +2,7 @@ var wsHandler = {
     socket: null,
     isOpen: false,
     ioStream: null,
+    accepting: false,
 
     init: function() {
         screens.loading.setStatus("Establishing connection...");
@@ -196,8 +197,19 @@ var wsHandler = {
         });
 
         // for sender
+        wsHandler.socket.on("as_connection_request", function(assemblID, userName, orcidID) {
+            console.log("Incoming connection request: " + assemblID + " " + userName + "("+orcidID+")");
+            if (wsHandler.accepting) {
+                wsHandler.socket.emit("as_connection_accepted", assemblID);
+            }
+            else {
+                wsHandler.socket.emit("as_connection_rejected", assemblID);
+            }
+        }); 
+
+        // for sender
         wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
-            console.log("Incoming connection: " + assemblID + " " + userName + "("+orcidID+")");
+            console.log("Connection made: " + assemblID + " " + userName + "("+orcidID+")");
             receiver.name = userName;
             receiver.assemblId = assemblID;
             receiver.orcidId = orcidID;
@@ -247,6 +259,14 @@ var wsHandler = {
             screens.loading.setStatus("Establishing connection with " + strip(sender.name) + "...");
             screens.loading.setDetails("");
             screens.showLoadingScreen(true);
+        });
+
+        // for receiver
+        wsHandler.socket.on('as_connection_rejected', function(assemblID, userName, orcidID) {
+            console.log("Connection rejected: " + assemblID + " " + userName + "("+orcidID+")");
+            alert("Could not establish a connection: " + userName + " was not ready. Try again in a few moments.");
+            screens.startReceiver();
+            screens.loading.resetProgress();
         });
     },
 

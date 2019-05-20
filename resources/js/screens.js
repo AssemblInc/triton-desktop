@@ -69,6 +69,8 @@ let screens = {
             screens.hideAll();
             document.getElementById("options").style.display = "block";
             document.getElementById("protocol").focus();
+            wsHandler.accepting = false;
+            ipcRenderer.send('sender-setup-started');
         }
     },
 
@@ -101,6 +103,8 @@ let screens = {
             document.getElementById("yourpeerid").value = ipcRenderer.sendSync('assemblid-request');
             document.getElementById("peeridshowcase").style.display = "block";
             document.getElementById("yourpeerid").focus();
+            wsHandler.accepting = true;
+            ipcRenderer.send('sender-setup-done');
         }
     },
 

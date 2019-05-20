@@ -486,8 +486,19 @@ function startApplication() {
     // for both ends
     ipcMain.on('user-name-changed', function(event, newName) {
         userDataHandler.saveData("username", newName);
-        bonjourHandler.init(mainWindow.webContents, userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
         loadPGP();
+    });
+
+    // for sender
+    ipcMain.on('sender-setup-done', function(event) {
+        bonjourHandler.init(mainWindow.webContents, userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
+    });
+
+    // for sender
+    ipcMain.on('sender-setup-started', function(event) {
+        if (bonjourHandler.isRunning()) {
+            bonjourHandler.stop();
+        }
     });
     
     // for sender
