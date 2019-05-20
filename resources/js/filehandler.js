@@ -21,7 +21,6 @@ let fileHandler = {
             case "webrtc":
                 return 16384;           // 16KB
             case "net":
-                return 1024;            // 1KB
             case "http":
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB

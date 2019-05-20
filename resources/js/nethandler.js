@@ -25,6 +25,19 @@ let netHandler = {
         netHandler.data.encrypted = false;
         netHandler.data.content = Buffer.from("");
     },
+    setChunkData: function(params) {
+        if (params != null) {
+            netHandler.data.size = parseInt(params[3]);
+            netHandler.data.amountLeft = netHandler.data.size;
+            netHandler.data.chunkNumber = parseInt(params[2]);
+            if (parseInt(params[1]) > 0) {
+                netHandler.data.encrypted = true;
+            }
+            else {
+                netHandler.data.encrypted = false;
+            }
+        }
+    },
     handleChunk: function(params, chunk) {
         if (params != null) {
             netHandler.data.size = parseInt(params[3]);
@@ -47,12 +60,15 @@ let netHandler = {
             netHandler.resetChunkData();
         }
         else {
+            console.log("netHandler.data.size: ", netHandler.data.size);
+            console.log("netHandler.data.content.byteLength: ", netHandler.data.content.byteLength);
             netHandler.data.amountLeft = netHandler.data.size - netHandler.data.content.byteLength;
         }
     },
 
     tempData: Buffer.from(""),
     handleData: function(data) {
+        console.log("Handling data...", data.byteLength);
         if (netHandler.data.amountLeft == 0) {
             if (netHandler.tempData.byteLength > 0) {
                 data = Buffer.concat([netHandler.tempData, data]);
@@ -66,19 +82,12 @@ let netHandler = {
                 netHandler.tempData = data;
                 return;
             }
-            switch(params[0]) {
-                case "chunk": {
-                    let chunk = data.slice(lio+1);
-                    netHandler.handleChunk(params, chunk);
-                    break;
-                }
-                default: {
-                    console.warn("NET params[0] equals " + params[0] + ", no idea what to do now");
-                    break;
-                }
-            }
+            netHandler.setChunkData(params);
+            netHandler.handleData(data.slice(lio+1));
         }
         else {
+            console.log("data.byteLength: ", data.byteLength);
+            console.log("netHandler.data.amountLeft: ", netHandler.data.amountLeft);
             if (data.byteLength < netHandler.data.amountLeft) {
                 netHandler.handleChunk(null, data);
             }
@@ -102,7 +111,7 @@ let netHandler = {
                                 console.error("NET socket error: ", err);
                             });
                             socket.on('data', function(data) {
-                                console.log("Received data from NET socket: ", data);
+                                // console.log("Received data from NET socket: ", data);
                                 if (netHandler.socketAuthorized) {
                                     netHandler.handleData(data);
                                 }
@@ -153,6 +162,7 @@ let netHandler = {
         if (netHandler.client != null) {
             if (isEncrypted) {
                 chunk = Buffer.from(chunk);
+                console.log("Packet size: ", chunk.byteLength);
                 netHandler.client.write("chunk;1;" + number + ";" + chunk.byteLength + ";" + chunk);
             }
             else {
@@ -166,6 +176,7 @@ let netHandler = {
 
     sendUnencryptedChunk: function(chunk, number) {
         if (netHandler.client != null) {
+            console.log("Packet size: ", chunk.byteLength);
             netHandler.client.write("chunk;0;" + number + ";" + chunk.byteLength + ";" + chunk);
         }
         else {
