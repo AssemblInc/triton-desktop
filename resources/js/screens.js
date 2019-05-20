@@ -127,7 +127,7 @@ let screens = {
                 }
                 else {
                     console.log("No command for retrying available.");
-                    document.getElementById("error-try-again-btn").setAttribute("onclick", "alert('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');");
+                    document.getElementById("error-try-again-btn").setAttribute("onclick", "toastr.error('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');");
                     document.getElementById("error-try-again-btn").style.display = "none";
                 }
             }

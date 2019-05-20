@@ -39,12 +39,12 @@ var wsHandler = {
             console.error("as_error " + err + ": " + errDesc);
             switch(err) {
                 case "client_not_connected":
-                    alert("Could not establish a connection: " + errDesc);
+                    toastr.error("Could not establish a connection: " + errDesc);
                     screens.startReceiver();
                     screens.loading.resetProgress();
                     break;
                 case "invalid_assembl_id":
-                    alert("Could not establish a connection: " + errDesc);
+                    toastr.error("Could not establish a connection: " + errDesc);
                     screens.startReceiver();
                     screens.loading.resetProgress();
                     break;
@@ -264,7 +264,7 @@ var wsHandler = {
         // for receiver
         wsHandler.socket.on('as_connection_rejected', function(assemblID, userName, orcidID) {
             console.log("Connection rejected: " + assemblID + " " + userName + "("+orcidID+")");
-            alert("Could not establish a connection: " + userName + " was not ready. Try again in a few moments.");
+            toastr.error("Could not establish a connection: " + userName + " was not ready. Try again in a few moments.");
             screens.startReceiver();
             screens.loading.resetProgress();
         });

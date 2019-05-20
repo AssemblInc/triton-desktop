@@ -220,7 +220,8 @@ function showVerification(displayName, orcidId, asSender) {
         document.getElementById("verif-orcid").style.display = "none";
     }
     ipcRenderer.send('connection-p2p-established');
-    alert("A connection with " + displayName + " has been established.");
+    // alert("A connection with " + displayName + " has been established.");
+    toastr.success("Connection established with " + strip(displayName));
 }
 
 function nameSubmit(event) {
@@ -291,7 +292,13 @@ function attachInformationBalloons() {
     var infoButtonsAmount = infoButtons.length;
     for (var ib = 0; ib < infoButtonsAmount; ib++) {
         infoButtons[ib].addEventListener("click", function(event) {
-            alert(event.target.getAttribute("data-info"));
+            // alert(event.target.getAttribute("data-info"));
+            toastr.info(event.target.getAttribute("data-info"), null, {
+                closeButton: true,
+                timeOut: 0,
+                extendedTimeOut: 0,
+                preventDuplicates: true
+            });
         });
     }
 }

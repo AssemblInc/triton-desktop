@@ -3,6 +3,7 @@
     <head>
         <title>Assembl Desktop</title>
         <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="resources/css/toastr.css" />
         <script>
         const { ipcRenderer, shell } = require('electron');
         const prettySize = require('prettysize');
@@ -12,6 +13,24 @@
         const externalIp = require('public-ip');
         const internalIp = require('internal-ip');
         const errors = require('./resources/json/errors.json');
+        const toastr = require('toastr');
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-center",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
         </script>
         <script src="resources/js/socket.io.js"></script>
         <script src="resources/js/socket.io-stream.js"></script>
@@ -51,7 +70,7 @@
                             <div style="font-size: 0.8em;"><span id="error-details" style="margin-bottom: 4px;">The error failed to load</span>. Error code <span id="error-code">0x0000</span></div>
                             <div id="error-fix" style="margin-bottom: 12px; font-size: 0.8em;">This should never happen. If it does, restart the application.</div>
                             <button type="button" class="connect-button error-btn" onclick="ipcRenderer.send('app-should-close');">Quit Assembl Desktop</button>
-                            <button type="button" class="connect-button error-btn" id="error-try-again-btn" style="display: none;" onclick="alert('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');">Try Again</button>
+                            <button type="button" class="connect-button error-btn" id="error-try-again-btn" style="display: none;" onclick="toastr.error('Cannot try again without closing Assembl Desktop. Please close the application and then try again.');">Try Again</button>
                         </div>
                     </td>
                 </tr>
@@ -148,7 +167,7 @@
                                         fileHandler.protocolToUse = opt;
                                     }
                                     else {
-                                        alert("Please select a valid transfer method.");
+                                        toastr.error("Please select a valid transfer method.");
                                         document.getElementById("protocol").value = "websocket";
                                     }
                                 }
@@ -176,7 +195,7 @@
                                             fileHandler.useEncryption(true, "pgp", 4096);
                                             break;
                                         default:
-                                            alert("Please select a valid encryption option.");
+                                            toastr.error("Please select a valid encryption option.");
                                             document.getElementById("encryption").value = "2kbit";
                                             break;
                                     }
@@ -204,7 +223,7 @@
                                             fileHandler.license = "odbl";
                                             break;
                                         default:
-                                            alert("This license is not supported right now. Please select a different one.");
+                                            toastr.error("This license is not supported right now. Please select a different one.");
                                             document.getElementById("license").value = "none";
                                             break;
                                     }

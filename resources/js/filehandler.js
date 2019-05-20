@@ -215,7 +215,8 @@ let fileHandler = {
             screens.showFileConfirm();
         }
         else {
-            alert("This file is empty and cannot be transferred.");
+            // alert("This file is empty and cannot be transferred.");
+            toastr.error("This file is empty and cannot be transferred.");
         }
     },
 
