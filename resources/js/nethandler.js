@@ -51,10 +51,21 @@ let netHandler = {
         }
     },
 
+    tempData: Buffer.from(""),
     handleData: function(data) {
         if (netHandler.data.amountLeft == 0) {
+            if (netHandler.tempData.byteLength > 0) {
+                data = Buffer.concat([netHandler.tempData, data]);
+                netHandler.tempData = Buffer.from("");
+            }
             let lio = data.lastIndexOf(";");
             let params = data.slice(0, lio).toString().split(";");
+            if (params.length < 4) {
+                // if params are cut off by TCP, store them temporarily until the next packet arrives
+                // then load it back into the new packet to process the data
+                netHandler.tempData = data;
+                return;
+            }
             switch(params[0]) {
                 case "chunk": {
                     let chunk = data.slice(lio+1);
