@@ -91,6 +91,12 @@ var wsHandler = {
         wsHandler.socket.on('as_event_for_receiver', function(eventName, data) {
             console.log("as_event_for_receiver " + eventName + ": ", data);
             switch(eventName) {
+                case "connection_established":
+                    showVerification(sender.name, sender.orcidId, false);
+                    screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
+                    screens.loading.setDetails("");
+                    screens.showLoadingScreen(true);
+                    break;
                 case "data_initialized":
                     ipcRenderer.send('renderer-transferinfo', data);
                     wsHandler.sendEventToSender("data_initialized_received", null);
@@ -108,6 +114,7 @@ var wsHandler = {
                     ipcRenderer.send('other-public-key-received', data);
                     break;
                 case "http_server_data_request":
+                    screens.loading.setDetails("Sending HTTP details...");
                     httpHandler.startServer().then(function() {
                         wsHandler.sendEventToSender("http_server_data_ready", JSON.stringify({
                             ip: httpHandler.publicIp,
@@ -119,6 +126,7 @@ var wsHandler = {
                     });
                     break;
                 case "webrtc_offer_ready":
+                    screens.loading.setDetails("Sending WebRTC answer...");
                     rtcHandler.createAnswer(data)
                         .then(function(answer) {
                             wsHandler.sendEventToSender("webrtc_answer_ready", answer);
@@ -153,7 +161,7 @@ var wsHandler = {
                     break;
                 case "http_server_data_ready":
                     data = JSON.parse(data);
-                    screens.loading.setDetails("Setting up connection...");
+                    screens.loading.setDetails("Setting up the connection...");
                     externalIp.v4().then(function(publicIp) {
                         if (publicIp == data.ip) {
                             // receiver is on the same network!
@@ -165,14 +173,15 @@ var wsHandler = {
                             // use public IP for connection.
                             httpHandler.initSender(data.url, data.auth);
                         }
-                        showVerification(receiver.name, receiver.orcidId);
+                        showVerification(receiver.name, receiver.orcidId, true);
                         screens.startFileDropper();
                     });
                     break;
                 case "webrtc_answer_ready":
+                    screens.loading.setDetails("Setting up the connection...");
                     rtcHandler.connectAnswer(data)
                         .then(function() {
-                            showVerification(receiver.name, receiver.orcidId);
+                            showVerification(receiver.name, receiver.orcidId, true);
                             screens.startFileDropper();
                         })
                         .catch(function(err) {
@@ -196,7 +205,7 @@ var wsHandler = {
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             switch(fileHandler.protocolToUse) {
                 case "websocket": {
-                    showVerification(receiver.name, receiver.orcidId);
+                    showVerification(receiver.name, receiver.orcidId, true);
                     screens.startFileDropper();
                     break;
                 }
@@ -235,8 +244,7 @@ var wsHandler = {
             sender.name = userName;
             sender.assemblId = assemblID;
             sender.orcidId = orcidID;
-            showVerification(sender.name, sender.orcidId);
-            screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
+            screens.loading.setStatus("Establishing connection with " + strip(sender.name) + "...");
             screens.loading.setDetails("");
             screens.showLoadingScreen(true);
         });

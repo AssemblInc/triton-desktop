@@ -206,7 +206,10 @@ ipcRenderer.on('signed-in', function(event) {
     wsHandler.init();
 });
 
-function showVerification(displayName, orcidId) {
+function showVerification(displayName, orcidId, asSender) {
+    if (asSender) {
+        wsHandler.sendEvent("connection_established");
+    }
     document.getElementById("verif").style.display = "block";
     document.getElementById("verif-name").innerHTML = strip(displayName);
     if (orcidId != null) {
