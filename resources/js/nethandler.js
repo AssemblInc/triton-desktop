@@ -55,20 +55,19 @@ let netHandler = {
                 ipcRenderer.send('renderer-received-chunk', netHandler.data.content.toString(), netHandler.data.chunkNumber);
             }
             else {
+                console.log(netHandler.data.content);
+                console.log(new Uint8Array(netHandler.data.content));
                 ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(netHandler.data.content), netHandler.data.chunkNumber);
             }
             netHandler.resetChunkData();
         }
         else {
-            console.log("netHandler.data.size: ", netHandler.data.size);
-            console.log("netHandler.data.content.byteLength: ", netHandler.data.content.byteLength);
             netHandler.data.amountLeft = netHandler.data.size - netHandler.data.content.byteLength;
         }
     },
 
     tempData: Buffer.from(""),
     handleData: function(data) {
-        console.log("Handling data...", data.byteLength);
         if (netHandler.data.amountLeft == 0) {
             if (netHandler.tempData.byteLength > 0) {
                 data = Buffer.concat([netHandler.tempData, data]);
@@ -86,8 +85,6 @@ let netHandler = {
             netHandler.handleData(data.slice(lio+1));
         }
         else {
-            console.log("data.byteLength: ", data.byteLength);
-            console.log("netHandler.data.amountLeft: ", netHandler.data.amountLeft);
             if (data.byteLength < netHandler.data.amountLeft) {
                 netHandler.handleChunk(null, data);
             }
