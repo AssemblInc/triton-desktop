@@ -268,6 +268,20 @@ var wsHandler = {
             screens.startReceiver();
             screens.loading.resetProgress();
         });
+
+        // for both
+        wsHandler.socket.on('as_disconnecting', function(assemblID, reason) {
+            if (assemblID !== ipcRenderer.sendSync('assemblid-request')) {
+                console.warn(assemblID + " is disconnecting: ", reason);
+                if (assemblID === sender.assemblId) {
+                    alert(sender.name + " disconnected. Assembl Desktop will now quit.");
+                }
+                else if (assemblID === receiver.assemblId) {
+                    alert(receiver.name + " disconnected. Assembl Desktop will now quit.");
+                }
+                ipcRenderer.send('app-should-close');
+            }
+        });
     },
 
     connectTo: function(assemblID) {
