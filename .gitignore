@@ -1,5 +1,5 @@
 /node_modules/*
-resources/.DS_Store
+/resources/.DS_Store
 **/.DS_Store
-dist/*
-**/package-lock.json
+/dist/*
+/package-lock.json
