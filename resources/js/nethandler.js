@@ -19,7 +19,24 @@ let netHandler = {
                     netHandler.server = net.createServer(function(socket) {
                         console.log("NET socket connected!");
                         socket.on('data', function(data) {
-                            console.log("Received data from NET socket: ", data);
+                            // console.log("Received data from NET socket: ", data);
+                            let lio = data.lastIndexOf(";");
+                            let params = data.slice(0, lio).split(";");
+                            switch(params[0]) {
+                                case "chunk": {
+                                    if (parseInt(params[1]) > 0) {
+                                        ipcRenderer.send('renderer-received-chunk', data.slice(lio+1).toString(), parseInt(params[2]));
+                                    }
+                                    else {
+                                        ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data.slice(lio+1)), parseInt(params[2]));
+                                    }
+                                    break;
+                                }
+                                default: {
+                                    console.warn("NET params[0] equals " + params[0] + ", no idea what to do now");
+                                    break;
+                                }
+                            }
                         });
                         socket.on('end', function() {
                             console.log("NET socket disconnected");
