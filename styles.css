@@ -319,6 +319,11 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     transition: 0.15s;
 }
 
+/* receiver */
+#senderpeerid {
+    text-transform: uppercase;
+}
+
 /* sender */
 #yourpeerid {
     margin-bottom: 0px;

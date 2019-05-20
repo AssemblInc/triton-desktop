@@ -147,6 +147,7 @@ ipcRenderer.on('saved-file', function(event, data) {
 
 function formSubmit(event) {
     event.preventDefault();
+    document.getElementById('senderpeerid').value = document.getElementById('senderpeerid').value.toUpperCase();
     screens.loading.setStatus("Establishing a peer to peer connection...");
     screens.loading.setDetails(strip(document.getElementById('senderpeerid').value));
     screens.loading.resetProgress();
