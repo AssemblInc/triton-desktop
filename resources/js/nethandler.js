@@ -90,7 +90,8 @@ let netHandler = {
     sendChunk: function(chunk, isEncrypted, number) {
         if (netHandler.client != null) {
             if (isEncrypted) {
-                netHandler.client.write("chunk;1;" + number + ";" + chunk);
+                chunk = Buffer.from(chunk);
+                netHandler.client.write("chunk;1;" + number + ";" + chunk.byteLength + ";" + chunk);
             }
             else {
                 ipcRenderer.send('pgp-encrypt-chunk', chunk, number);
@@ -103,7 +104,7 @@ let netHandler = {
 
     sendUnencryptedChunk: function(chunk, number) {
         if (netHandler.client != null) {
-            netHandler.client.write("chunk;0;" + number + ";" + chunk);
+            netHandler.client.write("chunk;0;" + number + ";" + chunk.byteLength + ";" + chunk);
         }
         else {
             console.warn("Tried sending data over NET while the client was not set up yet.");
