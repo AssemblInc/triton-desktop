@@ -5,9 +5,25 @@ let browser = null;
 let webWindow = null;
 let browserRefresher = null;
 
-exports.init = function(webContents, displayName, assemblId, orcidId) {
+exports.init = function(webContents) {
     webWindow = webContents;
     bonjour = require('bonjour')();
+    browser = bonjour.find({ type: 'assembl' });
+    browser.on('up', function(s) {
+        console.log("Found an Assembl Desktop instance: " + s.name + JSON.stringify(s.txt));
+        webWindow.send('bonjour-assembl-instance-up', JSON.stringify(s.txt));
+    });
+    browser.on('down', function(s) {
+        console.log("Lost an Assembl Desktop instance: " + s.name + JSON.stringify(s.txt));
+        webWindow.send('bonjour-assembl-instance-down', JSON.stringify(s.txt));
+    });
+    browser.start();
+    browserRefresher = setInterval(function() {
+        browser.update();
+    }, 1000);
+};
+
+exports.startBroadcast = function(displayName, assemblId, orcidId) {
     service = bonjour.publish({
         name: 'Assembl Desktop on ' + os.hostname(),
         type: 'assembl',
@@ -19,24 +35,27 @@ exports.init = function(webContents, displayName, assemblId, orcidId) {
             hostname: os.hostname()
         }
     });
-    browser = bonjour.find({ type: 'assembl' });
-    browser.on('up', function(service) {
-        console.log("Found an Assembl Desktop instance: " + service.name + JSON.stringify(service.txt));
-        webWindow.send('bonjour-assembl-instance-up', JSON.stringify(service.txt));
-    });
-    browser.on('down', function(service) {
-        console.log("Lost an Assembl Desktop instance: " + service.name + JSON.stringify(service.txt));
-        webWindow.send('bonjour-assembl-instance-down', JSON.stringify(service.txt));
-    });
-    browser.start();
-    browserRefresher = setInterval(function() {
-        browser.update();
-    }, 1000);
+};
+
+exports.stopBroadcast = function(callback) {
+    if (module.exports.isRunning()) {
+        if (service != null) {
+            service.stop(function() {
+                service = null;
+                if (typeof callback == "function") {
+                    callback();
+                }
+            });
+        }
+    }
 };
 
 exports.isRunning = function() {
     if (service != null) {
         return service.published;
+    }
+    if (browser != null) {
+        return true;
     }
     return false;
 };
@@ -47,9 +66,11 @@ exports.stop = function(callback) {
             clearInterval(browserRefresher);
             browserRefresher = null;
             browser.stop();
+            browser = null;
         }
         if (typeof callback == "function") {
             bonjour.unpublishAll(function() {
+                service = null;
                 bonjour.destroy();
                 if (typeof callback == "function") {
                     callback();
@@ -57,7 +78,8 @@ exports.stop = function(callback) {
             });
         }
         else {
-            service.stop(function() {
+            bonjour.unpublishAll(function() {
+                service = null;
                 bonjour.destroy();
                 if (typeof callback == "function") {
                     callback();
