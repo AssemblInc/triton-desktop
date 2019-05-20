@@ -32,7 +32,7 @@ let netHandler = {
         });
     },
 
-    startClient: function(port, ip) {
+    startClient: function(ip, port, auth) {
         netHandler.client = new net.Socket();
         netHandler.client.connect(port, ip, function() {
             console.log("Client connected");

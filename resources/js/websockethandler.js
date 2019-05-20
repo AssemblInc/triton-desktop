@@ -201,7 +201,7 @@ var wsHandler = {
                         else {
                             // receiver is not on the same network.
                             // use public IP for connection.
-                            httpHandler.startClient(data.publicIp, data.port, data.auth);
+                            netHandler.startClient(data.publicIp, data.port, data.auth);
                         }
                         showVerification(receiver.name, receiver.orcidId, true);
                         screens.startFileDropper();
