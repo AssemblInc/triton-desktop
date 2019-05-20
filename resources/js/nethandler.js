@@ -83,7 +83,7 @@ let netHandler = {
                 netHandler.handleChunk(null, data);
             }
             else {
-                netHandler.handleChunk(data.slice(0, netHandler.data.amountLeft));
+                netHandler.handleChunk(null, data.slice(0, netHandler.data.amountLeft));
                 netHandler.handleData(data.slice(netHandler.data.amountLeft));
             }
         }
