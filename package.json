@@ -79,7 +79,8 @@
     "socket.io": "^2.2.0",
     "socket.io-stream": "^0.9.1",
     "ssh2": "^0.8.4",
-    "stellar-sdk": "^0.12.0"
+    "stellar-sdk": "^0.12.0",
+    "toastr": "^2.1.4"
   },
   "engines": {
     "node": "11.6.0",
