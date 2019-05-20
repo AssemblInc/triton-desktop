@@ -24,7 +24,7 @@ let fileHandler = {
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
                 }
-                return 262144;          // 250KB
+                return 32768;           // 32KB
             case "http":
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
