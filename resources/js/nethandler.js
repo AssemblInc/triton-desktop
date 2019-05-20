@@ -11,6 +11,73 @@ let netHandler = {
     requiredAuth: Math.random().toString(24).substring(2)+":"+Math.random().toString(36).substring(2)+Math.random().toString(36).substring(2)+Math.random().toString(36).substring(2),
     port: 27627,
 
+    data: {
+        size: 0,
+        amountLeft: 0,
+        chunkNumber: 0,
+        encrypted: false,
+        content: Buffer.from("")
+    },
+    resetChunkData: function() {
+        netHandler.data.size = 0;
+        netHandler.data.amountLeft = 0;
+        netHandler.data.chunkNumber = 0;
+        netHandler.data.encrypted = false;
+        netHandler.data.content = Buffer.from("");
+    },
+    handleChunk: function(params, chunk) {
+        if (params != null) {
+            netHandler.data.size = parseInt(params[3]);
+            netHandler.data.chunkNumber = parseInt(params[2]);
+            if (parseInt(params[1]) > 0) {
+                netHandler.data.encrypted = true;
+            }
+            else {
+                netHandler.data.encrypted = false;
+            }
+        }
+        netHandler.data.content = Buffer.concat([netHandler.data.content, chunk]);
+        if (netHandler.data.size == netHandler.data.content.byteLength) {
+            if (netHandler.data.encrypted) {
+                ipcRenderer.send('renderer-received-chunk', netHandler.data.content.toString(), netHandler.data.chunkNumber);
+            }
+            else {
+                ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(netHandler.data.content), netHandler.data.chunkNumber);
+            }
+            netHandler.resetChunkData();
+        }
+        else {
+            netHandler.data.amountLeft = netHandler.data.size - netHandler.data.content.byteLength;
+        }
+    },
+
+    handleData: function(data) {
+        if (netHandler.data.amountLeft == 0) {
+            let lio = data.lastIndexOf(";");
+            let params = data.slice(0, lio).toString().split(";");
+            switch(params[0]) {
+                case "chunk": {
+                    let chunk = data.slice(lio+1);
+                    netHandler.handleChunk(params, chunk);
+                    break;
+                }
+                default: {
+                    console.warn("NET params[0] equals " + params[0] + ", no idea what to do now");
+                    break;
+                }
+            }
+        }
+        else {
+            if (data.byteLength < netHandler.data.amountLeft) {
+                netHandler.handleChunk(null, data);
+            }
+            else {
+                netHandler.handleChunk(data.slice(0, netHandler.data.amountLeft));
+                netHandler.handleData(data.slice(netHandler.data.amountLeft));
+            }
+        }
+    },
+
     startServer: function() {
         return new Promise(function(resolve, reject) {
             externalIp.v4().then(function(publicIp) {
@@ -26,23 +93,7 @@ let netHandler = {
                             socket.on('data', function(data) {
                                 console.log("Received data from NET socket: ", data);
                                 if (netHandler.socketAuthorized) {
-                                    let lio = data.lastIndexOf(";");
-                                    let params = data.slice(0, lio).toString().split(";");
-                                    switch(params[0]) {
-                                        case "chunk": {
-                                            if (parseInt(params[1]) > 0) {
-                                                ipcRenderer.send('renderer-received-chunk', data.slice(lio+1).toString(), parseInt(params[2]));
-                                            }
-                                            else {
-                                                ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(data.slice(lio+1)), parseInt(params[2]));
-                                            }
-                                            break;
-                                        }
-                                        default: {
-                                            console.warn("NET params[0] equals " + params[0] + ", no idea what to do now");
-                                            break;
-                                        }
-                                    }
+                                    netHandler.handleData(data);
                                 }
                                 else {
                                     // authorization process
