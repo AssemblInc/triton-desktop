@@ -1,5 +1,5 @@
 let fs = require('fs');
-const readerVersion = 1;
+const readerVersion = 2;
 
 function linkify(text) {
     var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -143,6 +143,10 @@ function renderFullValidationFile(validation, fileContents) {
     renderValue(validation.file.license, "val-file-license", validation.version, 1, "license");
     renderValue(validation.file.description, "val-file-description", validation.version, 1);
     renderValue(validation.file.hash, "val-file-hash", validation.version, 1);
+
+    renderValue(validation.stellar.transactionId, "val-stellar-transactionid", validation.version, 2);
+    renderValue(validation.stellar.time, "val-stellar-time", validation.version, 2, "timestamp");
+    renderValue(validation.stellar.ledger, "val-stellar-ledger", validation.version, 2);
 
     renderValue(validation.transmission.encryptionEnabled, "val-transmission-encryption-enabled", validation.version, 1, "boolean");
     renderValue(validation.transmission.encryptionMethod, "val-transmission-encryption-method", validation.version, 1);

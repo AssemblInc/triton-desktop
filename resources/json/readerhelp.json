@@ -10,6 +10,10 @@
     "val-file-description": "A description of the contents of the file that has been transferred, inputted by the sending party at the time of sending",
     "val-file-hash": "The keccak256 hash of the full file that has been transferred (at the time of sending)",
 
+    "val-stellar-transactionid": "The transaction ID of the proof on the Stellar blockchain. Visit the Stellar Explorer at https://steexp.org/ to view the transaction details belonging to this ID.",
+    "val-stellar-time": "The time of when the Stellar transaction was completed.",
+    "val-stellar-ledger": "The ID of the ledger that performed the transaction (according to Stellar).",
+
     "val-transmission-encryption-enabled": "Whether or not encryption was enabled for this file transmission",
     "val-transmission-encryption-method": "The method used for encryption (if enabled).",
     "val-transmission-encryption-level": "The level of encryption used (if enabled).",
@@ -31,7 +35,7 @@
     "ver-validation-name": "The name of the validation file in question (when the hash was added to the blockchain).",
     "ver-validation-hash": "The keccak256 hash of the full validation file in question (when the hash was added to the blockchain).",
 
-    "ver-stellar-transactionid": "The transaction ID of the transaction on the Stellar blockchain. Visit the Stellar Explorer at https://steexp.org/ to view the transaction details belonging to this ID.",
+    "ver-stellar-transactionid": "The transaction ID of the proof on the Stellar blockchain. Visit the Stellar Explorer at https://steexp.org/ to view the transaction details belonging to this ID.",
     "ver-stellar-time": "The time of when the Stellar transaction was completed.",
     "ver-stellar-ledger": "The ID of the ledger that performed the transaction (according to Stellar)."
 }

@@ -196,7 +196,7 @@ let fileHandler = {
             ]);
             */
             fileHandler.transferInfo = {
-                version: 1,
+                version: 2,
                 currentTime: Date.now(),
                 file: {
                     size: fileHandler.file.size,
@@ -207,6 +207,11 @@ let fileHandler = {
                     license: fileHandler.license,
                     description: null,
                     hash: null
+                },
+                stellar: {
+                    transactionId: null,
+                    time: 0,
+                    ledger: null
                 },
                 transmission: {
                     encryptionEnabled: fileHandler.encryption.enabled,
@@ -309,44 +314,70 @@ let fileHandler = {
                     mode: "indeterminate"
                 });
                 screens.showLoadingScreen(true);
-                // process final transferinfo
-                let transferInfoHash = keccak256.create();
-                let transferInfoString = JSON.stringify(fileHandler.transferInfo);
-                ipcRenderer.send('transferinfo-finalized', transferInfoString);
-                wsHandler.sendEvent('transfer_info_complete', transferInfoString);
-                // generate hash of fileinfo for blockchain
-                transferInfoHash.update(transferInfoString);
-                let memoHash = transferInfoHash.hex();
-                // add hash to stellar blockchain
-                stellarHandler.addHash(memoHash).then(function(stellarResults) {
-                    console.log(stellarResults);
-                    let transferInfoFolder = ipcRenderer.sendSync("transferinfo-folderrequest");
-                    let transferInfoFileName = ipcRenderer.sendSync("transferinfo-namerequest", fileHandler.transferInfo.currentTime);
-                    let stellarInfo = {
-                        version: 1,
-                        currentTime: fileHandler.transferInfo.currentTime,
-                        validation: {
-                            path: path.join(transferInfoFolder, transferInfoFileName),
-                            name: transferInfoFileName,
-                            hash: memoHash
-                        },
-                        stellar: {
-                            transactionId: stellarResults.hash,
-                            time: Date.now(),
-                            ledger: stellarResults.ledger
-                        }
-                    };
-                    console.log(stellarInfo);
-                    let stellarInfoString = JSON.stringify(stellarInfo);
-                    ipcRenderer.send('blockchaininfo-finalized', stellarInfoString);
-                    wsHandler.sendEvent('blockchain_info_complete', stellarInfoString);
+                // add file hash to stellar blockchain
+                stellarHandler.addHash(finalHash).then(function(firstStellarResults) {
+                    fileHandler.transferInfo.stellar.transactionId = firstStellarResults.hash;
+                    fileHandler.transferInfo.stellar.time = Date.now();
+                    fileHandler.transferInfo.stellar.ledger = firstStellarResults.ledger;
 
-                    screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
-                    wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
-                    // reset the filechooser
-                    document.getElementById("fileChooser").value = "";
-                })
-                .catch(function(err) {
+                    // process final transferinfo
+                    let transferInfoHash = keccak256.create();
+                    let transferInfoString = JSON.stringify(fileHandler.transferInfo);
+                    ipcRenderer.send('transferinfo-finalized', transferInfoString);
+                    wsHandler.sendEvent('transfer_info_complete', transferInfoString);
+                    // generate hash of fileinfo for blockchain
+                    transferInfoHash.update(transferInfoString);
+                    let memoHash = transferInfoHash.hex();
+                    // add transfer info hash to stellar blockchain
+                    stellarHandler.addHash(memoHash).then(function(stellarResults) {
+                        console.log(stellarResults);
+                        let transferInfoFolder = ipcRenderer.sendSync("transferinfo-folderrequest");
+                        let transferInfoFileName = ipcRenderer.sendSync("transferinfo-namerequest", fileHandler.transferInfo.currentTime);
+                        let stellarInfo = {
+                            version: 2,
+                            currentTime: fileHandler.transferInfo.currentTime,
+                            validation: {
+                                path: path.join(transferInfoFolder, transferInfoFileName),
+                                name: transferInfoFileName,
+                                hash: memoHash
+                            },
+                            stellar: {
+                                transactionId: stellarResults.hash,
+                                time: Date.now(),
+                                ledger: stellarResults.ledger
+                            }
+                        };
+                        console.log(stellarInfo);
+                        let stellarInfoString = JSON.stringify(stellarInfo);
+                        ipcRenderer.send('blockchaininfo-finalized', stellarInfoString);
+                        wsHandler.sendEvent('blockchain_info_complete', stellarInfoString);
+
+                        screens.loading.setStatus("Waiting for " + strip(receiver.name) + " to save the file...");
+                        wsHandler.sendEvent('data_transfer_complete', fileHandler.chunkAmount);
+                        // reset the filechooser
+                        document.getElementById("fileChooser").value = "";
+                    }).catch(function(err) {
+                        console.error(err);
+                        if (err.message.indexOf("status code ") > -1) {
+                            let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ") + 12));
+                            console.log(statusCode);
+                            switch (statusCode) {
+                                case 400:
+                                    screens.showErrorScreen('0x6003');
+                                    break;
+                                case 504:
+                                    screens.showErrorScreen('0x6002');
+                                    break;
+                                default:
+                                    screens.showErrorScreen('0x6001');
+                                    break;
+                            }
+                        }
+                        else {
+                            screens.showErrorScreen('0x6001');
+                        }
+                    });
+                }).catch(function(err) {
                     console.error(err);
                     if (err.message.indexOf("status code ") > -1) {
                         let statusCode = parseInt(err.message.substring(err.message.indexOf("status code ") + 12));
