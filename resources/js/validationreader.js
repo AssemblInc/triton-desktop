@@ -144,9 +144,11 @@ function renderFullValidationFile(validation, fileContents) {
     renderValue(validation.file.description, "val-file-description", validation.version, 1);
     renderValue(validation.file.hash, "val-file-hash", validation.version, 1);
 
+    /*
     renderValue(validation.stellar.transactionId, "val-stellar-transactionid", validation.version, 2);
     renderValue(validation.stellar.time, "val-stellar-time", validation.version, 2, "timestamp");
     renderValue(validation.stellar.ledger, "val-stellar-ledger", validation.version, 2);
+    */
 
     renderValue(validation.transmission.encryptionEnabled, "val-transmission-encryption-enabled", validation.version, 1, "boolean");
     renderValue(validation.transmission.encryptionMethod, "val-transmission-encryption-method", validation.version, 1);
