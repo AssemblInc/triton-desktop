@@ -41,11 +41,11 @@
     },
     "0x3002": {
         "details": "Could not decrypt chunk",
-        "fix": "Restart the application and try again"
+        "fix": "Restart the application, click 'Start fresh', then try again"
     },
     "0x3003": {
         "details": "Could not encrypt chunk",
-        "fix": "Restart the application and try again"
+        "fix": "Restart the application, click 'Start fresh', then try again"
     },
     "0x3004": {
         "details": "Could not generate an SSH keypair",
