@@ -82,11 +82,6 @@ let httpHandler = {
                                         }));
                                     }
                                     else if (req.headers['content-type'] == 'application/x-www-form-urlencoded') {
-                                        res.writeHead(200, {'Content-Type':'application/json'});
-                                        res.end(JSON.stringify({
-                                            'chunkNumber': parseInt(post.number),
-                                            'received': true
-                                        }));
                                         let post = parseQuery(data.toString());
                                         console.log("Received data over HTTP: ", post);
                                         if (parseInt(post['encrypted']) > 0) {
@@ -95,6 +90,11 @@ let httpHandler = {
                                         else {
                                             ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(post.chunk.split(",")), parseInt(post.number));
                                         }
+                                        res.writeHead(200, {'Content-Type':'application/json'});
+                                        res.end(JSON.stringify({
+                                            'chunkNumber': parseInt(post.number),
+                                            'received': true
+                                        }));
                                     }
                                     else {
                                         // content-type is not supported
