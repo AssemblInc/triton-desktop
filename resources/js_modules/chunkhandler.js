@@ -73,7 +73,7 @@ exports.handleChunk = function(chunk, isUint8Array, number) {
     
     // write chunk data to a temporary chunk file using a writestream
     let tempChunkFile = path.join(chunkPath, 'filetransfer-'+startTimestamp+'-'+number+'.assemblchunk');
-    chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
+    let chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
     chunkWriter.on('error', function(err) {
         console.warn("An error occured within the fs writestream!");
         console.error(err);
