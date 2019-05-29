@@ -47,20 +47,24 @@
         <script src="resources/js/nethandler.js"></script>
     </head>
     <body onload="domReady();">
-        <div class="screen" id="startup">
+        <div class="screen" id="loading">
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
                         <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
-                        <div style="margin-top: 0px; height: 0px;" class="underthelogo" id="extra-loading">
+                        <div class="underthelogo">
                             <img class="loading-svg" src="resources/svg/loading.svg" />
-                            <div>Starting Assembl Desktop...</div>
+                            <!--<progress id="loading-progress" min="0" max="100" value="0"></progress>-->
+                            <div id="loading-progress" style="display: none;"><div id="loading-progress-inner"></div></div>
+                            <div id="loading-status">Loading...</div>
+                            <div id="loading-details"></div>
+                            <div id="loading-progress-text" style="display: none;"></div>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
-        <div class="screen" id="errorscreen">
+        <div class="screen" id="errorscreen" style="display: none;">
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
@@ -76,7 +80,7 @@
                 </tr>
             </table>
         </div>
-        <div class="screen" id="passwordinputter">
+        <div class="screen" id="passwordinputter" style="display: none;">
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
@@ -96,7 +100,7 @@
                 </tr>
             </table>
         </div>
-        <div class="screen" id="freshstarter">
+        <div class="screen" id="freshstarter" style="display: none;">
             <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startPasswordInputter();" onkeydown="tabIndexFix(event, screens.startPasswordInputter);" title="Go back" alt="Go back" tabindex="0" />
             <table style="width: 100%; height: 100%;">
                 <tr>
@@ -115,7 +119,7 @@
                 </tr>
             </table>
         </div>
-        <div class="screen" id="nameinputter">
+        <div class="screen" id="nameinputter" style="display: none;">
             <table style="width: 100%; height: 100%;">
                 <tr>
                     <td style="text-align: center;">
@@ -240,7 +244,7 @@
                 </tr>
             </table>
         </div>
-        <div class="screen" id="peeridshowcase">
+        <div class="screen" id="peeridshowcase" style="display: none;">
             <img class="screen-back" src="resources/svg/arrow_back.svg" onclick="screens.startOptions();" onkeydown="tabIndexFix(event, screens.startOptions);" title="Go back" alt="Go back" tabindex="0" />
             <table style="width: 100%; height: 100%;">
                 <tr>
@@ -284,23 +288,6 @@
                                 <br />
                                 <button type="submit" class="connect-button" id="fileconfirm-button">start transfer</button>
                             </form>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="screen" id="loading" style="display: none;">
-            <table style="width: 100%; height: 100%;">
-                <tr>
-                    <td style="text-align: center;">
-                        <img class="assembl-logo-icon" src="resources/png/icon.png" /><div class="assembl-logo-text">Assembl</div>
-                        <div class="underthelogo">
-                            <img class="loading-svg" src="resources/svg/loading.svg" />
-                            <!--<progress id="loading-progress" min="0" max="100" value="0"></progress>-->
-                            <div id="loading-progress"><div id="loading-progress-inner"></div></div>
-                            <div id="loading-status">Loading...</div>
-                            <div id="loading-details"></div>
-                            <div id="loading-progress-text"></div>
                         </div>
                     </td>
                 </tr>

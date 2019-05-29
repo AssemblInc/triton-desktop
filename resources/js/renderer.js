@@ -304,12 +304,6 @@ let loadingTimeout = null;
 function domReady() {
     checkAndShowAnnouncement();
 
-    loadingTimeout = setTimeout(function() {
-        var extraLoading = document.getElementById("extra-loading");
-        extraLoading.style.height = "150px";
-        extraLoading.style.marginTop = "72px";
-    }, 3000);
-
     fileHandler.init();
 
     attachInformationBalloons();
