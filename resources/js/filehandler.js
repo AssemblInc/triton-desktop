@@ -38,7 +38,7 @@ let fileHandler = {
                 if (fileHandler.encryption.enabled) {
                     return 16384;       // 16KB
                 }
-                return 1048576;         // 1MB
+                return 16384;           // 16KB
 
         }
     },
