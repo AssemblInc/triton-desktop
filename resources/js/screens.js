@@ -226,12 +226,12 @@ let screens = {
         },
 
         resetProgress: function() {
+            screens.loading.timeStarted = Date.now();
             if (screens.loading.timeController != null) {
                 clearTimeout(screens.loading.timeController);
             }
             screens.loading.timeController = null;
             screens.loading.timeController = setInterval(this.progressTimeRemaining, 1000);
-            screens.loading.timeStarted = Date.now();
             screens.loading.max = 0;
             screens.loading.progress = 0;
             screens.loading.isFileSize = false;
