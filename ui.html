@@ -156,10 +156,10 @@
                             <form id="options-form" onsubmit="optionsSubmit(event);" autocomplete="off" accept-charset="UTF-8">
                                 <div>Select a transfer method:</div>
                                 <select id="protocol" onchange="protocolChange(this.value);">
-                                    <option value="websocket" selected>Websocket (proxy)</option>
-                                    <option value="webrtc">WebRTC (direct)</option>
-                                    <option value="http">HTTP (direct)</option>
-                                    <option value="net">NET (direct)</option>
+                                    <option value="webrtc">WebRTC (direct, slowest)</option>
+                                    <option value="websocket" selected>Websocket (proxy, slow)</option>
+                                    <option value="net">NET (direct, fast)</option>
+                                    <option value="http">HTTP (direct, fastest)</option>
                                 </select>
                                 <img src="resources/svg/info.svg" class="info-btn" title="Click for help" data-info="Both WebRTC and HTTP are direct and have no middleman involved. Websocket uses a proxy connection instead to transfer your files over the Assembl server." />
                                 <script>
