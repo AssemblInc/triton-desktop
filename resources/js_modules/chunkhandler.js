@@ -83,13 +83,12 @@ exports.handleChunk = function(chunk, isUint8Array, number) {
         // if the chunk is not in Uint8Array format, produce an Uint8Array out of the chunk, then write it to the chunk file
         let tempChunk = new Uint8Array(chunk);
         receivedByteAmount += tempChunk.byteLength;
-        chunkWriter.write(tempChunk);
+        chunkWriter.end(tempChunk);
     }
     else {
         receivedByteAmount += chunk.byteLength;
-        chunkWriter.write(chunk);
+        chunkWriter.end(chunk);
     }
-    chunkWriter.end();
 
     processedChunkAmount += 1;
 
