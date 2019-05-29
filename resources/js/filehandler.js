@@ -1,5 +1,5 @@
 let fileHandler = {
-    useExperimental: true,      // whether or not to use the experimental new fileHandler features
+    useExperimental: false,     // whether or not to use the experimental new fileHandler features
     file: null,                 // JS File Web API
     reader: null,               // JS FileReader Web API
     hash: null,                 // a hash from emn178's sha3 rep
