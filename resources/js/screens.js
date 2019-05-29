@@ -197,7 +197,7 @@ let screens = {
                 screens.loading['max'] = max;
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-                document.getElementById("loading-progress-text") = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ") <span class='loading-progress-text-remaining'></span>");
+                document.getElementById("loading-progress-text").innerHTML = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ") <span class='loading-progress-text-remaining'></span>");
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
                 });
