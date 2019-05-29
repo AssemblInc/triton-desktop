@@ -444,7 +444,7 @@ let fileHandler = {
     startTransfer: function() {
         fileHandler.sentChunkAmount = 0;
         screens.loading.setStatus("Transferring file to " + strip(receiver.name) + "...");
-        screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
+        screens.loading.setDetails(strip(fileHandler.file.name));
         if (!fileHandler.useExperimental) {
             // start sending the first chunk
             fileHandler.prepareChunk(fileHandler.offset);

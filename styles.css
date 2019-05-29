@@ -279,7 +279,7 @@ input[type=text]:focus, select:focus, input[type=password]:focus, input[type=tex
     border-radius: 2px;
 }
 
-#loading-details {
+#loading-details, #loading-progress-text {
     font-size: 0.6em;
     margin-top: 8px;
 }

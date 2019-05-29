@@ -70,7 +70,7 @@ ipcRenderer.on('data-initialized', function(event, data) {
     rTotalSize = parseInt(parsedData["file"]["size"]);
     rProgressSize = 0;
     fileName = parsedData["file"]["name"];
-    screens.loading.setDetails(strip(fileName) + " &bull; " + prettySize(rTotalSize, true, false, 2) + ' &bull; <span class="loading-details-progress">0% ('+prettySize(0, true, false, 2)+' / '+prettySize(rTotalSize, true, false, 2)+')</span>');
+    screens.loading.setDetails(strip(fileName));
     screens.loading.resetProgress();
     screens.showLoadingScreen(false);
     screens.loading.setProgressWithFileSize(0, parseInt(parsedData["file"]["size"]));
@@ -110,7 +110,7 @@ ipcRenderer.on('received-chunk', function(event, progressIncrease) {
 ipcRenderer.on('received-file', function(event, finalChunkAmount) {
     console.log("File has been fully received! Finalizing...");
     screens.loading.setStatus("Merging chunks...");
-    screens.loading.setDetails(strip(fileName) + ' &bull; <span class="loading-details-progress">0% (0 / '+finalChunkAmount+'</span>');
+    screens.loading.setDetails(strip(fileName));
     screens.loading.resetProgress();
     screens.loading.setProgress(0, finalChunkAmount);
     screens.showLoadingScreen(false);

@@ -142,15 +142,22 @@ let screens = {
             screens.hideAll();
             if (indeterminatable) {
                 document.getElementById("loading-progress").style.display = "none";
+                document.getElementById("loading-progress-text").style.display = "none";
             }
             else {
                 document.getElementById("loading-progress").style.display = "block";
+                document.getElementById("loading-progress-text").style.display = "block";
             }
             document.getElementById("loading").style.display = "block";
         }
     },
 
     loading: {
+        timeStarted: 0,
+        max: 0,
+        progress: 0,
+        isFileSize: false,
+
         setStatus: function(text) {
             if (!appClosing) {
                 document.getElementById("loading-status").innerHTML = text;
@@ -163,14 +170,34 @@ let screens = {
             }
         },
 
+        progressTimeRemaining: function() {
+            let timeElapsed = Date.now() - screens.loading.timeStarted;
+            if (screens.loading.progress != 0) {
+                let speed = screens.loading.progress / (timeElapsed / 1000);
+                if (speed != 0) {
+                    let remainingProgress = screens.loading.max - screens.loading.progress;
+                    if (remainingProgress != 0) {
+                        let remainingTime = remainingProgress / speed;
+                        let remainingTimeText = document.getElementById("loading-progress-text").getElementsByClassName("loading-progress-text-remaining");
+                        if (remainingTimeText.length > 0) {
+                            let remStr = remainingTime + " seconds remaining...";
+                            remainingTimeText[0].innerHTML = remStr;
+                        }
+                    }
+                }
+            }
+        },
+
+        timeController: setInterval(this.progressTimeRemaining, 1000),
+
         setProgressWithFileSize: function(progress, max) {
             if (!appClosing) {
+                screens.loading.isFileSize = true;
+                screens.loading['progress'] = progress;
+                screens.loading['max'] = max;
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-                let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
-                if (textBar.length > 0) {
-                    textBar[0].innerHTML = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ")");
-                }
+                document.getElementById("loading-progress-text") = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ") <span class='loading-progress-text-remaining'></span>");
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
                 });
@@ -179,12 +206,12 @@ let screens = {
 
         setProgress: function(progress, max) {
             if (!appClosing) {
+                screens.loading.isFileSize = false;
+                screens.loading['progress'] = progress;
+                screens.loading['max'] = max;
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-                let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
-                if (textBar.length > 0) {
-                    textBar[0].innerHTML = progressPerc + "% (" + progress + " / " + max + ")";
-                }
+                document.getElementById("loading-progress-text").innerHTML = progressPerc + "% (" + progress + " / " + max + ") <span class='loading-progress-text-remaining'></span>";
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
                 });
@@ -192,11 +219,9 @@ let screens = {
         },
 
         resetProgress: function() {
+            screens.loading.timeStarted = Date.now();
             document.getElementById("loading-progress-inner").style.width = "0%";
-            let textBar = document.getElementById("loading-details").getElementsByClassName("loading-details-progress");
-            if (textBar.length > 0) {
-                textBar[0].innerHTML = "0%";
-            }
+            document.getElementById("loading-progress-text").innerHTML = "0% (0 / 0)";
             ipcRenderer.send('progress-update', false);
         }
     }
