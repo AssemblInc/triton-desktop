@@ -166,7 +166,12 @@ var wsHandler = {
                     screens.startFileDropper();
                     break;
                 case "data_initialized_received":
-                    fileHandler.startTransfer();
+                    if (fileHandler.useExperimental && !fileHandler.encryption.enabled) {
+                        fileHandler.prepareHash(fileHandler.offset);
+                    }
+                    else {
+                        fileHandler.startTransfer();
+                    }
                     break;
                 case "public_key":
                     ipcRenderer.send('other-public-key-received', data);

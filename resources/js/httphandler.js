@@ -14,6 +14,7 @@ let httpHandler = {
         url: null,
         auth: null
     },
+    isMultiPart: false,
 
     startServer: function() {
         return new Promise(function(resolve, reject) {
@@ -29,9 +30,19 @@ let httpHandler = {
                         if (auth === httpHandler.requiredAuth) {
                             if (req.method == 'POST') {
                                 let chunks = [];
-                                req.on('data', function(chunk) {
-                                    chunks.push(chunk);
-                                });
+                                if (req.headers['content-type'] == 'multipart/form-data') {
+                                    httpHandler.isMultiPart = true;
+                                    req.on('data', function(chunk) {
+                                        chunks.push(chunk);
+                                        rProgressSize += chunk.byteLength;
+                                        screens.loading.setProgressWithFileSize(rProgressSize, rTotalSize);
+                                    });
+                                }
+                                else {
+                                    req.on('data', function(chunk) {
+                                        chunks.push(chunk);
+                                    });
+                                }
                                 req.on('end', function() {
                                     let data = Buffer.concat(chunks);
                                     if (req.headers['content-type'] === 'application/assembl-chunk') {

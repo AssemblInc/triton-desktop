@@ -268,10 +268,6 @@ let fileHandler = {
         
         // send transfer info to recipient
         wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
-
-        if (fileHandler.useExperimental && !fileHandler.encryption.enabled) {
-            fileHandler.prepareHash(o);
-        }
     },
 
     prepareHash: function(o) {
@@ -451,7 +447,9 @@ let fileHandler = {
         if (!fileHandler.useExperimental) {
             // start sending the first chunk
             fileHandler.prepareChunk(fileHandler.offset);
-            // httpHandler.sendUnencryptedFile(fileHandler.file);
+        }
+        else {
+            httpHandler.sendUnencryptedFile(fileHandler.file);
         }
     },
 
