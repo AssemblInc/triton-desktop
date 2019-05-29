@@ -157,6 +157,8 @@ let screens = {
         max: 0,
         progress: 0,
         isFileSize: false,
+        timeRemStr: "estimating time remaining...",
+        timeController: null,
 
         setStatus: function(text) {
             if (!appClosing) {
@@ -177,18 +179,23 @@ let screens = {
                 if (speed != 0) {
                     let remainingProgress = screens.loading.max - screens.loading.progress;
                     if (remainingProgress != 0) {
-                        let remainingTime = remainingProgress / speed;
-                        let remainingTimeText = document.getElementById("loading-progress-text").getElementsByClassName("loading-progress-text-remaining");
-                        if (remainingTimeText.length > 0) {
-                            let remStr = remainingTime + " seconds remaining...";
-                            remainingTimeText[0].innerHTML = remStr;
-                        }
+                        let remainingTime = Math.floor(remainingProgress / speed);
+                        screens.loading.timeRemStr = formatSeconds(remainingTime) + " remaining...";
                     }
                 }
+                else {
+                    screens.loading.timeRemStr = "estimating time remaining...";
+                }
+            }
+            else {
+                screens.loading.timeRemStr = "estimating time remaining...";
+            }
+
+            let remainingTimeText = document.getElementById("loading-progress-text").getElementsByClassName("loading-progress-text-remaining");
+            if (remainingTimeText.length > 0) {
+                remainingTimeText[0].innerHTML = remStr;
             }
         },
-
-        timeController: setInterval(this.progressTimeRemaining, 1000),
 
         setProgressWithFileSize: function(progress, max) {
             if (!appClosing) {
@@ -197,7 +204,7 @@ let screens = {
                 screens.loading['max'] = max;
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-                document.getElementById("loading-progress-text").innerHTML = strip(progressPerc + "% (" + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + ") <span class='loading-progress-text-remaining'></span>");
+                document.getElementById("loading-progress-text").innerHTML = strip(progressPerc + "% &bull; " + prettySize(progress, true, false, 2) + " / " + prettySize(max, true, false, 2) + " &bull; <span class='loading-progress-text-remaining'>"+screens.loading.timeRemStr+"</span>");
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
                 });
@@ -211,7 +218,7 @@ let screens = {
                 screens.loading['max'] = max;
                 let progressPerc = ((progress / max) * 100).toFixed(1);
                 document.getElementById("loading-progress-inner").style.width = progressPerc + "%";
-                document.getElementById("loading-progress-text").innerHTML = progressPerc + "% (" + progress + " / " + max + ") <span class='loading-progress-text-remaining'></span>";
+                document.getElementById("loading-progress-text").innerHTML = progressPerc + "% &bull; " + progress + " / " + max + " &bull; <span class='loading-progress-text-remaining'>"+screens.loading.timeRemStr+"</span>";
                 ipcRenderer.send('progress-update', true, progress / max, {
                     mode: "normal"
                 });
@@ -219,9 +226,18 @@ let screens = {
         },
 
         resetProgress: function() {
+            if (screens.loading.timeController != null) {
+                clearTimeout(screens.loading.timeController);
+            }
+            screens.loading.timeController = null;
+            screens.loading.timeController = setInterval(this.progressTimeRemaining, 1000);
             screens.loading.timeStarted = Date.now();
+            screens.loading.max = 0;
+            screens.loading.progress = 0;
+            screens.loading.isFileSize = false;
+            screens.loading.timeRemStr = "estimating time remaining...";
             document.getElementById("loading-progress-inner").style.width = "0%";
-            document.getElementById("loading-progress-text").innerHTML = "0% (0 / 0)";
+            document.getElementById("loading-progress-text").innerHTML = "0% &bull; 0 / 0";
             ipcRenderer.send('progress-update', false);
         }
     }

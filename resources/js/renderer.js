@@ -18,6 +18,62 @@ function strip(text) {
    return tmp.textContent || tmp.innerText || "";
 }
 
+function formatSeconds(seconds) {
+    var minutes = Math.floor(seconds / 60);
+    var hours = Math.floor(minutes / 60);
+    var days = Math.floor(hours / 24);
+    var months = Math.floor(days / 30);
+    var years = Math.floor(months / 12);
+    
+    hours = hours - (days * 24);
+    minutes = minutes - (days * 24 * 60) - (hours * 60);
+    seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+    
+    var returnValue = "";
+    if (years > 0) {
+        returnValue = years + " year";
+        if (years > 1) {
+            returnValue += "s";
+        }
+    }
+    else if (months > 0) {
+        returnValue = months + " month";
+        if (months > 1) {
+            returnValue += "s";
+        }
+    }
+    else if (days > 0) {
+        returnValue = days + " day";
+        if (days > 1) {
+            returnValue += "s";
+        }
+    }
+    else if (hours > 0) {
+        returnValue = hours + " hour";
+        if (hours > 1) {
+            returnValue += "s";
+        }
+    }
+    else if (minutes > 0) {
+        returnValue = minutes + " minute";
+        if (minutes > 1) {
+            returnValue += "s";
+        }
+    }
+    else if (seconds > 0) {
+        returnValue = seconds + " seconds";
+    }
+    else {
+        returnValue = "0 seconds";
+    }
+    
+    if (years < 0 || months < 0 || days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
+        returnValue = "0 seconds";
+    }
+    
+    return returnValue;
+}
+
 /* from https://stackoverflow.com/questions/2090551/parse-query-string-in-javascript */
 function parseQuery(queryString) {
     var query = {};
