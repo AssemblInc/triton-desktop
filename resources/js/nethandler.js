@@ -55,8 +55,8 @@ let netHandler = {
                 ipcRenderer.send('renderer-received-chunk', netHandler.data.content.toString(), netHandler.data.chunkNumber);
             }
             else {
-                console.log(netHandler.data.content);
-                console.log(new Uint8Array(netHandler.data.content));
+                // console.log(netHandler.data.content);
+                // console.log(new Uint8Array(netHandler.data.content));
                 ipcRenderer.send('renderer-received-unencrypted-chunk', new Uint8Array(netHandler.data.content), netHandler.data.chunkNumber);
             }
             netHandler.resetChunkData();
@@ -145,7 +145,7 @@ let netHandler = {
             netHandler.client.write(keccak256(auth));
         });
         netHandler.client.on('data', function(data) {
-            console.log("Received data from NET server: ", data);
+            // console.log("Received data from NET server: ", data);
         });
         netHandler.client.on('error', function(err) {
             console.error("NET socket error: ", err);
@@ -159,7 +159,7 @@ let netHandler = {
         if (netHandler.client != null) {
             if (isEncrypted) {
                 chunk = Buffer.from(chunk);
-                console.log("Packet size: ", chunk.byteLength);
+                // console.log("Packet size: ", chunk.byteLength);
                 netHandler.client.write("chunk;1;" + number + ";" + chunk.byteLength + ";" + chunk);
             }
             else {
@@ -173,7 +173,7 @@ let netHandler = {
 
     sendUnencryptedChunk: function(chunk, number) {
         if (netHandler.client != null) {
-            console.log("Packet size: ", chunk.byteLength);
+            // console.log("Packet size: ", chunk.byteLength);
             netHandler.client.write("chunk;0;" + number + ";" + chunk.byteLength + ";" + chunk);
         }
         else {
