@@ -1,4 +1,5 @@
 let fileHandler = {
+    useExperimental: true,      // whether or not to use the experimental new fileHandler features
     file: null,                 // JS File Web API
     reader: null,               // JS FileReader Web API
     hash: null,                 // a hash from emn178's sha3 rep
@@ -16,6 +17,9 @@ let fileHandler = {
     transferInfo: {},           // transferInfo (JSON attachment for Stellar)
 
     getChunkSize: function() {
+        if (fileHandler.useExperimental && !fileHandler.encryption.enabled) {
+            return 1048576;
+        }
         switch (fileHandler.protocolToUse) {
             default:
             case "webrtc":
@@ -49,66 +53,79 @@ let fileHandler = {
             console.warn("File reading aborted");
         });
         fileHandler.reader.addEventListener("load", function(event) {
-            if (!(fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true)) {
+            if (fileHandler.useExperimental && !fileHandler.encryption.enabled) {
                 // update the hash with the current chunk
                 fileHandler.hash.update(event.target.result);
                 // add current size of the chunk to the offset
                 fileHandler.offset += event.target.result.byteLength;
-                // convert the chunk into an Uint8Array (for ipc transport to the main process)
-                let convertedChunk = new Uint8Array(event.target.result);
-                switch(fileHandler.protocolToUse) {
-                    case "webrtc":
-                        // send chunk over webrtc
-                        if (fileHandler.encryption.enabled) {
-                            rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                        }
-                        else {
-                            rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                        }
-                        break;
-                    case "http":
-                        if (fileHandler.encryption.enabled) {
-                            httpHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                        }
-                        else {
-                            httpHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                        }
-                        break;
-                    case "net":
-                        if (fileHandler.encryption.enabled) {
-                            netHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                        }
-                        else {
-                            netHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                        }
-                        break;
-                    default:
-                        console.warn("No protocol selected. Using websockets");
-                        fileHandler.protocolToUse = "websocket";
-                    case "websocket":
-                        // send chunk over websocket
-                        if (fileHandler.encryption.enabled) {
-                            wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
-                        }
-                        else {
-                            wsHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
-                        }
-                        break;
-                }
                 // update loading progress
                 screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
                 // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
-                fileHandler.sentChunkAmount += 1;
-                setTimeout(function() {
-                    // this function is run with a timeout instead of right away
-                    // otherwise it seems like the connection won't be able to process the amount of chunks
-                    // and the receiving end will experience download stutters!
-                    // both on webrtc AND websockets.
-                    fileHandler.prepareChunk(fileHandler.offset);
-                }, 64);
+                // fileHandler.sentChunkAmount += 1;
+                fileHandler.prepareChunk(fileHandler.offset);
             }
             else {
-                console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
+                if (!(fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true)) {
+                    // update the hash with the current chunk
+                    fileHandler.hash.update(event.target.result);
+                    // add current size of the chunk to the offset
+                    fileHandler.offset += event.target.result.byteLength;
+                    // convert the chunk into an Uint8Array (for ipc transport to the main process)
+                    let convertedChunk = new Uint8Array(event.target.result);
+                    switch(fileHandler.protocolToUse) {
+                        case "webrtc":
+                            // send chunk over webrtc
+                            if (fileHandler.encryption.enabled) {
+                                rtcHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                            }
+                            else {
+                                rtcHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                            }
+                            break;
+                        case "http":
+                            if (fileHandler.encryption.enabled) {
+                                httpHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                            }
+                            else {
+                                httpHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                            }
+                            break;
+                        case "net":
+                            if (fileHandler.encryption.enabled) {
+                                netHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                            }
+                            else {
+                                netHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                            }
+                            break;
+                        default:
+                            console.warn("No protocol selected. Using websockets");
+                            fileHandler.protocolToUse = "websocket";
+                        case "websocket":
+                            // send chunk over websocket
+                            if (fileHandler.encryption.enabled) {
+                                wsHandler.sendChunk(convertedChunk, false, fileHandler.sentChunkAmount);
+                            }
+                            else {
+                                wsHandler.sendUnencryptedChunk(convertedChunk, fileHandler.sentChunkAmount);
+                            }
+                            break;
+                    }
+                    // update loading progress
+                    screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
+                    // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
+                    fileHandler.sentChunkAmount += 1;
+                    setTimeout(function() {
+                        // this function is run with a timeout instead of right away
+                        // otherwise it seems like the connection won't be able to process the amount of chunks
+                        // and the receiving end will experience download stutters!
+                        // both on webrtc AND websockets.
+                        fileHandler.prepareChunk(fileHandler.offset);
+                    }, 64);
+                }
+                else {
+                    console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
+                }
             }
         });
 
@@ -251,6 +268,31 @@ let fileHandler = {
         
         // send transfer info to recipient
         wsHandler.sendEvent('data_initialized', JSON.stringify(fileHandler.transferInfo));
+
+        if (fileHandler.useExperimental && !fileHandler.encryption.enabled) {
+            fileHandler.prepareHash(o);
+        }
+    },
+
+    prepareHash: function(o) {
+        if (fileHandler.offset < fileHandler.file.size) {
+            // console.log("Sending chunk starting at", o);
+            // create chunk from file
+            fileHandler.chunkAmount += 1;
+            let slice = fileHandler.file.slice(fileHandler.offset, o + fileHandler.getChunkSize());
+            // turn slice into an arraybuffer
+            fileHandler.reader.readAsArrayBuffer(slice);
+            // the sending part happens in the "onload" event of the FileReader
+        }
+        else {
+            // retrieve the final hash
+            let finalHash = fileHandler.hash.hex();
+            console.log("Hash is ready:", finalHash);
+            fileHandler.transferInfo.file.hash = finalHash;
+
+            // the file can now be sent
+            screens.startTransfer();
+        }
     },
 
     prepareChunk: function(o) {
@@ -406,9 +448,11 @@ let fileHandler = {
         fileHandler.sentChunkAmount = 0;
         screens.loading.setStatus("Transferring file to " + strip(receiver.name) + "...");
         screens.loading.setDetails(strip(fileHandler.file.name) + " &bull; " + prettySize(fileHandler.file.size, true, false, 2) + ' &bull; <span class="loading-details-progress">0%</span>');
-        // start sending the first chunk
-        fileHandler.prepareChunk(fileHandler.offset);
-        // httpHandler.sendUnencryptedFile(fileHandler.file);
+        if (!fileHandler.useExperimental) {
+            // start sending the first chunk
+            fileHandler.prepareChunk(fileHandler.offset);
+            // httpHandler.sendUnencryptedFile(fileHandler.file);
+        }
     },
 
     useEncryption(useIt, method, level) {
