@@ -71,12 +71,15 @@ let httpHandler = {
                                             }));
                                         }
                                     }
-                                    else if (req.headers['content-type'] == 'multipart/form-data') {
+                                    else if (req.headers['content-type'].indexOf('multipart/form-data') > -1) {
+                                        const boundary = req.headers['content-type'].split("boundary=").parts[1].split(";")[0];
+                                        let reqBody = data.toString();
+                                        reqBody.split(boundary);
+                                        console.log(reqBody);
                                         res.writeHead(200, {'Content-Type':'application/json'});
                                         res.end(JSON.stringify({
                                             'received': true
                                         }));
-                                        console.log(data);
                                     }
                                     else if (req.headers['content-type'] == 'application/x-www-form-urlencoded') {
                                         res.writeHead(200, {'Content-Type':'application/json'});
@@ -226,7 +229,7 @@ let httpHandler = {
                 // upload complete
             });
             xhr.setRequestHeader("authorization", "Basic "+btoa(httpHandler.sendTo.auth));
-            xhr.setRequestHeader("content-type", "multipart/form-data");
+            // xhr.setRequestHeader("content-type", "multipart/form-data");
             xhr.setRequestHeader("accept", "application/json");
             xhr.send(formData);
         }

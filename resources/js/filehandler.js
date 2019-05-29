@@ -288,7 +288,7 @@ let fileHandler = {
 
             // the file can now be sent
             fileHandler.offset = 0;
-            screens.startTransfer();
+            fileHandler.startTransfer();
         }
     },
 
