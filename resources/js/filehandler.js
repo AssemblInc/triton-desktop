@@ -62,7 +62,7 @@ let fileHandler = {
                 screens.loading.setProgressWithFileSize(fileHandler.offset, fileHandler.file.size);
                 // console.log("Progress in bytes: " + fileHandler.offset + " / " + fileHandler.file.size);
                 // fileHandler.sentChunkAmount += 1;
-                fileHandler.prepareChunk(fileHandler.offset);
+                fileHandler.prepareHash(fileHandler.offset);
             }
             else {
                 if (!(fileHandler.protocolToUse == "websocket" && fileHandler.useStream === true)) {
@@ -287,6 +287,7 @@ let fileHandler = {
             fileHandler.transferInfo.file.hash = finalHash;
 
             // the file can now be sent
+            fileHandler.offset = 0;
             screens.startTransfer();
         }
     },
