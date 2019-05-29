@@ -121,7 +121,7 @@ let fileHandler = {
                         // and the receiving end will experience download stutters!
                         // both on webrtc AND websockets.
                         fileHandler.prepareChunk(fileHandler.offset);
-                    }, 64);
+                    }, (fileHandler.protocolToUse == "net" ? 0 : 64));
                 }
                 else {
                     console.warn("fileHandler.useStream equals true. The FileReader is not outputting any data, since this is handled by the blobStream instead.");
