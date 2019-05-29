@@ -60,39 +60,55 @@ exports.setFinalChunkAmount = function(amount) {
 // handle a received chunk
 // chunk should be an arraybuffer
 exports.handleChunk = function(chunk, isUint8Array, number) {
-    /*
-    if (writer.writable) {
+    return new Promise(function(resolve, reject) {
+        let tempChunkFile = path.join(chunkPath, 'filetransfer-'+startTimestamp+'-'+number+'.assemblchunk');
         if (!isUint8Array) {
-            writer.write(new Uint8Array(chunk));
+            chunk = new Uint8Array(chunk);
+        }
+        receivedByteAmount += chunk.byteLength;
+        let buffer = Buffer.alloc(chunk.byteLength, chunk);
+
+        fs.open(tempChunkFile, 'w', function(err, fd) {
+            if (err) {
+                reject(err)
+            }
+            else {
+                fs.write(fd, buffer, 0, buffer.length, null, function(err) {
+                    if (err) {
+                        reject(err);
+                    }
+                    fs.close(fd, function() {
+                        resolve();
+                    });
+                });
+            }
+        });
+    
+        /*
+        // write chunk data to a temporary chunk file using a writestream
+        let chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
+        chunkWriter.on('error', function(err) {
+            console.warn("An error occured within the fs writestream!");
+            console.error(err);
+            chunkWriter.end();
+            reject(err);
+        });
+        if (!isUint8Array) {
+            // if the chunk is not in Uint8Array format, produce an Uint8Array out of the chunk, then write it to the chunk file
+            let tempChunk = new Uint8Array(chunk);
+            receivedByteAmount += tempChunk.byteLength;
+            chunkWriter.end(tempChunk, null, resolve);
         }
         else {
-            writer.write(chunk);
+            receivedByteAmount += chunk.byteLength;
+            chunkWriter.end(chunk, null, resolve);
         }
-    }
-    */
+        */
     
-    // write chunk data to a temporary chunk file using a writestream
-    let tempChunkFile = path.join(chunkPath, 'filetransfer-'+startTimestamp+'-'+number+'.assemblchunk');
-    let chunkWriter = fs.createWriteStream(tempChunkFile, { encoding: 'utf8', flags: 'a', autoClose: false });
-    chunkWriter.on('error', function(err) {
-        console.warn("An error occured within the fs writestream!");
-        console.error(err);
-        chunkWriter.end();
+        processedChunkAmount += 1;
+    
+        console.log("Chunk progress: "+number+" progressed, "+processedChunkAmount+" total progressed, "+finalChunkAmount+" total sent (according to sender)");
     });
-    if (!isUint8Array) {
-        // if the chunk is not in Uint8Array format, produce an Uint8Array out of the chunk, then write it to the chunk file
-        let tempChunk = new Uint8Array(chunk);
-        receivedByteAmount += tempChunk.byteLength;
-        chunkWriter.end(tempChunk);
-    }
-    else {
-        receivedByteAmount += chunk.byteLength;
-        chunkWriter.end(chunk);
-    }
-
-    processedChunkAmount += 1;
-
-    console.log("Chunk progress: "+number+" progressed, "+processedChunkAmount+" total progressed, "+finalChunkAmount+" total sent (according to sender)");
 };
 
 // check if file can be saved yet
