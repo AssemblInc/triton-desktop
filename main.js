@@ -146,7 +146,7 @@ function signIn() {
 
     signInWindow.webContents.on('dom-ready', function(event) {
         let url = signInWindow.webContents.getURL();
-        if (url.indexOf("code=") > -1) {
+        if (url.indexOf("://accounts.assembl.ch/api/tempapp/") > -1) {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
                     try {
@@ -158,7 +158,7 @@ function signIn() {
                         userDataHandler.saveData("orcid_token_type", orcidData["token_type"]);
                         userDataHandler.saveData("orcid_access_token", orcidData["access_token"]);
                         userDataHandler.saveData("orcid_refresh_token", orcidData["refresh_token"]);
-                        userDataHandler.saveData("orcid_expires_in", Math.floor(Date.now() * 0.001) + orcidData["expires_in"]);
+                        userDataHandler.saveData("orcid_expires_in", orcidData["expires_in"]);
                         // TODO: handle expires_in. Currently, tokens expire after 20 years, so it is not something we need to work on very quickly.
                         userDataHandler.saveData("orcid_scope", orcidData["scope"]);
                         console.log("Checking if username is there...");
@@ -187,11 +187,14 @@ function signIn() {
                     mainWindow.webContents.send('error-occurred', '0x4002');
                 });
         }
+        else if (url.indexOf("://accounts.assembl.ch/settings/") > -1) {
+            signInWindow.loadURL("https://accounts.assembl.ch/api/tempapp/");
+        }
 
         if (url.indexOf('//orcid.org/') > -1) {
-            signInWindow.setTitle('Sign in to Assembl with your ORCID iD');
+            signInWindow.setTitle('Connect your ORCID iD to your Assembl account');
         }
-        else if (url.indexOf('//accounts.assembl.science/') > -1) {
+        else if (url.indexOf('//accounts.assembl.ch/') > -1) {
             signInWindow.setTitle('Sign in to Assembl');
         }
         else {
@@ -199,7 +202,7 @@ function signIn() {
         }
     });
 
-    let signInUrl = 'https://accounts.assembl.science/signin/?json';
+    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/connect/?s=orcid';
     if (userDataHandler.hasData("orcid_id")) {
         signInUrl += '&orcid=' + userDataHandler.loadData("orcid_id");
     }
