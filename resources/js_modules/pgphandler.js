@@ -112,7 +112,7 @@ function loadKeys(keyManager, newKeys) {
 
 exports.createKeys = function(displayName, userId) {
     opts = {
-        userid: displayName + " <" + userId + "@users.assembl.science>",
+        userid: displayName + " <" + userId + "@accounts.assembl.ch>",
         primary: {
             nbits: 2048,
             flags: PGP.certify_keys | PGP.sign_data | PGP.auth | PGP.encrypt_comm | PGP.encrypt_storage,

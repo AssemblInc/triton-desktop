@@ -396,7 +396,7 @@ function checkAndShowAnnouncement() {
             }
         }
     };
-    xhr.open('GET', 'https://assembl.science/api/desktop-announcement.json', true);
+    xhr.open('GET', 'https://assembl.ch/api/desktop-announcement.json', true);
     xhr.setRequestHeader("Accept", "application/json")
     xhr.send();
 }
