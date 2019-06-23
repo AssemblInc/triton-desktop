@@ -9,7 +9,7 @@ var wsHandler = {
         screens.loading.setDetails("");
         screens.loading.resetProgress();
         screens.showLoadingScreen(true);
-        wsHandler.socket = io('https://socket.assembl.science:2998');
+        wsHandler.socket = io('https://socket.assembl.ch:2998');
         wsHandler.socket.on('connect', function() {
             console.log("Websocket connected: " + wsHandler.socket.id);
             setTimeout(function() {
