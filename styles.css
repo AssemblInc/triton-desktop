@@ -104,7 +104,7 @@ a:hover, a:focus, a:active {
 }
 
 .assembl-logo-icon {
-    display: inline-block;
+    display: none;
     vertical-align: middle;
     width: 3.5em;
     height: 3.5em;

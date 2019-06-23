@@ -93,7 +93,7 @@ header {
 }
 
 .assembl-logo-icon {
-    display: inline-block;
+    display: none;
     vertical-align: middle;
     width: 2em;
     height: 2em;
