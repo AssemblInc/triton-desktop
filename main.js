@@ -146,7 +146,7 @@ function signIn() {
 
     signInWindow.webContents.on('dom-ready', function(event) {
         let url = signInWindow.webContents.getURL();
-        if (url.indexOf("://accounts.assembl.ch/api/tempapp/") > -1) {
+        if (url.indexOf("https://accounts.assembl.ch/api/tempapp/") == 0) {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
                     try {
@@ -202,7 +202,7 @@ function signIn() {
         }
     });
 
-    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/connect/?s=orcid';
+    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/api/tempapp/';
     if (userDataHandler.hasData("orcid_id")) {
         signInUrl += '&orcid=' + userDataHandler.loadData("orcid_id");
     }
