@@ -517,6 +517,14 @@ input#fileChooser {
 
 #verif-name {
     text-align: middle;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit !important;
+}
+
+#verif-name:hover, #verif-name:focus {
+    text-decoration: underline;
+    color: inherit !important;
 }
 
 /* copyright statement */
