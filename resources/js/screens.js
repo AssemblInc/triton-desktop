@@ -178,7 +178,7 @@ let screens = {
 
             let remainingTimeText = document.getElementById("loading-progress-text").getElementsByClassName("loading-progress-text-remaining");
             if (remainingTimeText.length > 0) {
-                remainingTimeText[0].innerHTML = remStr;
+                remainingTimeText[0].innerHTML = screens.loading.timeRemStr;
             }
         },
 
