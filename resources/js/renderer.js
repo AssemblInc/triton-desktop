@@ -276,7 +276,7 @@ function showVerification(assemblId, displayName, orgAffiliation, asSender) {
     }
     document.getElementById("verif").style.display = "block";
     document.getElementById("verif-name").innerHTML = strip(displayName);
-    document.getElementById("verif-name").setAttribute("href", "https://accounts.assembl.ch/user/?id="+assemblId);
+    document.getElementById("verif-name").setAttribute("href", "https://accounts.assembl.ch/user/?id="+assemblId+"&closebtn");
     ipcRenderer.send('connection-p2p-established');
     // alert("A connection with " + displayName + " has been established.");
     toastr.success("Connection established with " + strip(displayName));
