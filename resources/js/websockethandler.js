@@ -247,7 +247,7 @@ var wsHandler = {
         }); 
 
         // for sender
-        wsHandler.socket.on('as_connection_made', function(assemblID, userName, orgAffiliation, oricdId) {
+        wsHandler.socket.on('as_connection_made', function(assemblID, userName, orgAffiliation, orcidId) {
             console.log("Connection made: " + assemblID + " " + userName + "("+orgAffiliation+", ORCID iD "+orcidId+")");
             receiver.name = userName;
             receiver.assemblId = assemblID;
