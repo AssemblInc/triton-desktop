@@ -98,7 +98,7 @@ var wsHandler = {
             console.log("as_event_for_receiver " + eventName + ": ", data);
             switch(eventName) {
                 case "connection_established":
-                    showVerification(sender.name, sender.orgAffiliation, false);
+                    showVerification(sender.assemblId, sender.name, sender.orgAffiliation, false);
                     screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
                     screens.loading.setDetails("");
                     screens.showLoadingScreen(true);
@@ -195,7 +195,7 @@ var wsHandler = {
                             // use public IP for connection.
                             httpHandler.initSender(data.url, data.auth);
                         }
-                        showVerification(receiver.name, receiver.orgAffiliation, true);
+                        showVerification(receiver.assemblId, receiver.name, receiver.orgAffiliation, true);
                         screens.startFileDropper();
                     });
                     break;
@@ -213,7 +213,7 @@ var wsHandler = {
                             // use public IP for connection.
                             netHandler.startClient(data.publicIp, data.port, data.auth);
                         }
-                        showVerification(receiver.name, receiver.orgAffiliation, true);
+                        showVerification(receiver.assemblId, receiver.name, receiver.orgAffiliation, true);
                         screens.startFileDropper();
                     });
                     break;
@@ -221,7 +221,7 @@ var wsHandler = {
                     screens.loading.setDetails("Setting up the connection...");
                     rtcHandler.connectAnswer(data)
                         .then(function() {
-                            showVerification(receiver.name, receiver.orgAffiliation, true);
+                            showVerification(receiver.assemblId, receiver.name, receiver.orgAffiliation, true);
                             screens.startFileDropper();
                         })
                         .catch(function(err) {
@@ -257,7 +257,7 @@ var wsHandler = {
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             switch(fileHandler.protocolToUse) {
                 case "websocket": {
-                    showVerification(receiver.name, receiver.orgAffiliation, true);
+                    showVerification(receiver.assemblId, receiver.name, receiver.orgAffiliation, true);
                     screens.startFileDropper();
                     break;
                 }

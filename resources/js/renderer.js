@@ -270,12 +270,13 @@ ipcRenderer.on('signed-in', function(event) {
     wsHandler.init();
 });
 
-function showVerification(displayName, orgAffiliation, asSender) {
+function showVerification(assemblId, displayName, orgAffiliation, asSender) {
     if (asSender) {
         wsHandler.sendEvent("connection_established");
     }
     document.getElementById("verif").style.display = "block";
     document.getElementById("verif-name").innerHTML = strip(displayName);
+    document.getElementById("verif-name").setAttribute("href", "https://accounts.assembl.ch/user/?id="+assemblId);
     ipcRenderer.send('connection-p2p-established');
     // alert("A connection with " + displayName + " has been established.");
     toastr.success("Connection established with " + strip(displayName));

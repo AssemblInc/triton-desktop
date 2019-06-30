@@ -309,7 +309,7 @@
         <div id="copyright">Assembl Desktop v<span id="app-version"></span> &copy; Assembl Inc. 2019</div>
         <div id="verif" style="display: none;">
             <div id="verif-conn">Connected with</div>
-            <div id="verif-name-holder"><span id="verif-name">unknown</span></div>
+            <div id="verif-name-holder"><a href="https://accounts.assembl.ch/user/?id=unset" target="_blank" onclick="event.preventDefault(); shell.openExternal(this.href);" id="verif-name" title="Show user overview">unknown</a></div>
         </div>
         <script> document.getElementById("app-version").innerHTML = ipcRenderer.sendSync('appversion-request'); </script>
     </body>
