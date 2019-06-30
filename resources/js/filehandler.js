@@ -238,12 +238,12 @@ let fileHandler = {
                 sender: {
                     name: ipcRenderer.sendSync('username-request'),
                     assemblId: ipcRenderer.sendSync('assemblid-request'),
-                    orcidId: ipcRenderer.sendSync('orcid-request')
+                    orgAffiliation: ipcRenderer.sendSync('org-affiliation-request')
                 },
                 receiver: {
                     name: receiver.name,
                     assemblId: receiver.assemblId,
-                    orcidId: receiver.orcidId
+                    orgAffiliation: receiver.orgAffiliation
                 }
             };
             console.log(fileHandler.transferInfo);

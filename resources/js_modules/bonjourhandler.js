@@ -23,7 +23,7 @@ exports.init = function(webContents) {
     }, 1000);
 };
 
-exports.startBroadcast = function(displayName, assemblId, orcidId) {
+exports.startBroadcast = function(displayName, assemblId, orgAffiliation) {
     service = bonjour.publish({
         name: 'Assembl Desktop on ' + os.hostname(),
         type: 'assembl',
@@ -31,7 +31,7 @@ exports.startBroadcast = function(displayName, assemblId, orcidId) {
         txt: {
             displayname: displayName,
             assemblid: assemblId,
-            orcidid: orcidId,
+            orgAffiliation: orgAffiliation,
             hostname: os.hostname()
         }
     });

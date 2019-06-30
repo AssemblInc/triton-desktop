@@ -259,38 +259,26 @@ ipcRenderer.on('userdata-created', function(event) {
     screens.showLoadingScreen(true);
 });
 
+ipcRenderer.on('signing-in', function(event) {
+    screens.loading.setStatus("Signing in...");
+    screens.loading.setDetails("Please wait...");
+    screens.loading.resetProgress();
+    screens.showLoadingScreen(true);
+});
+
 ipcRenderer.on('signed-in', function(event) {
     wsHandler.init();
 });
 
-function showVerification(displayName, orcidId, asSender) {
+function showVerification(displayName, orgAffiliation, asSender) {
     if (asSender) {
         wsHandler.sendEvent("connection_established");
     }
     document.getElementById("verif").style.display = "block";
     document.getElementById("verif-name").innerHTML = strip(displayName);
-    if (orcidId != null) {
-        document.getElementById("verif-orcid").setAttribute("href", "https://orcid.org/"+orcidId);
-    }
-    else {
-        document.getElementById("verif-orcid").style.display = "none";
-    }
     ipcRenderer.send('connection-p2p-established');
     // alert("A connection with " + displayName + " has been established.");
     toastr.success("Connection established with " + strip(displayName));
-}
-
-function nameSubmit(event) {
-    if (event != null) {
-        event.preventDefault();
-    }
-    // start generating a pgp keypair with the name
-    screens.loading.setStatus("Generating a PGP keypair...");
-    screens.loading.setDetails("This might take a while. Please wait...");
-    screens.loading.resetProgress();
-    ipcRenderer.send('user-name-changed', document.getElementById('yourname').value);
-    screens.showLoadingScreen(true);
-    return false;
 }
 
 function confirmSend(event) {

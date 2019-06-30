@@ -519,18 +519,6 @@ input#fileChooser {
     text-align: middle;
 }
 
-#verif-orcid {
-    cursor: pointer;
-}
-
-#verif-orcid img {
-    display: inline-block;
-    width: 13px;
-    height: 13px;
-    margin-left: 4px;
-    vertical-align: text-bottom;
-}
-
 /* copyright statement */
 #copyright {
     display: block;

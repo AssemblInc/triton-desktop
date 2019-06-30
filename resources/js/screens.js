@@ -42,21 +42,6 @@ let screens = {
         }
     },
 
-    startNameInputter: function() {
-        if (!appClosing) {
-            screens.hideAll();
-            document.getElementById("nameinputter").style.display = "block";
-            var curUserName = ipcRenderer.sendSync('username-request');
-            if (curUserName != null && curUserName.length > 0) {
-                document.getElementById("yourname").value = curUserName;
-                nameSubmit();
-            }
-            else {
-                document.getElementById("yourname").focus();
-            }
-        }
-    },
-
     startPurposeSelector: function() {
         if (!appClosing) {
             screens.hideAll();

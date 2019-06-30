@@ -13,7 +13,11 @@ var wsHandler = {
         wsHandler.socket.on('connect', function() {
             console.log("Websocket connected: " + wsHandler.socket.id);
             setTimeout(function() {
-                screens.startNameInputter();
+                screens.loading.setStatus("Generating a PGP keypair...");
+                screens.loading.setDetails("This might take a while. Please wait...");
+                screens.loading.resetProgress();
+                ipcRenderer.send('websocket-connected');
+                screens.showLoadingScreen(true);
             }, 1000);
             wsHandler.isOpen = true;
         });
@@ -59,7 +63,8 @@ var wsHandler = {
             wsHandler.socket.emit("as_my_data", {
                 assembl_id: ipcRenderer.sendSync('assemblid-request'),
                 user_name: ipcRenderer.sendSync('username-request'),
-                orcid_id: ipcRenderer.sendSync('orcid-request')
+                org_affiliation: ipcRenderer.sendSync('org-affiliation-request'),
+                orcid_id: ipcRenderer.sendSync('orcidid-request'),
             });
         });
 
@@ -93,7 +98,7 @@ var wsHandler = {
             console.log("as_event_for_receiver " + eventName + ": ", data);
             switch(eventName) {
                 case "connection_established":
-                    showVerification(sender.name, sender.orcidId, false);
+                    showVerification(sender.name, sender.orgAffiliation, false);
                     screens.loading.setStatus("Waiting for " + strip(sender.name) + "...");
                     screens.loading.setDetails("");
                     screens.showLoadingScreen(true);
@@ -190,7 +195,7 @@ var wsHandler = {
                             // use public IP for connection.
                             httpHandler.initSender(data.url, data.auth);
                         }
-                        showVerification(receiver.name, receiver.orcidId, true);
+                        showVerification(receiver.name, receiver.orgAffiliation, true);
                         screens.startFileDropper();
                     });
                     break;
@@ -208,7 +213,7 @@ var wsHandler = {
                             // use public IP for connection.
                             netHandler.startClient(data.publicIp, data.port, data.auth);
                         }
-                        showVerification(receiver.name, receiver.orcidId, true);
+                        showVerification(receiver.name, receiver.orgAffiliation, true);
                         screens.startFileDropper();
                     });
                     break;
@@ -216,7 +221,7 @@ var wsHandler = {
                     screens.loading.setDetails("Setting up the connection...");
                     rtcHandler.connectAnswer(data)
                         .then(function() {
-                            showVerification(receiver.name, receiver.orcidId, true);
+                            showVerification(receiver.name, receiver.orgAffiliation, true);
                             screens.startFileDropper();
                         })
                         .catch(function(err) {
@@ -231,8 +236,8 @@ var wsHandler = {
         });
 
         // for sender
-        wsHandler.socket.on("as_connection_request", function(assemblID, userName, orcidID) {
-            console.log("Incoming connection request: " + assemblID + " " + userName + "("+orcidID+")");
+        wsHandler.socket.on("as_connection_request", function(assemblID, userName, orgAffiliation) {
+            console.log("Incoming connection request: " + assemblID + " " + userName + "("+orgAffiliation+")");
             if (wsHandler.accepting) {
                 wsHandler.socket.emit("as_connection_accepted", assemblID);
             }
@@ -242,16 +247,17 @@ var wsHandler = {
         }); 
 
         // for sender
-        wsHandler.socket.on('as_connection_made', function(assemblID, userName, orcidID) {
-            console.log("Connection made: " + assemblID + " " + userName + "("+orcidID+")");
+        wsHandler.socket.on('as_connection_made', function(assemblID, userName, orgAffiliation, oricdId) {
+            console.log("Connection made: " + assemblID + " " + userName + "("+orgAffiliation+", ORCID iD "+orcidId+")");
             receiver.name = userName;
             receiver.assemblId = assemblID;
-            receiver.orcidId = orcidID;
+            receiver.orgAffiliation = orgAffiliation;
+            receiver.orcidId = orcidId;
             document.getElementById("fileconfirm-recipient").innerHTML = strip(receiver.name);
             wsHandler.sendEvent("public_key", ipcRenderer.sendSync('publickey-request'));
             switch(fileHandler.protocolToUse) {
                 case "websocket": {
-                    showVerification(receiver.name, receiver.orcidId, true);
+                    showVerification(receiver.name, receiver.orgAffiliation, true);
                     screens.startFileDropper();
                     break;
                 }
@@ -291,20 +297,21 @@ var wsHandler = {
         });
 
         // for receiver
-        wsHandler.socket.on('as_connected_to', function(assemblID, userName, orcidID) {
-            console.log("Outgoing connection: " + assemblID + " " + userName + "("+orcidID+")");
+        wsHandler.socket.on('as_connected_to', function(assemblID, userName, orgAffiliation, orcidId) {
+            console.log("Outgoing connection: " + assemblID + " " + userName + "("+orgAffiliation+", ORCID iD "+orcidId+")");
             wsHandler.sendEventToSender("public_key", ipcRenderer.sendSync('publickey-request'));
             sender.name = userName;
             sender.assemblId = assemblID;
-            sender.orcidId = orcidID;
+            sender.orgAffiliation = orgAffiliation;
+            sender.orcidId = orcidId;
             screens.loading.setStatus("Establishing connection with " + strip(sender.name) + "...");
             screens.loading.setDetails("");
             screens.showLoadingScreen(true);
         });
 
         // for receiver
-        wsHandler.socket.on('as_connection_rejected', function(assemblID, userName, orcidID) {
-            console.log("Connection rejected: " + assemblID + " " + userName + "("+orcidID+")");
+        wsHandler.socket.on('as_connection_rejected', function(assemblID, userName, orgAffiliation, orcidId) {
+            console.log("Connection rejected: " + assemblID + " " + userName + "("+orgAffiliation+", ORCID iD "+orcidId+")");
             toastr.error("Could not establish a connection: " + userName + " was not ready. Try again in a few moments.");
             screens.startReceiver();
             screens.loading.resetProgress();

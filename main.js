@@ -2,6 +2,7 @@ const process = require('process');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const isSingleInstance = app.requestSingleInstanceLock();
 if (!isSingleInstance) {
     console.log("Another instance of Assembl Desktop is already running. Quitting...");
@@ -107,6 +108,14 @@ function appReady() {
     }
 }
 
+function storeAccountData(data) {
+    userDataHandler.saveData("assembl_id", data["assembl_id"]);
+    userDataHandler.saveData("username", data["name"]);
+    userDataHandler.saveData("org_affiliation", data["org_affiliation"]);
+    userDataHandler.saveData("organization_id", data["organization_id"]);
+    userDataHandler.saveData("orcid_id", data["orcid_id"]);
+}
+
 function signIn() {
     let signedIn = false;
     console.log("Creating sign in window...");
@@ -146,30 +155,14 @@ function signIn() {
 
     signInWindow.webContents.on('dom-ready', function(event) {
         let url = signInWindow.webContents.getURL();
-        if (url.indexOf("https://accounts.assembl.ch/api/tempapp/") == 0) {
+        if (url.indexOf("https://accounts.assembl.ch/api/account/") == 0) {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
                     try {
-                        let orcidData = JSON.parse(result);
-                        console.log("ORCID iD data received:");
-                        console.log(orcidData);
-                        userDataHandler.saveData("assembl_id", orcidData["assembl_id"]);
-                        userDataHandler.saveData("orcid_id", orcidData["orcid"]);
-                        userDataHandler.saveData("orcid_token_type", orcidData["token_type"]);
-                        userDataHandler.saveData("orcid_access_token", orcidData["access_token"]);
-                        userDataHandler.saveData("orcid_refresh_token", orcidData["refresh_token"]);
-                        userDataHandler.saveData("orcid_expires_in", orcidData["expires_in"]);
-                        // TODO: handle expires_in. Currently, tokens expire after 20 years, so it is not something we need to work on very quickly.
-                        userDataHandler.saveData("orcid_scope", orcidData["scope"]);
-                        console.log("Checking if username is there...");
-                        if (orcidData["name"] != null && orcidData["name"].length > 0) {
-                            userDataHandler.saveData("orcid_name", orcidData["name"]);
-                            userDataHandler.saveData("username", orcidData["name"]);
-                        }
-                        else {
-                            userDataHandler.saveData("orcid_name", "");
-                            userDataHandler.saveData("username", "");
-                        }
+                        let accData = JSON.parse(result);
+                        console.log("account data received:");
+                        console.log(accData);
+                        storeAccountData(accData);
                         console.log("Closing sign in window...");
                         signedIn = true;
                         signInWindow.close();
@@ -188,7 +181,7 @@ function signIn() {
                 });
         }
         else if (url.indexOf("://accounts.assembl.ch/settings/") > -1) {
-            signInWindow.loadURL("https://accounts.assembl.ch/api/tempapp/");
+            signInWindow.loadURL("https://accounts.assembl.ch/api/account/");
         }
 
         if (url.indexOf('//orcid.org/') > -1) {
@@ -202,10 +195,7 @@ function signIn() {
         }
     });
 
-    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/api/tempapp/';
-    if (userDataHandler.hasData("orcid_id")) {
-        signInUrl += '&orcid=' + userDataHandler.loadData("orcid_id");
-    }
+    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/api/account/';
 
     signInWindow.loadURL(signInUrl);
 }
@@ -304,8 +294,33 @@ function startApplication() {
             .then(function() {
                 console.log("Userdata loaded");
                 mainWindow.webContents.send('userdata-loaded');
-                if (userDataHandler.hasData("orcid_access_token")) {
-                    mainWindow.webContents.send('signed-in');
+                if (userDataHandler.hasData("assembl_id")) {
+                    console.log("Signing in...");
+                    mainWindow.webContents.send('signing-in');
+                    // retrieve account data (might have changed!)
+                    https.get('https://accounts.assembl.ch/api/account/?id='+userDataHandler.loadData("assembl_id"), function(res) {
+                        let data = '';
+                        res.on('data', function(chunk) {
+                            data += chunk;
+                        });
+                        res.on('end', function() {
+                            try {
+                                let accRes = JSON.parse(data);
+                                console.log(accRes);
+                                // store account data (once again)
+                                storeAccountData(accRes);
+                                console.log("Signed in");
+                                mainWindow.webContents.send('signed-in');
+                            }
+                            catch (err) {
+                                console.error(err);
+                                mainWindow.webContents.send('error-occurred', '0x4001');
+                            }
+                        }).on('error', function(err) {
+                            console.error(err);
+                            mainWindow.webContents.send('error-occurred', '0x4002');
+                        });
+                    });
                 }
                 else {
                     signIn();
@@ -367,7 +382,17 @@ function startApplication() {
     });
 
     // for both
-    ipcMain.on('orcid-request', function(event) {
+    ipcMain.on('organization-id-request', function(event) {
+        event.returnValue = userDataHandler.loadData("organization_id");
+    });
+
+    // for both
+    ipcMain.on('org-affiliation-request', function(event) {
+        event.returnValue = userDataHandler.loadData("org_affiliation");
+    });
+
+    // for both
+    ipcMain.on('orcidid-request', function(event) {
         event.returnValue = userDataHandler.loadData("orcid_id");
     });
 
@@ -487,15 +512,14 @@ function startApplication() {
     }
     
     // for both ends
-    ipcMain.on('user-name-changed', function(event, newName) {
-        userDataHandler.saveData("username", newName);
+    ipcMain.on('websocket-connected', function(event) {
         bonjourHandler.init(mainWindow.webContents);
         loadPGP();
     });
 
     // for sender
     ipcMain.on('sender-setup-done', function(event) {
-        bonjourHandler.startBroadcast(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("orcid_id"));
+        bonjourHandler.startBroadcast(userDataHandler.loadData("username"), userDataHandler.loadData("assembl_id"), userDataHandler.loadData("org_affiliation"));
     });
 
     // for sender
