@@ -1,0 +1,1 @@
+https://github.com/multiformats/multicodec/blob/master/table.csv

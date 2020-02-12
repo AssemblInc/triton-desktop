@@ -109,7 +109,7 @@ ipcRenderer.on('error-occurred', function(event, errorCode) {
 ipcRenderer.on('app-closing', function(event, data) {
     console.warn("App is closing!");
     screens.loading.resetProgress();
-    screens.loading.setStatus("Closing Assembl Desktop...");
+    screens.loading.setStatus("Closing Assembl Triton...");
     screens.loading.setDetails("Please wait...");
     screens.showLoadingScreen(true);
     appClosing = true;
@@ -276,7 +276,7 @@ function showVerification(assemblId, displayName, orgAffiliation, asSender) {
     }
     document.getElementById("verif").style.display = "block";
     document.getElementById("verif-name").innerHTML = strip(displayName);
-    document.getElementById("verif-name").setAttribute("href", "https://accounts.assembl.ch/user/?id="+assemblId+"&closebtn");
+    document.getElementById("verif-name").setAttribute("href", "https://accounts.assembl.net/user/?id="+assemblId+"&closebtn");
     ipcRenderer.send('connection-p2p-established');
     // alert("A connection with " + displayName + " has been established.");
     toastr.success("Connection established with " + strip(displayName));
@@ -385,7 +385,7 @@ function checkAndShowAnnouncement() {
             }
         }
     };
-    xhr.open('GET', 'https://assembl.ch/api/desktop-announcement.json', true);
+    xhr.open('GET', 'https://assembl.net/api/desktop-announcement.json', true);
     xhr.setRequestHeader("Accept", "application/json")
     xhr.send();
 }

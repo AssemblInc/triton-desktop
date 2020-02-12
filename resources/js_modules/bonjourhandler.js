@@ -10,11 +10,11 @@ exports.init = function(webContents) {
     bonjour = require('bonjour')();
     browser = bonjour.find({ type: 'assembl' });
     browser.on('up', function(s) {
-        console.log("Found an Assembl Desktop instance: " + s.name + JSON.stringify(s.txt));
+        console.log("Found an Assembl Triton instance: " + s.name + JSON.stringify(s.txt));
         webWindow.send('bonjour-assembl-instance-up', JSON.stringify(s.txt));
     });
     browser.on('down', function(s) {
-        console.log("Lost an Assembl Desktop instance: " + s.name + JSON.stringify(s.txt));
+        console.log("Lost an Assembl Triton instance: " + s.name + JSON.stringify(s.txt));
         webWindow.send('bonjour-assembl-instance-down', JSON.stringify(s.txt));
     });
     browser.start();
@@ -25,7 +25,7 @@ exports.init = function(webContents) {
 
 exports.startBroadcast = function(displayName, assemblId, orgAffiliation) {
     service = bonjour.publish({
-        name: 'Assembl Desktop on ' + os.hostname(),
+        name: 'Assembl Triton on ' + os.hostname(),
         type: 'assembl',
         port: 27625,
         txt: {

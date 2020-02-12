@@ -63,7 +63,7 @@ function openValidationFile(validationFile) {
                     try {
                         console.log(jsonContents);
                         if (jsonContents.version > readerVersion) {
-                            alert("This "+fileType+" file was saved in a newer version than this version of Assembl Desktop can manage. Please download & install the latest update to be able to view the full validation file.");
+                            alert("This "+fileType+" file was saved in a newer version than this version of Assembl Triton can manage. Please download & install the latest update to be able to view the full validation file.");
                         }
 
                         if (extension == "asvv") {

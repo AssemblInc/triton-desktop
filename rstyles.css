@@ -21,7 +21,7 @@ html, body {
 body {
     margin: 0px;
     padding: 0px;
-    background: #193864;
+    background: linear-gradient(to top right, #0036b7, #004cff);
     color: #EDF4F4;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 17px;

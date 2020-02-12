@@ -1,14 +1,14 @@
 {
-  "name": "assembl-desktop",
+  "name": "assembl-triton",
   "version": "0.0.4",
-  "description": "Assembl Desktop allows you to transmit files directly to another person.",
-  "homepage": "https://assembl.ch/",
+  "description": "Assembl Triton allows you to transmit files directly to another person.",
+  "homepage": "https://triton.assembl.net/",
   "author": "Assembl Inc.",
   "license": "SEE LICENSE IN LICENSE.MD",
   "main": "main.js",
   "build": {
     "appId": "ch.assembl.desktop",
-    "productName": "Assembl Desktop",
+    "productName": "Assembl Triton",
     "copyright": "Copyright © 2019 Assembl Inc.",
     "extraFiles": [
       "resources/*",
@@ -57,8 +57,8 @@
     "pack": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^4.0.3",
-    "electron-builder": "^20.40.2"
+    "electron": "^4.2.12",
+    "electron-builder": "^20.44.4"
   },
   "dependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
@@ -68,17 +68,17 @@
     "http": "0.0.0",
     "internal-ip": "^4.3.0",
     "js-sha3": "^0.8.0",
-    "kafkajs": "^1.8.0",
-    "kbpgp": "^2.0.82",
+    "kafkajs": "^1.12.0",
+    "kbpgp": "^2.1.9",
     "mv": "^2.1.1",
     "nat-upnp": "^1.1.1",
     "net": "^1.0.2",
     "node": "^11.9.0",
     "prettysize": "^2.0.0",
-    "public-ip": "^3.1.0",
-    "socket.io": "^2.2.0",
+    "public-ip": "^3.2.0",
+    "socket.io": "^2.3.0",
     "socket.io-stream": "^0.9.1",
-    "ssh2": "^0.8.4",
+    "ssh2": "^0.8.7",
     "stellar-sdk": "^0.12.0",
     "toastr": "^2.1.4"
   },

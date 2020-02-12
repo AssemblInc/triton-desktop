@@ -5,7 +5,7 @@ const path = require('path');
 const https = require('https');
 const isSingleInstance = app.requestSingleInstanceLock();
 if (!isSingleInstance) {
-    console.log("Another instance of Assembl Desktop is already running. Quitting...");
+    console.log("Another instance of Assembl Triton is already running. Quitting...");
     app.quit();
 }
 else {
@@ -85,7 +85,7 @@ function appReady() {
     console.log('Node v' + process.versions.node);
     console.log('Electron v' + process.versions.electron);
     console.log('Chrome v' + process.versions.chrome);
-    console.log('Assembl Desktop v' + app.getVersion());
+    console.log('Assembl Triton v' + app.getVersion());
 
     app.on('browser-window-created', function(e, window) {
         // window.setMenu(null);
@@ -155,7 +155,7 @@ function signIn() {
 
     signInWindow.webContents.on('dom-ready', function(event) {
         let url = signInWindow.webContents.getURL();
-        if (url.indexOf("https://accounts.assembl.ch/api/account/") == 0) {
+        if (url.indexOf("https://accounts.assembl.net/api/account/") == 0) {
             signInWindow.webContents.executeJavaScript('document.body.innerText')
                 .then(function(result) {
                     try {
@@ -180,22 +180,22 @@ function signIn() {
                     mainWindow.webContents.send('error-occurred', '0x4002');
                 });
         }
-        else if (url.indexOf("://accounts.assembl.ch/settings/") > -1) {
-            signInWindow.loadURL("https://accounts.assembl.ch/api/account/");
+        else if (url.indexOf("://accounts.assembl.net/settings/") > -1) {
+            signInWindow.loadURL("https://accounts.assembl.net/api/account/");
         }
 
         if (url.indexOf('//orcid.org/') > -1) {
             signInWindow.setTitle('Connect your ORCID iD to your Assembl account');
         }
-        else if (url.indexOf('//accounts.assembl.ch/') > -1) {
+        else if (url.indexOf('//accounts.assembl.net/') > -1) {
             signInWindow.setTitle('Sign in to Assembl');
         }
         else {
-            signInWindow.setTitle('Assembl Desktop');
+            signInWindow.setTitle('Assembl Triton');
         }
     });
 
-    let signInUrl = 'https://accounts.assembl.ch/signin/?continue=https://accounts.assembl.ch/api/account/';
+    let signInUrl = 'https://accounts.assembl.net/signin/?continue=https://accounts.assembl.net/api/account/';
 
     signInWindow.loadURL(signInUrl);
 }
@@ -218,7 +218,7 @@ function showSplashScreen() {
         skipTaskbar: true,
         show: true,
         fullscreenable: false,
-        title: "Starting Assembl Desktop...",
+        title: "Starting Assembl Triton...",
         webPreferences: {
             nodeIntegration: false,
             devTools: false,
@@ -245,7 +245,7 @@ function startApplication() {
         show: false,
         center: true,
         fullscreenable: false,
-        title: "Assembl Desktop",
+        title: "Assembl Triton",
         webPreferences: {
             nodeIntegration: true,
             devTools: true,
@@ -298,7 +298,7 @@ function startApplication() {
                     console.log("Signing in...");
                     mainWindow.webContents.send('signing-in');
                     // retrieve account data (might have changed!)
-                    https.get('https://accounts.assembl.ch/api/account/?id='+userDataHandler.loadData("assembl_id"), function(res) {
+                    https.get('https://accounts.assembl.net/api/account/?id='+userDataHandler.loadData("assembl_id"), function(res) {
                         let data = '';
                         res.on('data', function(chunk) {
                             data += chunk;

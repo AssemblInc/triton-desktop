@@ -37,7 +37,7 @@ exports.setOtherKeys = function(publicKey) {
     }, function(err, keyManager) {
         if (!err) {
             keyManagers.other = keyManager;
-            console.log("Other keyManager has been imported into Assembl Desktop. We can now encrypt data.");
+            console.log("Other keyManager has been imported into Assembl Triton. We can now encrypt data.");
         }
         else {
             console.warn("An error occured while importing the public key from the receiver into the KeyManager.");
@@ -112,7 +112,7 @@ function loadKeys(keyManager, newKeys) {
 
 exports.createKeys = function(displayName, userId) {
     opts = {
-        userid: displayName + " <" + userId + "@accounts.assembl.ch>",
+        userid: displayName + " <" + userId + "@accounts.assembl.net>",
         primary: {
             nbits: 2048,
             flags: PGP.certify_keys | PGP.sign_data | PGP.auth | PGP.encrypt_comm | PGP.encrypt_storage,

@@ -1,4 +1,4 @@
-// UNFINISHED
+// NOTE: UNFINISHED
 
 const { Kafka } = require('kafkajs');
 

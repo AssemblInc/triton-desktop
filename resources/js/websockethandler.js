@@ -9,7 +9,7 @@ var wsHandler = {
         screens.loading.setDetails("");
         screens.loading.resetProgress();
         screens.showLoadingScreen(true);
-        wsHandler.socket = io('https://socket.assembl.ch:2998');
+        wsHandler.socket = io('https://socket.assembl.net:2998');
         wsHandler.socket.on('connect', function() {
             console.log("Websocket connected: " + wsHandler.socket.id);
             setTimeout(function() {
@@ -322,10 +322,10 @@ var wsHandler = {
             if (assemblID !== ipcRenderer.sendSync('assemblid-request')) {
                 console.warn(assemblID + " is disconnecting: ", reason);
                 if (assemblID === sender.assemblId) {
-                    alert(sender.name + " disconnected. Assembl Desktop will now quit.");
+                    alert(sender.name + " disconnected. Assembl Triton will now quit.");
                 }
                 else if (assemblID === receiver.assemblId) {
-                    alert(receiver.name + " disconnected. Assembl Desktop will now quit.");
+                    alert(receiver.name + " disconnected. Assembl Triton will now quit.");
                 }
                 ipcRenderer.send('app-should-close');
             }
